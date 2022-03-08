@@ -41,9 +41,9 @@ build-job:       # This job runs in the build stage, which runs first.
     - SSL_NO_VERIFY=1 conda install make gcc_linux-64 gxx_linux-64  pthread-stubs
     - conda info 
     - conda list
-    - cd $CI_BUILDS_DIR/build/
     - cmake -E make_directory $CI_BUILDS_DIR/build
     - cmake -E make_directory $CI_BUILDS_DIR/install
+    - cd $CI_BUILDS_DIR/build/
     - cmake $CI_PROJECT_DIR -DCMAKE_BUILD_TYPE=$BUILD_TYPE -DSPICEQL_BUILD_DOCS=OFF -DCMAKE_INSTALL_PREFIX=$CI_BUILDS_DIR/install
     - cmake --install $CI_PROJECT_DIR 
 
