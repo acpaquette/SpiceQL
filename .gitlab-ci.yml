@@ -26,7 +26,7 @@ before_script:
     - conda init bash
     - source ~/.bashrc
 
-build-job:       # This job runs in the build stage, which runs first.
+build-and-ctest:       # This job runs in the build stage, which runs first.
   variables:
     SSPICE_DEBUG : y
     BUILD_TYPE : Release
@@ -63,16 +63,16 @@ build-job:       # This job runs in the build stage, which runs first.
       - $CI_PROJECT_DIR/install
 
 
-test-install-job:   # This job also runs in the test stage.
+check-install-binaries:   # This job also runs in the test stage.
   stage: test    # It can run at the same time as unit-test-job (in parallel).
   dependencies:
-    - build-job
+    - build-and-ctest
   script:
     - cd $CI_PROJECT_DIR/install/
     - test -e lib/libSpiceQL.so
     - test -e include/SpiceQL/sugar_spice.h
 
-test-json-files:
+check-installed-json-files:
   stage: test
   dependencies:
     - build-job
