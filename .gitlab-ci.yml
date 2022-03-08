@@ -38,7 +38,7 @@ build-job:       # This job runs in the build stage, which runs first.
     - conda init bash
     - source ~/.bashrc
     - conda activate spiceql
-    - SSL_NO_VERIFY=1 conda install make gcc_linux-64 gxx_linux-64  pthread-stubs
+    - SSL_NO_VERIFY=1 conda install make gcc_linux-64 gxx_linux-64  pthread-stubs ctest
     - conda info 
     - conda list
     - cmake -E make_directory $CI_BUILDS_DIR/build
@@ -46,6 +46,7 @@ build-job:       # This job runs in the build stage, which runs first.
     - cd $CI_BUILDS_DIR/build/
     - cmake $CI_PROJECT_DIR -DCSpice_DIR=$CONDA_PREFIX/lib/cmake/cspice/ -DCMAKE_BUILD_TYPE=$BUILD_TYPE -DSPICEQL_BUILD_DOCS=OFF -DCMAKE_INSTALL_PREFIX=$CI_BUILDS_DIR/install
     - cmake --build . 
+    - cmake --install . 
 
 unit-test-job:   # This job runs in the test stage.
   stage: test    # It only starts when the job in the build stage completes successfully.
@@ -55,12 +56,22 @@ unit-test-job:   # This job runs in the test stage.
     - ctest -VV -C $BUILD_TYPE
     - echo "Code coverage is 90%"
 
-lint-test-job:   # This job also runs in the test stage.
+test-install-job:   # This job also runs in the test stage.
   stage: test    # It can run at the same time as unit-test-job (in parallel).
   script:
-    - echo "Linting code... This will take about 10 seconds."
-    - sleep 10
-    - echo "No lint issues found."
+    - cd $CI_BUILDS_DIR/install/
+    - test -e lib/libSpiceQL.so
+    - test -e include/SpiceQL/sugar_spice.h
+    - python -c "import pyspiceql"
+
+test-json-files:
+  stage: test
+  script:
+    - for file in *.json;
+            do
+            pwd
+            jsonschema --instance "$file" spiceMissionSchmea.schema.json 
+        done;
 
 deploy-job:      # This job runs in the deploy stage.
   stage: deploy  # It only runs when *both* jobs in the test stage complete successfully.
