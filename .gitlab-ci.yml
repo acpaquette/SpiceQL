@@ -19,6 +19,9 @@ stages:          # List of stages for jobs, and their order of execution
   - test
   - deploy
 
+variables:
+    SSPICE_DEBUG : y
+
 before_script:
     - conda init bash
     - source ~/.bashrc
@@ -46,16 +49,13 @@ build-job:       # This job runs in the build stage, which runs first.
     - conda info 
     - conda list
     - cmake -E make_directory $CI_PROJECT_DIR/build
-    - cmake -E make_directory $CI_PROJECT_DIR/install
     - cd $CI_PROJECT_DIR/build/
-    - cmake $CI_PROJECT_DIR -DCSpice_DIR=$CONDA_PREFIX/lib/cmake/cspice/ -DCMAKE_BUILD_TYPE=$BUILD_TYPE -DSPICEQL_BUILD_DOCS=OFF -DCMAKE_INSTALL_PREFIX=$CI_PROJECT_DIR/install
+    - cmake $CI_PROJECT_DIR -DCSpice_DIR=$CONDA_PREFIX/lib/cmake/cspice/ -DCMAKE_BUILD_TYPE=$BUILD_TYPE -DSPICEQL_BUILD_DOCS=OFF -DCMAKE_INSTALL_PREFIX=$CI_PROJECT_DIR/env
     - cmake --build . 
     - cmake --install . 
   artifacts:
     paths:
       - $CI_PROJECT_DIR/build
-      - $CI_PROJECT_DIR/install
-      - $CONDA_PREFIX
       - $CI_PROJECT_DIR/env
 
 unit-test-job:   # This job runs in the test stage.
@@ -73,7 +73,8 @@ test-install-job:   # This job also runs in the test stage.
   dependencies:
     - build-job
   script:
-    - cd $CI_PROJECT_DIR/install/
+    - conda activate $CI_PROJECT_DIR/env/
+    - cd $CI_PROJECT_DIR/env/
     - test -e lib/libSpiceQL.so
     - test -e include/SpiceQL/sugar_spice.h
     - python -c "import pyspiceql"
