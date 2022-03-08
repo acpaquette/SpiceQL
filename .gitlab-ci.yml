@@ -84,11 +84,13 @@ test-json-files:
   dependencies:
     - build-job
   script:
-    - for file in *.json;
-            do
-            pwd
-            jsonschema --instance "$file" spiceMissionSchmea.schema.json 
-        done;
+    - cd $CI_PROJECT_DIR/SpiceQL/db/schema
+    - | 
+      for file in *.json;
+          do
+          pwd
+          jsonschema --instance "$file" spiceMissionSchmea.schema.json 
+      done;
 
 deploy-job:      # This job runs in the deploy stage.
   stage: deploy  # It only runs when *both* jobs in the test stage complete successfully.
