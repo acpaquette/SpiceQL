@@ -71,7 +71,6 @@ test-install-job:   # This job also runs in the test stage.
     - cd $CI_PROJECT_DIR/install/
     - test -e lib/libSpiceQL.so
     - test -e include/SpiceQL/sugar_spice.h
-    - python -c "import pyspiceql"
 
 test-json-files:
   stage: test
