@@ -49,32 +49,26 @@ build-job:       # This job runs in the build stage, which runs first.
     - conda info 
     - conda list
     - cmake -E make_directory $CI_PROJECT_DIR/build
+    - cmake -E make_directory $CI_PROJECT_DIR/install
     - cd $CI_PROJECT_DIR/build/
-    - cmake $CI_PROJECT_DIR -DCSpice_DIR=$CONDA_PREFIX/lib/cmake/cspice/ -DCMAKE_BUILD_TYPE=$BUILD_TYPE -DSPICEQL_BUILD_DOCS=OFF -DCMAKE_INSTALL_PREFIX=$CI_PROJECT_DIR/env
+    - cmake $CI_PROJECT_DIR -DCSpice_DIR=$CONDA_PREFIX/lib/cmake/cspice/ -DCMAKE_BUILD_TYPE=$BUILD_TYPE -DSPICEQL_BUILD_DOCS=OFF -DCMAKE_INSTALL_PREFIX=$CI_PROJECT_DIR/install
     - cmake --build . 
     - cmake --install . 
+    - echo "Running unit tests... This will take about 60 seconds."
+    - cd $CI_PROJECT_DIR/build/
+    - ctest -VV -C $BUILD_TYPE
   artifacts:
     paths:
       - $CI_PROJECT_DIR/build
-      - $CI_PROJECT_DIR/env
+      - $CI_PROJECT_DIR/install
 
-unit-test-job:   # This job runs in the test stage.
-  stage: test    # It only starts when the job in the build stage completes successfully.
-  dependencies:
-    - build-job
-  script:
-    - echo "Running unit tests... This will take about 60 seconds."
-    - conda activate $CI_PROJECT_DIR/env/
-    - cd $CI_PROJECT_DIR/build/
-    - ctest -VV -C $BUILD_TYPE
 
 test-install-job:   # This job also runs in the test stage.
   stage: test    # It can run at the same time as unit-test-job (in parallel).
   dependencies:
     - build-job
   script:
-    - conda activate $CI_PROJECT_DIR/env/
-    - cd $CI_PROJECT_DIR/env/
+    - cd $CI_PROJECT_DIR/install/
     - test -e lib/libSpiceQL.so
     - test -e include/SpiceQL/sugar_spice.h
     - python -c "import pyspiceql"
@@ -84,6 +78,8 @@ test-json-files:
   dependencies:
     - build-job
   script:
+    - cd $CI_PROJECT_DIR/install
+    - pip install --trusted-host pypi.org --trusted-host pypi.python.org --trusted-host files.pythonhosted.org jsonschema
     - cd $CI_PROJECT_DIR/SpiceQL/db/schema
     - | 
       for file in *.json;
