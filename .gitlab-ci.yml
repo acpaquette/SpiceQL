@@ -30,7 +30,6 @@ build-job:       # This job runs in the build stage, which runs first.
   stage: build
   script:
     - ls $CI_PROJECT_DIR
-    - cat $CONDA_PREFIX
     - git config http.sslVerify "false"
     - GIT_SSL_NO_VERIFY=true git submodule update --init --recursive
     - touch /etc/pip.conf
