@@ -45,7 +45,7 @@ build-job:       # This job runs in the build stage, which runs first.
     - cmake -E make_directory $CI_BUILDS_DIR/install
     - cd $CI_BUILDS_DIR/build/
     - cmake $CI_PROJECT_DIR -DCSpice_DIR=$CONDA_PREFIX/lib/cmake/cspice/ -DCMAKE_BUILD_TYPE=$BUILD_TYPE -DSPICEQL_BUILD_DOCS=OFF -DCMAKE_INSTALL_PREFIX=$CI_BUILDS_DIR/install
-    - cmake --install . 
+    - cmake --build . 
 
 unit-test-job:   # This job runs in the test stage.
   stage: test    # It only starts when the job in the build stage completes successfully.
