@@ -19,7 +19,13 @@ stages:          # List of stages for jobs, and their order of execution
   - test
   - deploy
 
-before_script:
+
+build-job:       # This job runs in the build stage, which runs first.
+  variables:
+    SSPICE_DEBUG : y
+    BUILD_TYPE : Release
+  stage: build
+  script:
     - ls $CI_PROJECT_DIR
     - git config http.sslVerify "false"
     - GIT_SSL_NO_VERIFY=true git submodule update --init --recursive
@@ -36,13 +42,6 @@ before_script:
     - SSL_NO_VERIFY=1 conda install make gcc_linux-64 gxx_linux-64  pthread-stubs
     - conda info 
     - conda list
-
-build-job:       # This job runs in the build stage, which runs first.
-  variables:
-    SSPICE_DEBUG : y
-    BUILD_TYPE : Release
-  stage: build
-  script:
     - cmake -E make_directory $CI_BUILDS_DIR/build
     - cmake -E make_directory $CI_BUILDS_DIR/install
     - cd $CI_BUILDS_DIR/build/
@@ -52,6 +51,8 @@ build-job:       # This job runs in the build stage, which runs first.
 
 unit-test-job:   # This job runs in the test stage.
   stage: test    # It only starts when the job in the build stage completes successfully.
+  dependencies:
+    - build-job
   script:
     - echo "Running unit tests... This will take about 60 seconds."
     - conda activate spiceql
@@ -60,6 +61,8 @@ unit-test-job:   # This job runs in the test stage.
 
 test-install-job:   # This job also runs in the test stage.
   stage: test    # It can run at the same time as unit-test-job (in parallel).
+  dependencies:
+    - build-job
   script:
     - cd $CI_BUILDS_DIR/install/
     - test -e lib/libSpiceQL.so
@@ -68,6 +71,8 @@ test-install-job:   # This job also runs in the test stage.
 
 test-json-files:
   stage: test
+  dependencies:
+    - build-job
   script:
     - for file in *.json;
             do
