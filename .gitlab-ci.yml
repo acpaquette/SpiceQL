@@ -23,6 +23,7 @@ build-job:       # This job runs in the build stage, which runs first.
   variables:
     SSPICE_DEBUG : y
     BUILD_TYPE : Release
+    GIT_SUBMODULE_STRATEGY: recursive
   stage: build
   script:
     - touch /etc/pip.conf
