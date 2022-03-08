@@ -41,7 +41,7 @@ build-job:       # This job runs in the build stage, which runs first.
     - cd $CI_BUILDS_DIR
     - cmake -E make_directory $CI_BUILDS_DIR/build
     - cmake -E make_directory $CI_BUILDS_DIR/install
-    - cmake $CI_PROJECT_DIR -DCMAKE_BUILD_TYPE=$BUILD_TYPE -DCSpice_DIR=$CONDA_PREFIX/lib/cmake/cspice/ -Dfmt_DIR=$CONDA/envs/sugar_spice/lib/cmake/fmt/ -DSPICEQL_BUILD_DOCS=OFF -DCMAKE_INSTALL_PREFIX=$CI_BUILDS_DIR/install
+    - cmake /builds/asc/SpiceQL/ -DCMAKE_BUILD_TYPE=$BUILD_TYPE -DCSpice_DIR=$CONDA_PREFIX/lib/cmake/cspice/ -Dfmt_DIR=$CONDA/envs/sugar_spice/lib/cmake/fmt/ -DSPICEQL_BUILD_DOCS=OFF -DCMAKE_INSTALL_PREFIX=$CI_BUILDS_DIR/install
     - cmake --install . --config $BUILD_TYPE
 
 unit-test-job:   # This job runs in the test stage.
