@@ -21,3 +21,4 @@ dependencies:
     - sphinx-material
     - m2r2
     - sphinxcontrib.gist
+    - jsonschema
