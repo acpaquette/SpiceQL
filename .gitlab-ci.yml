@@ -38,10 +38,10 @@ build-job:       # This job runs in the build stage, which runs first.
                     \tpypi.org\n
                     \tfiles.pythonhosted.org" >> /etc/pip.conf
     - cat /etc/pip.conf
-    - SSL_NO_VERIFY=1 conda env create --name spiceql -f environment.yml --prefix $CI_PROJECT_DIR/env
+    - SSL_NO_VERIFY=1 conda env create -f environment.yml --prefix $CI_PROJECT_DIR/env
     - conda init bash
     - source ~/.bashrc
-    - conda activate spiceql
+    - conda activate $CI_PROJECT_DIR/env
     - SSL_NO_VERIFY=1 conda install make gcc_linux-64 gxx_linux-64  pthread-stubs
     - conda info 
     - conda list
