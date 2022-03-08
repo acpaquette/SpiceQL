@@ -75,7 +75,7 @@ check-install-binaries:   # This job also runs in the test stage.
 check-installed-json-files:
   stage: test
   dependencies:
-    - build-job
+    - build-and-ctest
   script:
     - cd $CI_PROJECT_DIR/install
     - pip install --trusted-host pypi.org --trusted-host pypi.python.org --trusted-host files.pythonhosted.org jsonschema
