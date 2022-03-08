@@ -43,7 +43,7 @@ build-job:       # This job runs in the build stage, which runs first.
     - cd $CI_BUILDS_DIR
     - cmake -E make_directory $CI_BUILDS_DIR/build
     - cmake -E make_directory $CI_BUILDS_DIR/install
-    - cmake $CI_PEOJECT_DI -DCMAKE_BUILD_TYPE=$BUILD_TYPE -DSPICEQL_BUILD_DOCS=OFF -DCMAKE_INSTALL_PREFIX=$CI_BUILDS_DIR/install
+    - cmake $CI_PROJECT_DI -DCMAKE_BUILD_TYPE=$BUILD_TYPE -DSPICEQL_BUILD_DOCS=OFF -DCMAKE_INSTALL_PREFIX=$CI_BUILDS_DIR/install
     - cmake --install $CI_PROJECT_DIR --config $BUILD_TYPE
 
 unit-test-job:   # This job runs in the test stage.
