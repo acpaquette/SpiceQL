@@ -79,12 +79,12 @@ check-installed-json-files:
   script:
     - cd $CI_PROJECT_DIR/install
     - pip install --trusted-host pypi.org --trusted-host pypi.python.org --trusted-host files.pythonhosted.org jsonschema
-    - cd $CI_PROJECT_DIR/SpiceQL/db/schema
+    - cd $CI_PROJECT_DIR/SpiceQL/db
     - | 
       for file in *.json;
           do
           pwd
-          jsonschema --instance "$file" spiceMissionSchmea.schema.json 
+          jsonschema --instance "$file" schema/spiceMissionSchmea.schema.json 
       done;
 
 deploy-job:      # This job runs in the deploy stage.
