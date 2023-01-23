@@ -1,1 +1,2 @@
-from pyspiceql import *
+from .pyspiceql import *
+
