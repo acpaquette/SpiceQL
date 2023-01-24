@@ -19,13 +19,15 @@ namespace SpiceQL {
   /**
     * @brief get the latest kernel in a list
     *
-    * Returns the kernel with the latest version string (e.g. the highest v??? or similar
+    * Returns the kernels with the latest version string (e.g. the highest v??? or similar
     * sub-string in a kernel path name) in the input list and returns it as a path object.
+    * Given multiple different kernels, like de### and mar###, each will be evaluted on there
+    * own to return the highest version of each.
     *
     * @param kernels vector of strings, should be a list of kernel paths.
-    * @returns path object to latest Kernel
+    * @returns std::vector<std::string> vector paths to latest Kernels
    **/
-  std::string getLatestKernel(std::vector<std::string> kernels);
+  std::vector<std::string> getLatestKernel(std::vector<std::string> kernels);
 
 
    /**
@@ -79,7 +81,7 @@ namespace SpiceQL {
    * @param conf json conf file
    * @returns list of paths matching ext
   **/
-  nlohmann::json searchMissionKernels(std::string root,  nlohmann::json conf);
+  nlohmann::json listMissionKernels(std::string root,  nlohmann::json conf);
 
 
   /**
@@ -93,7 +95,7 @@ namespace SpiceQL {
    * @param conf json conf file
    * @returns list of paths matching ext
   **/
-  nlohmann::json searchMissionKernels(nlohmann::json conf);
+  nlohmann::json listMissionKernels(nlohmann::json conf);
 
 
   /**

@@ -29,33 +29,33 @@ TEST_F(TestConfig, FunctionalTestConfigEval) {
   mocks.OnCallFunc(getDataDirectory).Return("/isis_data/");
 
   json config_eval_res = testConfig.get();
-  json pointer_eval_res = testConfig.get("/clem1");
+  json pointer_eval_res = testConfig.get("/clementine1");
 
-  json::json_pointer pointer = "/clem1/ck/reconstructed/kernels"_json_pointer;
+  json::json_pointer pointer = "/clementine1/ck/reconstructed/kernels"_json_pointer;
   int expected_number = 4;
   ASSERT_EQ(config_eval_res[pointer].size(), expected_number);
   ASSERT_EQ(pointer_eval_res[pointer].size(), expected_number);
   ASSERT_EQ(testConfig[pointer].size(), 1);
 
-  pointer = "/clem1/ck/smithed/kernels"_json_pointer;
+  pointer = "/clementine1/ck/smithed/kernels"_json_pointer;
   expected_number = 1;
   ASSERT_EQ(config_eval_res[pointer].size(), expected_number);
   ASSERT_EQ(pointer_eval_res[pointer].size(), expected_number);
   ASSERT_EQ(testConfig[pointer].size(), expected_number);
 
-  pointer = "/clem1/spk/reconstructed/kernels"_json_pointer;
+  pointer = "/clementine1/spk/reconstructed/kernels"_json_pointer;
   expected_number = 2;
   ASSERT_EQ(config_eval_res[pointer].size(), expected_number);
   ASSERT_EQ(pointer_eval_res[pointer].size(), expected_number);
   ASSERT_EQ(testConfig[pointer].size(), 1);
 
-  pointer = "/clem1/fk/kernels"_json_pointer;
+  pointer = "/clementine1/fk/kernels"_json_pointer;
   expected_number = 1;
   ASSERT_EQ(config_eval_res[pointer].size(), expected_number);
   ASSERT_EQ(pointer_eval_res[pointer].size(), expected_number);
   ASSERT_EQ(testConfig[pointer].size(), expected_number);
 
-  pointer = "/clem1/sclk/kernels"_json_pointer;
+  pointer = "/clementine1/sclk/kernels"_json_pointer;
   expected_number = 2;
   ASSERT_EQ(config_eval_res[pointer].size(), expected_number);
   ASSERT_EQ(pointer_eval_res[pointer].size(), expected_number);
@@ -88,23 +88,23 @@ TEST_F(TestConfig, FunctionalTestConfigGlobalEval) {
   testConfig.get();
   json config_eval_res = testConfig.globalConf();
 
-  json::json_pointer pointer = "/clem1/ck/reconstructed/kernels"_json_pointer;
+  json::json_pointer pointer = "/clementine1/ck/reconstructed/kernels"_json_pointer;
   int expected_number = 1;
   ASSERT_EQ(config_eval_res[pointer].size(), expected_number);
 
-  pointer = "/clem1/ck/smithed/kernels"_json_pointer;
+  pointer = "/clementine1/ck/smithed/kernels"_json_pointer;
   expected_number = 1;
   ASSERT_EQ(config_eval_res[pointer].size(), expected_number);
 
-  pointer = "/clem1/spk/reconstructed/kernels"_json_pointer;
+  pointer = "/clementine1/spk/reconstructed/kernels"_json_pointer;
   expected_number = 1;
   ASSERT_EQ(config_eval_res[pointer].size(), expected_number);
 
-  pointer = "/clem1/fk/kernels"_json_pointer;
+  pointer = "/clementine1/fk/kernels"_json_pointer;
   expected_number = 1;
   ASSERT_EQ(config_eval_res[pointer].size(), expected_number);
 
-  pointer = "/clem1/sclk/kernels"_json_pointer;
+  pointer = "/clementine1/sclk/kernels"_json_pointer;
   expected_number = 1;
   ASSERT_EQ(config_eval_res[pointer].size(), expected_number);
 
@@ -140,4 +140,37 @@ TEST_F(TestConfig, FunctionalTestsConfigKeySearch) {
   for (auto pointer : res_pointers) {
     EXPECT_EQ(pointer, pointers[i++]);
   }
+}
+
+TEST_F(TestConfig, FunctionalTestsConfigGetParentPointer) {
+  MockRepository mocks;
+  mocks.OnCallFunc(SpiceQL::getRootDependency).Return("");
+
+  std::string pointer = "/banana/apple/orange";
+
+  std::string parent = testConfig.getParentPointer(pointer, 0);
+  EXPECT_EQ(parent, "");
+
+  parent = testConfig.getParentPointer(pointer, 1);
+  EXPECT_EQ(parent, "/banana");
+
+  parent = testConfig.getParentPointer(pointer, 2);
+  EXPECT_EQ(parent, "/banana/apple");
+
+  parent = testConfig.getParentPointer(pointer, 3);
+  EXPECT_EQ(parent, pointer);
+}
+
+TEST_F(TestConfig, FunctionalTestsConfigGetParentPointerDeps) {
+  std::string folder = getenv("SPICEROOT");
+  folder += "/lro";
+  ASSERT_TRUE(fs::create_directory(folder));
+  std::string pointer = "/lroc/sclk";
+
+  std::string parent = testConfig.getParentPointer(pointer, 1);
+  EXPECT_EQ(parent, "/lro");
+
+  parent = testConfig.getParentPointer(pointer, 2);
+  EXPECT_EQ(parent, "/lroc/sclk");
+  ASSERT_TRUE(fs::remove(folder));
 }

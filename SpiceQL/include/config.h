@@ -47,6 +47,7 @@ namespace SpiceQL {
        */
       Config operator[](std::string pointer);
 
+      Config operator[](std::vector<std::string> pointers);
 
       /**
        * @brief 
@@ -145,6 +146,14 @@ namespace SpiceQL {
        */
       std::vector<std::string> findKey(std::string key, bool recursive);
 
+      /**
+       * @brief Get the pointer at a position of a pointer
+       *
+       * @param searchPointer Pointer/path to be searched
+       * @param pointerPosition Position of the pointer to extract
+       * @return std::string pointer at the position in the searchPointer
+       */
+      std::string getParentPointer(std::string searchPointer, int pointerPosition = 0);
 
     private:
       /**
@@ -156,14 +165,11 @@ namespace SpiceQL {
 
 
       /**
-       * @brief Given a conf json object, expands the regexes to paths 
+       * @brief Expands the regexes to paths of a config object 
        * 
-       * @param eval_json Json to expand
-       * @param merge if true, merges with the internal 
        * @return nlohmann::json 
        */
-      nlohmann::json evaluateJson(nlohmann::json eval_json);
-
+      nlohmann::json evaluateConfig();
 
       //! internal json config
       nlohmann::json config;

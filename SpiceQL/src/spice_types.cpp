@@ -82,15 +82,22 @@ namespace SpiceQL {
 
 
   int Kernel::translateFrame(string frame) {
-    KernelPool::getInstance();    
+    // KernelPool::getInstance();
     
     SpiceInt code;
     SpiceBoolean found;
 
     // Get FKs 
-    // load all latest quntil we can get smarter about it
+    // load all latest until we can get smarter about it
     Config c;
-    json j = c.getLatestRecursive("fk");
+    json config = c.globalConf();
+    json j;
+    if (config.find(frame) != config.end()) {
+       j = c.getLatestRecursive("/" + frame + "/fk");
+    }
+    else {
+      j = c.getLatestRecursive("fk");
+    }
     KernelSet kset(j);
 
     bodn2c_c(frame.c_str(), &code, &found);
@@ -140,7 +147,7 @@ namespace SpiceQL {
       // get lsk kernel
       json conf = getMissionConfig("base");
       conf = globKernels(getDataDirectory(), conf, "lsk");
-      Kernel lsk(getLatestKernel(conf.at("base").at("lsk").at("kernels")));
+      KernelSet lsk(getLatestKernel(conf.at("base").at("lsk").at("kernels")));
 
       SpiceDouble et;
       utc2et_c(utc.c_str(), &et);
@@ -151,13 +158,28 @@ namespace SpiceQL {
   double sclkToEt(string mission, string sclk) {
       // get lsk kernel
       Config missionConf;
-      missionConf = missionConf[mission];
+      json globalConf = missionConf.globalConf();
+      if (globalConf.find(mission) != globalConf.end()) {
+        missionConf = missionConf[mission];
+      }
 
       json sclks = missionConf.getLatestRecursive("sclk");
       KernelSet sclkSet(sclks);
 
       SpiceDouble et;
       scs2e_c(Kernel::translateFrame(mission), sclk.c_str(), &et);
+      return et;
+  }
+
+  double sclkToEt(int frameCode, string sclk) {
+      // get lsk kernel
+      Config missionConf;
+
+      json sclks = missionConf.getLatestRecursive("sclk");
+      KernelSet sclkSet(sclks);
+
+      SpiceDouble et;
+      scs2e_c(frameCode, sclk.c_str(), &et);
       return et;
   }
 
@@ -264,7 +286,7 @@ namespace SpiceQL {
       }
     }
   
-    clocks = searchMissionKernels(dataDir, clocks);
+    clocks = listMissionKernels(dataDir, clocks);
     clocks = getLatestKernels(clocks);
 
     vector<json::json_pointer> kpointers = findKeyInJson(clocks, "kernels", true);
@@ -287,21 +309,21 @@ namespace SpiceQL {
 
 
   KernelSet::KernelSet(json kernels) {
-    this->kernels = kernels; 
+    this->kernels = kernels;
 
     vector<json::json_pointer> pointers = findKeyInJson(kernels, "kernels", true);
 
-    for(auto &p : pointers) { 
-      json jkernels = kernels[p]; 
-      vector<SharedKernel> res; 
+    for(auto &p : pointers) {
+      json jkernels = kernels[p];
+      vector<SharedKernel> res;
       for(auto & k : jkernels) {
         SharedKernel sk(new Kernel(k));
         res.emplace_back(sk);
       }
       loadedKernels.emplace(p, res);
-    } 
+    }
   }
 
-  
+
 } 
  

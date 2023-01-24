@@ -32,7 +32,7 @@ class IsisDataDirectory : public ::testing::Test {
     
     void SetUp() override;
     void TearDown() override; 
-    void compareKernelSets(string name);
+    void compareKernelSets(string name, set<string> expectedDiff = {});
     void CompareKernelSets(vector<string> kVector, vector<string> expectedSubSet);
 };
 

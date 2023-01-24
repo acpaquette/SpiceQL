@@ -51,19 +51,21 @@ if(SPICEQL_BUILD_LIB)
                               ${SPICEQL_BUILD_INCLUDE_DIR}/query.h
                             ${SPICEQL_BUILD_INCLUDE_DIR}/config.h)
 
-  set(SPICEQL_CONFIG_FILES ${CMAKE_CURRENT_SOURCE_DIR}/SpiceQL/db/clem1.json
+  set(SPICEQL_CONFIG_FILES ${CMAKE_CURRENT_SOURCE_DIR}/SpiceQL/db/apollo16.json
+                           ${CMAKE_CURRENT_SOURCE_DIR}/SpiceQL/db/apollo17.json
+                           ${CMAKE_CURRENT_SOURCE_DIR}/SpiceQL/db/base.json
+                           ${CMAKE_CURRENT_SOURCE_DIR}/SpiceQL/db/cassini.json
+                           ${CMAKE_CURRENT_SOURCE_DIR}/SpiceQL/db/clem1.json
                               ${CMAKE_CURRENT_SOURCE_DIR}/SpiceQL/db/galileo.json
+                           ${CMAKE_CURRENT_SOURCE_DIR}/SpiceQL/db/juno.json
+                           ${CMAKE_CURRENT_SOURCE_DIR}/SpiceQL/db/kaguya.json
                               ${CMAKE_CURRENT_SOURCE_DIR}/SpiceQL/db/lro.json
                               ${CMAKE_CURRENT_SOURCE_DIR}/SpiceQL/db/mess.json
-                              ${CMAKE_CURRENT_SOURCE_DIR}/SpiceQL/db/juno.json
-                              ${CMAKE_CURRENT_SOURCE_DIR}/SpiceQL/db/apollo16.json
-                              ${CMAKE_CURRENT_SOURCE_DIR}/SpiceQL/db/apollo17.json
-                              ${CMAKE_CURRENT_SOURCE_DIR}/SpiceQL/db/base.json
-                              ${CMAKE_CURRENT_SOURCE_DIR}/SpiceQL/db/cassini.json
+                           ${CMAKE_CURRENT_SOURCE_DIR}/SpiceQL/db/mex.json
+                           ${CMAKE_CURRENT_SOURCE_DIR}/SpiceQL/db/mgs.json
                               ${CMAKE_CURRENT_SOURCE_DIR}/SpiceQL/db/mro.json
-                              ${CMAKE_CURRENT_SOURCE_DIR}/SpiceQL/db/kaguya.json
+                           ${CMAKE_CURRENT_SOURCE_DIR}/SpiceQL/db/odyssey.json
                               ${CMAKE_CURRENT_SOURCE_DIR}/SpiceQL/db/tgo.json
-                              ${CMAKE_CURRENT_SOURCE_DIR}/SpiceQL/db/mex.json
                               ${CMAKE_CURRENT_SOURCE_DIR}/SpiceQL/db/viking1.json
                               ${CMAKE_CURRENT_SOURCE_DIR}/SpiceQL/db/viking2.json)
 

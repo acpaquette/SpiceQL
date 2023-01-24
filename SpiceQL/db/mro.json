@@ -20,7 +20,7 @@
           "kernels" : ["MRO_SCLKSCET.[0-9]{5}.65536.tsc", "MRO_SCLKSCET.[0-9]{5}.tsc"]
         },
         "fk" : {
-          "kernels" : ["ro_v[0-9]{2}.tf"]
+          "kernels" : ["mro_v[0-9]{2}.tf"]
         }
     },
     "marci" : {

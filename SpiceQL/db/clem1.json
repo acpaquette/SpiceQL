@@ -1,5 +1,5 @@
 {
-  "clem1" : {
+  "clementine1" : {
     "sclk" : {
       "kernels" : ["dspse[0-9]{3}.tsc"]
     },
@@ -27,12 +27,12 @@
     "iak" : {
       "kernels" : "uvvisAddendum[0-9]{3}.ti"
     },
-    "deps" : ["/clem1"]
+    "deps" : ["/clementine1"]
   },
   "nir" : {
     "iak" : {
       "kernels" : "nirAddendum[0-9]{3}.ti"
     },
-    "deps" : ["/clem1"]
+    "deps" : ["/clementine1"]
   }
 }

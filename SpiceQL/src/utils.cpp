@@ -140,7 +140,7 @@ namespace SpiceQL {
     spkezr_c( target_spice, et, frame_spice, abcorr_spice, observer_spice, starg_spice, &lt );
 
     // convert to std::array for output
-    array<double, 6> starg;
+    array<double, 6> starg = {0, 0, 0, 0, 0, 0};
     for(int i = 0; i < 6; i++) {
       starg[i] = starg_spice[i];
     }
@@ -384,7 +384,7 @@ namespace SpiceQL {
   vector<string> glob(string const & root, regex const & reg, bool recursive) {
     vector<string> paths;
     vector<string> files_to_search = ls(root, recursive);
-
+    
     for (auto &f : files_to_search) {
       if (regex_search(f.c_str(), reg)) {
         paths.emplace_back(f);
@@ -632,4 +632,24 @@ namespace SpiceQL {
     return string(type);
   }
 
+
+  string getRootDependency(json config, string pointer) {
+    json::json_pointer depPointer(pointer);
+    depPointer /= "deps";
+    json deps = config[depPointer];
+
+    for (auto path: deps) {
+      fs::path fsDataPath(getDataDirectory() + (string)path);
+      if (fs::exists(fsDataPath)) {
+        return path;
+      }
+      else {
+        string recursePath = getRootDependency(config, (string)path);
+        if (recursePath != "") {
+          return recursePath;
+        }
+      }
+    }
+    return "";
+  }
 }
