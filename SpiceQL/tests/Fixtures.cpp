@@ -112,7 +112,7 @@ void IsisDataDirectory::SetUp() {
 void IsisDataDirectory::TearDown() {}
 
 
-void IsisDataDirectory::compareKernelSets(string name) {
+void IsisDataDirectory::compareKernelSets(string name, set<string> expectedDiff) {
   fs::path dbPath = getMissionConfigFile(name);
 
   ifstream i(dbPath);
@@ -121,21 +121,38 @@ void IsisDataDirectory::compareKernelSets(string name) {
   MockRepository mocks;
   mocks.OnCallFunc(ls).Return(files);
   
-  nlohmann::json res = searchMissionKernels("doesn't matter", conf);
+  nlohmann::json res = listMissionKernels("doesn't matter", conf);
 
   set<string> kernels = getKernelSet(res);
   set<string> expectedKernels = missionMap.at(name);
-  set<string> diff; 
-  
+  set<string> diff;
+  set<string> diffDiff;
+
+  string diffFailMessage = "";
+
   set_difference(expectedKernels.begin(), expectedKernels.end(), kernels.begin(), kernels.end(), inserter(diff, diff.begin()));
   
   if (diff.size() != 0) {
-    FAIL() << "Kernel sets are not equal, expected - retrieved diff: " << fmt::format("{}", fmt::join(diff, " ")) << endl;
+    diffFailMessage = "Kernel sets are not equal, expected - retrieved diff: " + fmt::format("{}", fmt::join(diff, " "));
   }
-  
+
   set_difference(kernels.begin(), kernels.end(), expectedKernels.begin(), expectedKernels.end(), inserter(diff, diff.begin()));
   if (diff.size() != 0) {
-    FAIL() << "Kernel sets are not equal, retrieved - expected diff: " << fmt::format("{}", fmt::join(diff, " ")) << endl;
+    diffFailMessage = "Kernel sets are not equal, retrieved - expected diff: " + fmt::format("{}", fmt::join(diff, " "));
+  }
+
+  if (expectedDiff.size() > 0) {
+    set_difference(diff.begin(), diff.end(), expectedDiff.begin(), expectedDiff.end(), inserter(diffDiff, diffDiff.begin()));
+    if (diffDiff.size() != 0) {
+      diffFailMessage = "Kernel sets with expected diff are not equal, diff - expected diff: " + fmt::format("{}", fmt::join(diffDiff, " "));
+    }
+    else {
+      diffFailMessage = "";
+    }
+  }
+
+  if (diffFailMessage != "") {
+    FAIL() << diffFailMessage << endl;
   }
 }
 

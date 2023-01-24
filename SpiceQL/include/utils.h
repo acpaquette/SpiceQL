@@ -6,8 +6,12 @@
 #pragma once
 
 #include <iostream>
+#include <stdio.h>
+#include <time.h>
 #include <regex>
 #include <optional>
+#include <array>
+#include <vector>
 
 #include <nlohmann/json.hpp>
 
@@ -332,4 +336,18 @@ namespace SpiceQL {
     * @returns string vector containing arr data
    **/
    std::string getDataDirectory();
+
+  /**
+    * @brief Returns the root most dependency for a json pointer
+    *
+    * Given a config json, recursively find the root pointer for the
+    * given json pointer
+    *
+    * @param config unevaluated config json
+    * @param pointer json pointer to get the root dependency for
+    * 
+    *
+    * @returns string vector containing arr data
+   **/
+   std::string getRootDependency(nlohmann::json config, std::string pointer);
 }

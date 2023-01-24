@@ -64,7 +64,7 @@ TEST_F(LroKernelSet, UnitTestStackedKernelCopyConstructor) {
 
 TEST_F(LroKernelSet, UnitTestStackedKernelSetConstructorDestructor) {
   // load all available kernels
-  nlohmann::json kernels = searchMissionKernels(root, conf);
+  nlohmann::json kernels = listMissionKernels(root, conf);
 
   // do a time query
   kernels = searchMissionKernels(kernels, {110000000, 120000001}, false);
@@ -118,7 +118,7 @@ TEST_F(LroKernelSet, UnitTestStackedKernelSetConstructorDestructor) {
 
 TEST_F(LroKernelSet, UnitTestStackedKernelPoolGetLoadedKernels) {
   // load all available kernels
-  nlohmann::json kernels = searchMissionKernels(root, conf);
+  nlohmann::json kernels = listMissionKernels(root, conf);
 
   // do a time query
   kernels = searchMissionKernels(kernels, {110000000, 120000001}, false);

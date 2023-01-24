@@ -1,19 +1,28 @@
 %module pyspiceql
 
-%include std_string.i
-%include std_vector.i
+%include "std_vector.i"
+%include "std_string.i"
+%include "std_array.i"
+%include "std_map.i"
+%include "carrays.i"
+%include "std_pair.i"
 
 #include <nlohmann/json.hpp>
 
+%{
+  #include <array>
+  #include <vector> 
+%}
+
 %typemap(in) nlohmann::json {
-  if (PyDict_Check($input)) {
+  if (PyDict_Check($input) || PyList_Check($input)) {
     PyObject* module = PyImport_ImportModule("json");
     PyObject* jsonDumps = PyUnicode_FromString("dumps");
     PyObject* pythonJsonString = PyObject_CallMethodObjArgs(module, jsonDumps, $input, NULL);
     $1 = nlohmann::json::parse(PyUnicode_AsUTF8(pythonJsonString));
   }
   else {
-    PyErr_SetString(PyExc_TypeError, "not a dictionary");
+    PyErr_SetString(PyExc_TypeError, "not a json serializable type");
     SWIG_fail;
   }
 }
@@ -30,8 +39,14 @@
   $result = PyObject_CallMethodObjArgs(module, jsonLoads, pythonJsonString, NULL);
 }
 
-%template(_string_list) std::vector< std::string >;
-%template(_double_list) std::vector< double >;
+namespace std {
+  %template(IntVector) vector<int>;
+  %template(DoubleVector) vector<double>;
+  %template(StringVector) vector<string>;
+  %template(ConstCharVector) vector<const char*>;
+  %template(PairDoubleVector) vector<pair<double, double>>;
+  %template(DoubleArray6) array<double, 6>;
+}
 
 %exception {
   try {

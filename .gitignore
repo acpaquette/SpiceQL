@@ -31,8 +31,8 @@
 *.out
 *.app
 
-build/
-install/
+*build/
+*install/
 Doxyfile
 
 .DS_Store

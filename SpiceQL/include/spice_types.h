@@ -329,11 +329,27 @@ namespace SpiceQL {
 
 
   /**
-   * @brief 
+   * @brief Converts a given spacecraft clock time to an ephemeris time
+   * 
+   * Given a mission and spacecraft clock time, sclkToEt converts 
+   * the mission string to a frame code, then converts the clock time
+   * to an ephemeris time
    * 
    * @param mission 
    * @param sclk 
    * @return double 
    */
   double sclkToEt(std::string mission, std::string sclk);
+
+  /**
+   * @brief Converts a given spacecraft clock time to an ephemeris time
+   * 
+   * Given a known frame code sclkToEt converts a given spacecraft clock time
+   * to an ephemeris time
+   *
+   * @param frameCode
+   * @param sclk
+   * @return double
+   */
+  double sclkToEt(int frameCode, std::string sclk);
 }

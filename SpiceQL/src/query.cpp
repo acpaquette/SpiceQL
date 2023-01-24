@@ -26,7 +26,14 @@ namespace SpiceQL {
    // check to make sure the key exists when calling findKeyWords(key)
    if (findKeywords(key).contains(key)){
       json results = findKeywords(key);
-      return results[key] ;
+      std::string keyResult;
+      if (results[key].is_string()) {
+          keyResult = results[key];
+      }
+      else {
+          keyResult = results[key].dump();
+      }
+      return keyResult;
     }
     // throw exception
     else{
@@ -58,50 +65,72 @@ namespace SpiceQL {
 
 
 
-  string getLatestKernel(vector<string> kernels) {
+  vector<string> getLatestKernel(vector<string> kernels) {
     if(kernels.empty()) {
       throw invalid_argument("Can't get latest kernel from empty vector");
     }
+    vector<vector<string>> files = {};
 
     string extension = static_cast<fs::path>(kernels.at(0)).extension();
     // ensure everything is different versions of the same file
     for(const fs::path &k : kernels) {
       if (k.extension() != extension) {
-        throw invalid_argument("The input paths do are not different versions of the same file");
+        throw invalid_argument("The input extensions are not different versions of the same file");
       }
+      bool foundList = false;
+      for (int i = 0; i < files.size(); i++) {
+        const fs::path &firstVecElem = files[i][0];
+        string fileName = firstVecElem.filename();
+        string kernelName = k.filename();
+        fileName = fileName.erase(fileName.find_first_of("0123456789"));
+        kernelName = kernelName.erase(kernelName.find_first_of("0123456789"));
+        if (fileName == kernelName) {
+          files[i].push_back(k);
+          foundList = true;
+        }
+      }
+      if (!foundList) {
+        files.push_back({k});
+      }
+      foundList = false;
     }
 
-    return *(max_element(kernels.begin(), kernels.end()));
+    vector<string> outKernels = {};
+    for (auto kernelList : files) {
+      outKernels.push_back(*(max_element(kernelList.begin(), kernelList.end())));
+    }
+
+    return outKernels;
   }
 
 
   json getLatestKernels(json kernels) {
     // the kernels group is now the conf with
     for(auto &kernelType: {"ck", "spk", "tspk", "fk", "ik", "iak", "pck", "lsk"}) {
-        vector<json::json_pointer> catPointers = findKeyInJson(kernels, kernelType, true);
-        for(auto &p : catPointers) {
-          for(auto qual: Kernel::QUALITIES) {
-            if(!kernels[p].contains(qual)){
-              continue;
-            }
-
-            std::vector<string> l = jsonArrayToVector(kernels[p][qual]["kernels"]);
-            fs::path latest;
-
-            if (!l.empty()) {
-              latest = getLatestKernel(l);
-              kernels[p][qual]["kernels"] = latest;
-            }
+      vector<json::json_pointer> catPointers = findKeyInJson(kernels, kernelType, true);
+      for(auto &p : catPointers) {
+        for(auto qual: Kernel::QUALITIES) {
+          if(!kernels[p].contains(qual)){
+            continue;
           }
 
-          if(kernels[p].contains("kernels")) {
-            vector<string> k = jsonArrayToVector(kernels[p]["kernels"]);
-            if(!k.empty()) {
-              fs::path latest = getLatestKernel(k);
-              kernels[p]["kernels"] = latest;
-            }
+          std::vector<string> l = jsonArrayToVector(kernels[p][qual]["kernels"]);
+          vector<string> latest;
+
+          if (!l.empty()) {
+            latest = getLatestKernel(l);
+            kernels[p][qual]["kernels"] = latest;
           }
         }
+
+        if(kernels[p].contains("kernels")) {
+          vector<string> k = jsonArrayToVector(kernels[p]["kernels"]);
+          if(!k.empty()) {
+            vector<string> latest = getLatestKernel(k);
+            kernels[p]["kernels"] = latest;
+          }
+        }
+      }
     }
 
     vector<json::json_pointer> pointers = findKeyInJson(kernels, "sclk", true);
@@ -112,7 +141,7 @@ namespace SpiceQL {
 
       vector<string> k = jsonArrayToVector(kernels[p]);
       if(!k.empty()) {
-        fs::path latest = getLatestKernel(k);
+        vector<string> latest = getLatestKernel(k);
         kernels[p] = latest;
       }
     }
@@ -172,7 +201,7 @@ namespace SpiceQL {
   }
 
 
-  json searchMissionKernels(string root, json conf) {
+  json listMissionKernels(string root, json conf) {
     json kernels;
 
     // the kernels group is now the conf with
@@ -237,7 +266,7 @@ namespace SpiceQL {
   }
 
 
-  json searchMissionKernels(json conf) {
+  json listMissionKernels(json conf) {
     fs::path root = getDataDirectory();
     return searchMissionKernels(root, conf);
   }

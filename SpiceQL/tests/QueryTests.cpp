@@ -25,13 +25,17 @@ TEST(QueryTests, UnitTestGetLatestKernel) {
     "test/iak.0004.ti"
   };
 
-  EXPECT_EQ(getLatestKernel(kernels),  "test/iak.0004.ti");
+  EXPECT_EQ(getLatestKernel(kernels)[0],  "test/iak.0004.ti");
 }
 
 TEST(QueryTests, getKernelStringValue){
   unique_ptr<Kernel> k(new Kernel("data/msgr_mdis_v010.ti"));
   // INS-236810_CCD_CENTER        =  (  511.5, 511.5 )
-  EXPECT_EQ(getKernelStringValue("INS-236810_FOV_SHAPE"), "RECTANGLE");
+  string res = getKernelStringValue("INS-236810_FOV_SHAPE");
+  EXPECT_EQ(res, "RECTANGLE");
+
+  res = getKernelStringValue("INS-236810_FOV_REF_ANGLE");
+  EXPECT_EQ(res, "0.7465");
 
   try {
     getKernelStringValue("aKeyThatWillNotBeInTheResults");
@@ -95,7 +99,7 @@ TEST(QueryTests, UnitTestGetLatestKernelError) {
 }
 
 
-TEST_F(KernelDataDirectories, FunctionalTestSearchMissionKernelsAllMess) {
+TEST_F(KernelDataDirectories, FunctionalTestListMissionKernelsAllMess) {
   string dbPath = getMissionConfigFile("mess");
 
   ifstream i(dbPath);
@@ -105,7 +109,7 @@ TEST_F(KernelDataDirectories, FunctionalTestSearchMissionKernelsAllMess) {
   MockRepository mocks;
   mocks.OnCallFunc(ls).Return(paths);
 
-  nlohmann::json res = searchMissionKernels("/isis_data/", conf);
+  nlohmann::json res = listMissionKernels("/isis_data/", conf);
 
   ASSERT_EQ(res["mdis"]["ck"]["reconstructed"]["kernels"].size(), 4);
   ASSERT_EQ(res["mdis"]["ck"]["smithed"]["kernels"].size(), 4);
@@ -118,12 +122,12 @@ TEST_F(KernelDataDirectories, FunctionalTestSearchMissionKernelsAllMess) {
 
   ASSERT_EQ(res["mdis_att"]["ck"]["reconstructed"]["kernels"].size(), 4);
 
-  ASSERT_EQ(res["mess"]["ck"]["reconstructed"]["kernels"].size(), 5);
-  ASSERT_EQ(res["mess"]["sclk"]["kernels"].size(), 2);
+  ASSERT_EQ(res["messenger"]["ck"]["reconstructed"]["kernels"].size(), 5);
+  ASSERT_EQ(res["messenger"]["sclk"]["kernels"].size(), 2);
 }
 
 
-TEST_F(KernelDataDirectories, FunctionalTestSearchMissionKernelsClem1) {
+TEST_F(KernelDataDirectories, FunctionalTestListMissionKernelsClem1) {
   fs::path dbPath = getMissionConfigFile("clem1");
 
   ifstream i(dbPath);
@@ -133,13 +137,13 @@ TEST_F(KernelDataDirectories, FunctionalTestSearchMissionKernelsClem1) {
   MockRepository mocks;
   mocks.OnCallFunc(ls).Return(paths);
 
-  nlohmann::json res = searchMissionKernels("/isis_data/", conf);
+  nlohmann::json res = listMissionKernels("/isis_data/", conf);
 
-  ASSERT_EQ(res["clem1"]["ck"]["reconstructed"]["kernels"].size(), 4);
-  ASSERT_EQ(res["clem1"]["ck"]["smithed"]["kernels"].size(), 1);
-  ASSERT_EQ(res["clem1"]["spk"]["reconstructed"]["kernels"].size(), 2);
-  ASSERT_EQ(res["clem1"]["fk"]["kernels"].size(), 1);
-  ASSERT_EQ(res["clem1"]["sclk"]["kernels"].size(), 2);
+  ASSERT_EQ(res["clementine1"]["ck"]["reconstructed"]["kernels"].size(), 4);
+  ASSERT_EQ(res["clementine1"]["ck"]["smithed"]["kernels"].size(), 1);
+  ASSERT_EQ(res["clementine1"]["spk"]["reconstructed"]["kernels"].size(), 2);
+  ASSERT_EQ(res["clementine1"]["fk"]["kernels"].size(), 1);
+  ASSERT_EQ(res["clementine1"]["sclk"]["kernels"].size(), 2);
 
   ASSERT_EQ(res["uvvis"]["ik"]["kernels"].size(), 1);
   ASSERT_EQ(res["uvvis"]["iak"]["kernels"].size(), 2);
@@ -148,7 +152,7 @@ TEST_F(KernelDataDirectories, FunctionalTestSearchMissionKernelsClem1) {
 }
 
 
-TEST_F(KernelDataDirectories, FunctionalTestSearchMissionKernelsGalileo) {
+TEST_F(KernelDataDirectories, FunctionalTestListMissionKernelsGalileo) {
   fs::path dbPath = getMissionConfigFile("galileo");
 
   ifstream i(dbPath);
@@ -158,7 +162,7 @@ TEST_F(KernelDataDirectories, FunctionalTestSearchMissionKernelsGalileo) {
   MockRepository mocks;
   mocks.OnCallFunc(ls).Return(paths);
 
-  nlohmann::json res = searchMissionKernels("/isis_data/", conf);
+  nlohmann::json res = listMissionKernels("/isis_data/", conf);
 
   ASSERT_EQ(res["galileo"]["ck"]["reconstructed"]["kernels"].size(), 4);
   ASSERT_EQ(res["galileo"]["ck"]["smithed"]["kernels"].size(), 3);
@@ -171,7 +175,7 @@ TEST_F(KernelDataDirectories, FunctionalTestSearchMissionKernelsGalileo) {
 
 
 
-TEST_F(KernelDataDirectories, FunctionalTestSearchMissionKernelsCassini) {
+TEST_F(KernelDataDirectories, FunctionalTestListMissionKernelsCassini) {
   fs::path dbPath = getMissionConfigFile("cassini");
   ifstream i(dbPath);
   nlohmann::json conf;
@@ -179,7 +183,7 @@ TEST_F(KernelDataDirectories, FunctionalTestSearchMissionKernelsCassini) {
   MockRepository mocks;
   mocks.OnCallFunc(ls).Return(paths);
 
-  nlohmann::json res = searchMissionKernels("/isis_data/", conf);
+  nlohmann::json res = listMissionKernels("/isis_data/", conf);
 
   ASSERT_EQ(res["cassini"]["ck"]["reconstructed"]["kernels"].size(), 2);
   ASSERT_EQ(res["cassini"]["ck"]["smithed"]["kernels"].size(), 3);
@@ -192,7 +196,7 @@ TEST_F(KernelDataDirectories, FunctionalTestSearchMissionKernelsCassini) {
 }
 
 
-TEST_F(KernelDataDirectories, FunctionalTestSearchMissionKernelsApollo16) {
+TEST_F(KernelDataDirectories, FunctionalTestListMissionKernelsApollo16) {
   fs::path dbPath = getMissionConfigFile("apollo16");
     ifstream i(dbPath);
   nlohmann::json conf;
@@ -200,7 +204,7 @@ TEST_F(KernelDataDirectories, FunctionalTestSearchMissionKernelsApollo16) {
   MockRepository mocks;
   mocks.OnCallFunc(ls).Return(paths);
 
-  nlohmann::json res = searchMissionKernels("/isis_data/", conf);
+  nlohmann::json res = listMissionKernels("/isis_data/", conf);
 
   ASSERT_EQ(res["apollo16"]["sclk"]["kernels"].size(), 1);
   ASSERT_EQ(res["apollo16"]["ck"]["reconstructed"]["kernels"].size(), 4);
@@ -223,7 +227,7 @@ TEST_F(IsisDataDirectory, FunctionalTestApollo17Conf) {
 
   MockRepository mocks;
   mocks.OnCallFunc(ls).Return(files);
-  nlohmann::json res = searchMissionKernels("doesn't matter", conf);
+  nlohmann::json res = listMissionKernels("doesn't matter", conf);
 
   set<string> kernels = getKernelSet(res);
   set<string> expectedKernels = missionMap.at("apollo17");
@@ -244,7 +248,7 @@ TEST_F(IsisDataDirectory, FunctionalTestLroConf) {
   MockRepository mocks;
   mocks.OnCallFunc(ls).Return(files);
   
-  nlohmann::json res = searchMissionKernels("doesn't matter", conf);
+  nlohmann::json res = listMissionKernels("doesn't matter", conf);
 
   // check a kernel from each regex exists in their quality groups
   vector<string> kernelToCheck =  jsonArrayToVector(res.at("moc").at("ck").at("reconstructed").at("kernels"));
@@ -279,7 +283,13 @@ TEST_F(IsisDataDirectory, FunctionalTestLroConf) {
 
 
 TEST_F(IsisDataDirectory, FunctionalTestJunoConf) {
-  compareKernelSets("juno");
+  set<string> expectedDiff = {"jup260.bsp",
+                              "jup310.bsp",
+                              "jup329.bsp",
+                              "vgr1_jup230.bsp",
+                              "vgr2_jup204.bsp",
+                              "vgr2_jup230.bsp"};
+  compareKernelSets("juno", expectedDiff);
 } 
 
 
@@ -290,7 +300,7 @@ TEST_F(IsisDataDirectory, FunctionalTestMroConf) {
   MockRepository mocks;
   mocks.OnCallFunc(ls).Return(files);
   
-  nlohmann::json res = searchMissionKernels("doesn't matter", conf);
+  nlohmann::json res = listMissionKernels("doesn't matter", conf);
 
   // check a kernel from each regex exists in there quality groups
   vector<string> kernelToCheck =  jsonArrayToVector(res.at("mro").at("spk").at("reconstructed").at("kernels"));
@@ -340,7 +350,7 @@ TEST_F(IsisDataDirectory, FunctionalTestMgsConf) {
   MockRepository mocks;
   mocks.OnCallFunc(ls).Return(files);
 
-  nlohmann::json res = searchMissionKernels("doesn't matter", conf);
+  nlohmann::json res = listMissionKernels("doesn't matter", conf);
 
   set<string> kernels = getKernelSet(res);
   set<string> mission = missionMap.at("mgs");
@@ -405,7 +415,7 @@ TEST_F(IsisDataDirectory, FunctionalTestOdysseyConf) {
   MockRepository mocks;
   mocks.OnCallFunc(ls).Return(files);
 
-  nlohmann::json res = searchMissionKernels("doesn't matter", conf);
+  nlohmann::json res = listMissionKernels("doesn't matter", conf);
 
   set<string> kernels = getKernelSet(res);
   set<string> mission = missionMap.at("odyssey");
@@ -442,7 +452,7 @@ TEST_F(IsisDataDirectory, FunctionalTestOdysseyConf) {
   CompareKernelSets(getKernelList(res.at("odyssey").at("spk").at("smithed")), expected);  
 }
 
-TEST_F(IsisDataDirectory, FunctionalTestSearchMissionKernelsKaguya) {
+TEST_F(IsisDataDirectory, FunctionalTestListMissionKernelsKaguya) {
   fs::path dbPath = getMissionConfigFile("kaguya");
   
   compareKernelSets("kaguya");
@@ -453,7 +463,7 @@ TEST_F(IsisDataDirectory, FunctionalTestSearchMissionKernelsKaguya) {
   MockRepository mocks;
   mocks.OnCallFunc(ls).Return(files);
 
-  nlohmann::json res = searchMissionKernels("doesn't matter", conf);
+  nlohmann::json res = listMissionKernels("doesn't matter", conf);
 
   set<string> kernels = getKernelSet(res);
   set<string> mission = missionMap.at("kaguya");
@@ -468,7 +478,7 @@ TEST_F(IsisDataDirectory, FunctionalTestSearchMissionKernelsKaguya) {
 }
 
 
-TEST_F(IsisDataDirectory, FunctionalTestSearchMissionKernelsTgo) {
+TEST_F(IsisDataDirectory, FunctionalTestListMissionKernelsTgo) {
   fs::path dbPath = getMissionConfigFile("tgo");
   
   compareKernelSets("tgo");
@@ -478,7 +488,7 @@ TEST_F(IsisDataDirectory, FunctionalTestSearchMissionKernelsTgo) {
   MockRepository mocks;
   mocks.OnCallFunc(ls).Return(files);
 
-  nlohmann::json res = searchMissionKernels("doesn't matter", conf);
+  nlohmann::json res = listMissionKernels("doesn't matter", conf);
 
   set<string> kernels = getKernelSet(res);
 
@@ -502,7 +512,7 @@ TEST_F(IsisDataDirectory, FunctionalTestSearchMissionKernelsTgo) {
 }
 
 
-TEST_F(IsisDataDirectory, FunctionalTestSearchMissionKernelsMex) {
+TEST_F(IsisDataDirectory, FunctionalTestListMissionKernelsMex) {
   fs::path dbPath = getMissionConfigFile("mex");
   
   compareKernelSets("mex");
@@ -513,7 +523,7 @@ TEST_F(IsisDataDirectory, FunctionalTestSearchMissionKernelsMex) {
   MockRepository mocks;
   mocks.OnCallFunc(ls).Return(files);
 
-  nlohmann::json res = searchMissionKernels("doesn't matter", conf);
+  nlohmann::json res = listMissionKernels("doesn't matter", conf);
 
   set<string> kernels = getKernelSet(res);set<string> mission = missionMap.at("mex");
   

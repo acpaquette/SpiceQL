@@ -1,9 +1,6 @@
-
-import os 
 from glob import glob
 
 import re
-import fnmatch
 
 if __name__ == "__main__":
   term = re.compile(".*(bc|ti|tf|bsp|tsc)", re.IGNORECASE)

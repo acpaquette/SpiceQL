@@ -1,5 +1,7 @@
 #include <gtest/gtest.h>
 
+#include <ghc/fs_std.hpp>
+
 #include "utils.h"
 #include "Fixtures.h"
 #include "spice_types.h"
@@ -236,4 +238,26 @@ TEST(UtilTests, eraseAtPointer) {
   numErased = eraseAtPointer(j, nlohmann::json::json_pointer("/outer_key/middle_key/bad_key"));
   EXPECT_EQ(numErased, 0);
   EXPECT_EQ(j, baseJ);
+}
+
+TEST(UtilTests, getRootDependency) {
+  std::string folder = getenv("SPICEROOT");
+  folder += "/mission_2";
+  ASSERT_TRUE(fs::create_directory(folder));
+
+  nlohmann::json baseConfig = R"(
+  {
+    "mission_1" : {
+      "deps" : ["/mission_2"]
+    },
+    "mission_2" : {
+    },
+    "instrument" : {
+      "deps" : ["/mission_1"]
+    }
+  })"_json;
+
+  std::string rootPointer = getRootDependency(baseConfig, "/instrument");
+  ASSERT_TRUE(fs::remove(folder));
+  EXPECT_EQ(rootPointer, "/mission_2");
 }
