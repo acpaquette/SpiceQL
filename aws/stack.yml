@@ -1,0 +1,147 @@
+AWSTemplateFormatVersion: 2010-09-09
+
+Resources:
+  AccessPointResource:
+    Type: AWS::EFS::AccessPoint
+    Properties:
+      FileSystemId: fs-0dafe0512ba2eaa98
+      PosixUser:
+        Uid: '1000'
+        Gid: '1000'
+      RootDirectory:
+        CreationInfo:
+          OwnerGid: '1000'
+          OwnerUid: '1000'
+          Permissions: '755'
+        Path: '/'
+  EFSAccessPolicy:
+    Type: AWS::IAM::ManagedPolicy
+    Properties: 
+      Description: Allow Manager to mount and write to EFS
+      PolicyDocument:
+        Version: 2012-10-17
+        Statement:
+          - Effect: Allow
+            Action:
+              - elasticfilesystem:ClientMount
+              - elasticfilesystem:ClientWrite
+            Resource: '*'
+  SpiceQlRestfulApi: 
+    Type: AWS::ApiGateway::RestApi
+    Properties: 
+      Name: "SpiceQLAPI"
+  SpiceQlModel:
+    Type: AWS::ApiGateway::Model
+    Properties: 
+      ContentType: "application/json"
+      Name: "schema"
+      RestApiId: !Ref SpiceQlRestfulApi
+  # SpiceQlResource: 
+  #   Type: AWS::ApiGateway::Resource 
+  #   Properties:
+  #     PathPart: spiceql
+  #     RestApiId: !Ref SpiceQlRestfulApi
+  #     ParentId: !GetAtt 
+  #      - SpiceQlRestfulApi
+  #      - RootResourceId
+  SpiceQlGet:
+    Type: AWS::ApiGateway::Method
+    Properties:
+      HttpMethod: POST
+      RestApiId: !Ref SpiceQlRestfulApi
+      AuthorizationType: None
+      RequestParameters:
+        method.request.path.action: true
+      ResourceId: !GetAtt
+        - SpiceQlRestfulApi
+        - RootResourceId
+      Integration: 
+        Type: AWS
+        TimeoutInMillis: 29000
+        IntegrationHttpMethod: POST
+        PassthroughBehavior: WHEN_NO_MATCH
+        RequestParameters:
+          integration.request.path.action: method.request.path.action
+        RequestTemplates:
+          # pass everything through 
+          "application/json": "$input.json('$')"
+        Uri: !Sub "arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${SpiceQLambda.Arn}/invocations" 
+        CacheKeyParameters:
+        - method.request.path.action
+        IntegrationResponses: 
+          - ResponseTemplates:
+              # see https://docs.aws.amazon.com/apigateway/latest/eloperguide/api-gateway-mapping-template-reference.html 
+              # for the format and pre-populated variables
+              "application/json": "'$input.body'"
+            StatusCode: 200
+      MethodResponses:
+        - ResponseModels: 
+            "application/json": !Ref SpiceQlModel 
+          ResponseParameters: 
+            method.response.header.link: true
+          StatusCode: 200
+  RestApiDeployment: 
+    Type: AWS::ApiGateway::Deployment
+    DependsOn: 
+      - SpiceQlRestfulApi 
+      - SpiceQlGet
+    Properties: 
+      RestApiId: !Ref SpiceQlRestfulApi
+      StageName: v1
+  SpiceQlSG:
+    Type: AWS::EC2::SecurityGroup
+    Properties: 
+      GroupDescription: "Sg for SpiceQLambda"
+      GroupName: SpiceQlSecurityGroupDev
+      SecurityGroupEgress:
+        - IpProtocol: tcp
+          FromPort: 442
+          ToPort: 2050
+          CidrIp: 0.0.0.0/0 
+      SecurityGroupIngress: 
+        - IpProtocol: tcp 
+          FromPort: 442
+          ToPort: 2050
+          CidrIp: 0.0.0.0/0 
+      VpcId: vpc-004f1e36134bcaa04
+  SpiceQLambda:
+    Type: 'AWS::Lambda::Function'
+    Properties:
+      Timeout: 100 
+      Role: arn:aws:iam::950438895271:role/csr-Lambda-Role
+      FunctionName: spiceqlambdadev
+      PackageType: Image
+      FileSystemConfigs: 
+        - Arn: !GetAtt AccessPointResource.Arn
+          LocalMountPath: '/mnt/isis_data'
+      Code:
+        ImageUri: 950438895271.dkr.ecr.us-west-2.amazonaws.com/spiceql:latest
+      VpcConfig:
+        SecurityGroupIds: 
+          - !Ref SpiceQlSG 
+        SubnetIds: 
+          - subnet-0326c18b7c38caa73
+  SpiceQlApiPermission:
+    Type: AWS::Lambda::Permission
+    DependsOn:
+      - SpiceQLambda
+    Properties:
+      Action: lambda:InvokeFunction
+      FunctionName: !Ref SpiceQLambda
+      Principal: apigateway.amazonaws.com
+      # SourceArn: !GetAtt SpiceQlModel.Arn arn:aws:execute-api:us-west-2:235348801643:y5n4n7bwhk/*/GET/
+      SourceArn:
+          Fn::Join:
+            - ''
+            - - 'arn:'
+              - !Ref AWS::Partition
+              - ":execute-api:"
+              - !Ref AWS::Region
+              - ":"
+              - !Ref AWS::AccountId
+              - ":"
+              - !Ref SpiceQlRestfulApi
+              - "/*/POST/*"
+
+
+

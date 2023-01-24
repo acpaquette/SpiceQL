@@ -86,3 +86,16 @@ cmake .. -DCMAKE_INSTALL_PREFIX=$CONDA_PREFIX -DSPICEQL_BUILD_DOCS=OFF -DSPICEQL
 ## Bindings
 
 The SpiceQL API is available via Python bindings in the module `pyspiceql`. The bindings are built using SWIG and are on by default. You can disable the bindings in your build by setting `SPICEQL_BUILD_BINDINGS` to `OFF` when configuring your build.
+
+
+## Building and Testing Lambda Locally
+
+1. Build your image locally using the `docker build` command.
+`docker build -f aws/Dockerfile -t spiceql .`
+
+2. Run your container image locally using the `docker run` command.
+`docker run -p 9000:8080 -it spiceql`
+
+3. From a new terminal window, post an event to the following endpoint using a `curl` command:
+`curl -XPOST "http://localhost:9000/2015-03-31/functions/function/invocations" -d '{"func" : "getMissionConfigFile", "mission" : "mro"}'`
+

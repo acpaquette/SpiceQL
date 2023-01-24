@@ -1,0 +1,20 @@
+channels:
+  - defaults
+  - conda-forge
+  - usgs-astrogeology
+  - usgs-astrogeology/label/dev
+  - tudat-team
+
+dependencies:
+  - python=3.9
+  - s3fs-fuse
+  - cmake
+  - cspice-cmake
+  - cpp-filesystem
+  - doxygen
+  - fmt
+  - make
+  - pip
+  - pytest
+  - swig
+  - jsonschema
