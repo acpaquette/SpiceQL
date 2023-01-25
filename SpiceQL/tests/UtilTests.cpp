@@ -2,9 +2,12 @@
 
 #include <ghc/fs_std.hpp>
 
+#include "TestUtilities.h"
+
 #include "utils.h"
 #include "Fixtures.h"
 #include "spice_types.h"
+#include "config.h"
 #include "SpiceUsr.h"
 
 using namespace SpiceQL;
@@ -260,4 +263,19 @@ TEST(UtilTests, getRootDependency) {
   std::string rootPointer = getRootDependency(baseConfig, "/instrument");
   ASSERT_TRUE(fs::remove(folder));
   EXPECT_EQ(rootPointer, "/mission_2");
+}
+
+
+TEST(UtilTests, checkNaifErrors) {
+  checkNaifErrors();
+  furnsh_c("does/not/exist");
+
+  // furnsh has errored, but we wont get anything until we check for it.
+  try { 
+    checkNaifErrors();
+    FAIL() << "Should throw" << std::endl;
+  }
+  catch (runtime_error &e) {
+    EXPECT_PRED_FORMAT2(spiceql::AssertExceptionMessage, e, "The attempt to load \"does/not/exist\" by the routine FURNSH failed.");
+  }
 }

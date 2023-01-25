@@ -4,7 +4,8 @@ set(SPICEQL_TEST_DIRECTORY ${CMAKE_SOURCE_DIR}/SpiceQL/tests/)
 
 
 # collect all of the test sources
-set (SPICEQL_TEST_SOURCE ${SPICEQL_TEST_DIRECTORY}/Fixtures.cpp
+set (SPICEQL_TEST_SOURCE    ${SPICEQL_TEST_DIRECTORY}/TestUtilities.cpp
+                            ${SPICEQL_TEST_DIRECTORY}/Fixtures.cpp
                             ${SPICEQL_TEST_DIRECTORY}/UtilTests.cpp
                             ${SPICEQL_TEST_DIRECTORY}/QueryTests.cpp
                             ${SPICEQL_TEST_DIRECTORY}/IoTests.cpp
