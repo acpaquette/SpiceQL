@@ -92,11 +92,14 @@ namespace SpiceQL {
 
     for(auto &et : times) {
       double sclkdp;
+      checkNaifErrors();
       sce2c_c(bodyCode/1000, et, &sclkdp);
+      checkNaifErrors();
       et = sclkdp;
     }
+    checkNaifErrors();
     ckopn_c(path.c_str(), "CK", comment.value_or("CK Kernel").size(), &handle);
-
+    checkNaifErrors();
     ckw03_c (handle,
              times.at(0),
              times.at(times.size()-1),
@@ -110,8 +113,9 @@ namespace SpiceQL {
              (angularVelocities) ? angularVelocities->data() : nullptr,
              times.size(),
              times.data());
-
+    checkNaifErrors();
     ckcls_c(handle);
+    checkNaifErrors();
   }
 
 
@@ -140,7 +144,9 @@ namespace SpiceQL {
     states = concatStates(statePositions, *stateVelocities);
 
     SpiceInt handle;
+    checkNaifErrors();
     spkopn_c(fileName.c_str(), "SPK", 512, &handle);
+    checkNaifErrors();
 
     spkw13_c(handle,
              bodyCode,
@@ -153,8 +159,9 @@ namespace SpiceQL {
              stateTimes.size(),
              states.data(),
              stateTimes.data());
-
+    checkNaifErrors();
     spkcls_c(handle);
+    checkNaifErrors();
 
     return;
   }

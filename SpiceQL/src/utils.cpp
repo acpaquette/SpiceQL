@@ -137,7 +137,9 @@ namespace SpiceQL {
     SpiceDouble lt;
     SpiceDouble starg_spice[6];
 
+    checkNaifErrors();
     spkezr_c( target_spice, et, frame_spice, abcorr_spice, observer_spice, starg_spice, &lt );
+    checkNaifErrors();
 
     // convert to std::array for output
     array<double, 6> starg = {0, 0, 0, 0, 0, 0};
@@ -161,12 +163,16 @@ namespace SpiceQL {
     bool has_av = true;
 
     // First try getting the entire state matrix (6x6), which includes CJ and the angular velocity
+    checkNaifErrors();
     frmchg_((int *) &refFrame, (int *) &toFrame, &et, (doublereal *) stateCJ);
+    checkNaifErrors();
 
     if (!failed_c()) {
       // Transpose and isolate CJ and av
+      checkNaifErrors();
       xpose6_c(stateCJ, stateCJ);
       xf2rav_c(stateCJ, CJ_spice, av_spice);
+      checkNaifErrors();
 
       // Convert to std::array for output
       for(int i = 0; i < 3; i++) {
@@ -176,17 +182,19 @@ namespace SpiceQL {
     }
     else {  // TODO This case is untested
       // Recompute CJ_spice ignoring av
-
+      checkNaifErrors();
       reset_c(); // reset frmchg_ failure
 
       refchg_((int *) &refFrame, (int *) &toFrame, &et, (doublereal *) CJ_spice);
       xpose_c(CJ_spice, CJ_spice);
+      checkNaifErrors();
 
       has_av = false;
     }
 
     // Translate matrix to std:array quaternion
     m2q_c(CJ_spice, quat_spice);
+
     for(int i = 0; i < 4; i++) {
       quat[i] = quat_spice[i];
     }
@@ -210,7 +218,9 @@ namespace SpiceQL {
     SpiceBoolean gnfound;
 
     // Call gnpool to search for input key template
+    checkNaifErrors();
     gnpool_c(cstr, START, ROOM, LENOUT, &nkeys, kvals, &gnfound);
+    checkNaifErrors();
 
     if(!gnfound) {
       return nullptr;
@@ -235,7 +245,9 @@ namespace SpiceQL {
 
       fkey = &kvals[i][0];
 
+      checkNaifErrors();
       gdpool_c(fkey, START, ROOM, &nvals, dvals, &gdfound);
+      checkNaifErrors();
 
       if (gdfound) {
         // format output
@@ -251,6 +263,8 @@ namespace SpiceQL {
 
       if (!gdfound) {
         gipool_c(fkey, START, ROOM, &nvals, ivals, &gifound);
+        checkNaifErrors();
+
       }
 
       if (gifound) {
@@ -267,6 +281,7 @@ namespace SpiceQL {
 
       if (!gifound || !gdfound) {
         gcpool_c(fkey, START, ROOM, LENOUT, &nvals, cvals, &gcfound);
+        checkNaifErrors();
       }
 
       if (gcfound) {
@@ -398,6 +413,8 @@ namespace SpiceQL {
   vector<pair<double, double>> getTimeIntervals(string kpath) {
     auto formatIntervals = [&](SpiceCell &coverage) -> vector<pair<double, double>> {
       //Get the number of intervals in the object.
+      checkNaifErrors();
+
       int niv = card_c(&coverage) / 2;
       //Convert the coverage interval start and stop times to TDB
       double begin, end;
@@ -407,7 +424,7 @@ namespace SpiceQL {
       for(int j = 0;  j < niv;  j++) {
         //Get the endpoints of the jth interval.
         wnfetd_c(&coverage, j, &begin, &end);
-
+        checkNaifErrors();
         pair<double, double> p = {begin, end};
         res.emplace_back(p);
       }
@@ -422,7 +439,10 @@ namespace SpiceQL {
 
     Kernel k(kpath);
 
+    checkNaifErrors();
     kinfo_c(kpath.c_str(), 32, 2048, fileType, source, &handle, &found);
+    checkNaifErrors();
+
     string currFile = fileType;
 
     //create a spice cell capable of containing all the objects in the kernel.
@@ -444,6 +464,7 @@ namespace SpiceQL {
     else if (currFile == "TEXT") {
       throw invalid_argument("Input Kernel is a text kernel which has no intervals");
     }
+    checkNaifErrors();
 
     vector<pair<double, double>> result;
 
@@ -454,6 +475,7 @@ namespace SpiceQL {
       //only provide coverage for negative NAIF codes
       //(Positive codes indicate planetary bodies, negatives indicate
       // spacecraft and instruments)
+      checkNaifErrors();
       if (body < 0) {
         vector<pair<double, double>> times;
         //find the correct coverage window
@@ -475,6 +497,7 @@ namespace SpiceQL {
 
           times = formatIntervals(cover);
         }
+        checkNaifErrors();
 
         result.reserve(result.size() + distance(times.begin(), times.end()));
         result.insert(result.end(), times.begin(), times.end());
@@ -622,8 +645,9 @@ namespace SpiceQL {
     SpiceBoolean found;
 
     Kernel k(kernelPath);
-
+    checkNaifErrors();
     kinfo_c(kernelPath.c_str(), 6, 6, type, source, &handle, &found);
+    checkNaifErrors();
 
     if (!found) {
       throw domain_error("Kernel Type not found");
@@ -652,4 +676,57 @@ namespace SpiceQL {
     }
     return "";
   }
+
+
+  bool checkNaifErrors(bool reset) {
+    static bool initialized = false; 
+
+    if(!initialized) {
+      SpiceChar returnAct[32] = "RETURN";
+      SpiceChar printAct[32] = "NONE";
+      erract_c("SET", sizeof(returnAct), returnAct);   // Reset action to return
+      errprt_c("SET", sizeof(printAct), printAct);     // ... and print nothing
+      initialized = true;
+    }
+
+    if(!failed_c()) return true;
+
+    // This method has been documented with the information provided
+    //   from the NAIF documentation at:
+    //    naif/cspice61/packages/cspice/doc/html/req/error.html
+
+    // This message is a character string containing a very terse, usually
+    // abbreviated, description of the problem. The message is a character
+    // string of length not more than 25 characters. It always has the form:
+    // SPICE(...)
+    // Short error messages used in CSPICE are CONSTANT, since they are
+    // intended to be used in code. That is, they don't contain any data which
+    // varies with the specific instance of the error they indicate.
+    // Because of the brief format of the short error messages, it is practical
+    // to use them in a test to determine which type of error has occurred.
+    const int SHORT_DESC_LEN = 26;
+    char naifShort[SHORT_DESC_LEN];
+    getmsg_c("SHORT", SHORT_DESC_LEN, naifShort);
+
+    // This message may be up to 1840 characters long. The CSPICE error handling
+    // mechanism makes no use of its contents. Its purpose is to provide human-readable
+    // information about errors. Long error messages generated by CSPICE routines often
+    // contain data relevant to the specific error they describe.
+    const int LONG_DESC_LEN = 1841;
+    char naifLong[LONG_DESC_LEN];
+    getmsg_c("LONG", LONG_DESC_LEN, naifLong);
+
+    // Search for known naif errors...
+    string errMsg = ""; 
+
+    // Now process the error
+    if(reset) {
+      reset_c();
+    }
+    
+    errMsg += "Error Occured:" + string(naifShort) + " " + string(naifLong);
+
+    throw runtime_error(errMsg);
+  }
+
 }

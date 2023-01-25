@@ -100,7 +100,9 @@ namespace SpiceQL {
     }
     KernelSet kset(j);
 
+    checkNaifErrors();
     bodn2c_c(frame.c_str(), &code, &found);
+    checkNaifErrors();
 
     if (!found) {
       throw invalid_argument(fmt::format("Frame code for frame name \"{}\" not Found", frame));
@@ -116,7 +118,9 @@ namespace SpiceQL {
     SpiceChar name[128];
     SpiceBoolean found;
 
+    checkNaifErrors();
     bodc2n_c(frame, 128, name, &found);
+    checkNaifErrors();
 
     if(!found) {
       throw invalid_argument(fmt::format("Frame name for code {} not Found", frame));
@@ -150,7 +154,10 @@ namespace SpiceQL {
       KernelSet lsk(getLatestKernel(conf.at("base").at("lsk").at("kernels")));
 
       SpiceDouble et;
+      checkNaifErrors();
       utc2et_c(utc.c_str(), &et);
+      checkNaifErrors();
+
       return et;
   }
 
@@ -167,7 +174,11 @@ namespace SpiceQL {
       KernelSet sclkSet(sclks);
 
       SpiceDouble et;
+
+      checkNaifErrors();
       scs2e_c(Kernel::translateFrame(mission), sclk.c_str(), &et);
+      checkNaifErrors();
+
       return et;
   }
 
@@ -179,7 +190,10 @@ namespace SpiceQL {
       KernelSet sclkSet(sclks);
 
       SpiceDouble et;
+      checkNaifErrors();
       scs2e_c(frameCode, sclk.c_str(), &et);
+      checkNaifErrors();
+      
       return et;
   }
 
@@ -195,12 +209,17 @@ namespace SpiceQL {
       refCount = it->second; 
 
       if (force_refurnsh) {
+        checkNaifErrors();
         furnsh_c(path.c_str());
+        checkNaifErrors();
+
       } 
     }
     else {  
       // load the kernel and register in onto the kernel map 
+      checkNaifErrors();
       furnsh_c(path.c_str());
+      checkNaifErrors();
       refCounts.emplace(path, 1);
     }
 
@@ -215,12 +234,18 @@ namespace SpiceQL {
       // if the map contains the last copy of the kernel, delete it
       if (refcount == 1) {
         // unfurnsh the kernel
+        checkNaifErrors();
         unload_c(path.c_str());
+        checkNaifErrors();
+        
         refCounts.erase(path);
         return 0;
       }
       else {
+        checkNaifErrors();
         unload_c(path.c_str());
+        checkNaifErrors();
+        
         refcount--;
         
         return refcount;
@@ -254,9 +279,12 @@ namespace SpiceQL {
 
   KernelPool::KernelPool() : refCounts() { 
     loadLeapSecondKernel();
-
+    
+    checkNaifErrors();
     // create aliases for spacecrafts 
     boddef_c("mess", -236); // NAIF uses MESSENGER, we use mess for short
+    checkNaifErrors();
+  
   }
 
 
