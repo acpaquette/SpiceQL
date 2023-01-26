@@ -1,6 +1,8 @@
 AWSTemplateFormatVersion: 2010-09-09
-
+Description: SpiceQL Dev Lambda Deploy
 Resources:
+
+  #EFS
   AccessPointResource:
     Type: AWS::EFS::AccessPoint
     Properties:
@@ -26,52 +28,53 @@ Resources:
               - elasticfilesystem:ClientMount
               - elasticfilesystem:ClientWrite
             Resource: '*'
+
+  # API Gateway
   SpiceQlRestfulApi: 
     Type: AWS::ApiGateway::RestApi
     Properties: 
-      Name: "SpiceQLAPI"
+      Name: "SpiceQlAPI"
+      EndpointConfiguration: 
+        Types:
+            - REGIONAL
   SpiceQlModel:
     Type: AWS::ApiGateway::Model
     Properties: 
       ContentType: "application/json"
       Name: "schema"
       RestApiId: !Ref SpiceQlRestfulApi
-  # SpiceQlResource: 
-  #   Type: AWS::ApiGateway::Resource 
-  #   Properties:
-  #     PathPart: spiceql
-  #     RestApiId: !Ref SpiceQlRestfulApi
-  #     ParentId: !GetAtt 
-  #      - SpiceQlRestfulApi
-  #      - RootResourceId
+  SpiceQlResource: 
+    Type: AWS::ApiGateway::Resource 
+    Properties:
+      PathPart: spiceql
+      RestApiId: !Ref SpiceQlRestfulApi
+      ParentId: !GetAtt 
+        - SpiceQlRestfulApi
+        - RootResourceId
   SpiceQlGet:
     Type: AWS::ApiGateway::Method
     Properties:
-      HttpMethod: POST
+      HttpMethod: GET
       RestApiId: !Ref SpiceQlRestfulApi
       AuthorizationType: None
-      RequestParameters:
-        method.request.path.action: true
-      ResourceId: !GetAtt
-        - SpiceQlRestfulApi
-        - RootResourceId
+      RequestParameters: {
+        method.request.querystring.func: false,
+        method.request.querystring.mission: false
+      }
+      ResourceId: !Ref SpiceQlResource
       Integration: 
         Type: AWS
         TimeoutInMillis: 29000
         IntegrationHttpMethod: POST
-        PassthroughBehavior: WHEN_NO_MATCH
-        RequestParameters:
-          integration.request.path.action: method.request.path.action
+        RequestParameters: {
+          integration.request.querystring.func: method.request.querystring.func,
+          integration.request.querystring.mission: method.request.querystring.mission,
+        }
         RequestTemplates:
-          # pass everything through 
-          "application/json": "$input.json('$')"
-        Uri: !Sub "arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${SpiceQLambda.Arn}/invocations" 
-        CacheKeyParameters:
-        - method.request.path.action
+          "application/json": "{\"func\": \"$input.params('func')\", \"mission\": \"$input.params('mission')\" }"
+        Uri: !Sub "arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${SpiceQlLambda.Arn}/invocations" 
         IntegrationResponses: 
           - ResponseTemplates:
-              # see https://docs.aws.amazon.com/apigateway/latest/eloperguide/api-gateway-mapping-template-reference.html 
-              # for the format and pre-populated variables
               "application/json": "'$input.body'"
             StatusCode: 200
       MethodResponses:
@@ -80,7 +83,7 @@ Resources:
           ResponseParameters: 
             method.response.header.link: true
           StatusCode: 200
-  RestApiDeployment: 
+  SpiceQlRestApiDeployment: 
     Type: AWS::ApiGateway::Deployment
     DependsOn: 
       - SpiceQlRestfulApi 
@@ -91,7 +94,7 @@ Resources:
   SpiceQlSG:
     Type: AWS::EC2::SecurityGroup
     Properties: 
-      GroupDescription: "Sg for SpiceQLambda"
+      GroupDescription: "Sg for SpiceQlLambda"
       GroupName: SpiceQlSecurityGroupDev
       SecurityGroupEgress:
         - IpProtocol: tcp
@@ -104,8 +107,36 @@ Resources:
           ToPort: 2050
           CidrIp: 0.0.0.0/0 
       VpcId: vpc-004f1e36134bcaa04
-  SpiceQLambda:
-    Type: 'AWS::Lambda::Function'
+
+  #Domain
+  SpiceQlDomainName:
+      Type: AWS::ApiGateway::DomainName
+      Properties: 
+          RegionalCertificateArn: arn:aws:acm:us-west-2:950438895271:certificate/6aa50410-fb5a-4300-888f-55aae14463df
+          DomainName: spiceql-dev.prod-asc.chs.usgs.gov
+          EndpointConfiguration:
+            Types:
+            - REGIONAL
+  SpiceQlRoute53:
+      Type: AWS::Route53::RecordSet
+      Properties: 
+        HostedZoneName: prod-asc.chs.usgs.gov.
+        AliasTarget: 
+            DNSName: !GetAtt SpiceQlDomainName.RegionalDomainName
+            HostedZoneId: !GetAtt SpiceQlDomainName.RegionalHostedZoneId
+        Name: spiceql-dev.prod-asc.chs.usgs.gov
+        Type: A
+  SpiceQlApiMapping:
+      Type: AWS::ApiGatewayV2::ApiMapping
+      Properties: 
+        DomainName: !Ref SpiceQlDomainName
+        ApiId: !Ref SpiceQlRestfulApi
+        ApiMappingKey: 'v1'
+        Stage: v1
+        
+  # Lambda
+  SpiceQlLambda:
+    Type: AWS::Lambda::Function
     Properties:
       Timeout: 100 
       Role: arn:aws:iam::950438895271:role/csr-Lambda-Role
@@ -124,24 +155,9 @@ Resources:
   SpiceQlApiPermission:
     Type: AWS::Lambda::Permission
     DependsOn:
-      - SpiceQLambda
+      - SpiceQlLambda
     Properties:
       Action: lambda:InvokeFunction
-      FunctionName: !Ref SpiceQLambda
+      FunctionName: !Ref SpiceQlLambda
       Principal: apigateway.amazonaws.com
-      # SourceArn: !GetAtt SpiceQlModel.Arn arn:aws:execute-api:us-west-2:235348801643:y5n4n7bwhk/*/GET/
-      SourceArn:
-          Fn::Join:
-            - ''
-            - - 'arn:'
-              - !Ref AWS::Partition
-              - ":execute-api:"
-              - !Ref AWS::Region
-              - ":"
-              - !Ref AWS::AccountId
-              - ":"
-              - !Ref SpiceQlRestfulApi
-              - "/*/POST/*"
-
-
-
+      SourceArn: !Sub "arn:aws:execute-api:${AWS::Region}:950438895271:${SpiceQlRestfulApi}/*/GET/spiceql"

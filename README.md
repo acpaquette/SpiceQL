@@ -97,5 +97,45 @@ The SpiceQL API is available via Python bindings in the module `pyspiceql`. The 
 `docker run -p 9000:8080 -it spiceql`
 
 3. From a new terminal window, post an event to the following endpoint using a `curl` command:
-`curl -XPOST "http://localhost:9000/2015-03-31/functions/function/invocations" -d '{"func" : "getMissionConfigFile", "mission" : "mro"}'`
+`curl -XGET "http://localhost:9000/2015-03-31/functions/function/invocations" -d '{"func" : "getMissionConfigFile", "mission" : "mro"}'`
+
+## Interacting with Public(VPN) AWS Lambda Function
+
+The URL for interacting with the lambda function is:
+`https://spiceql-dev.prod-asc.chs.usgs.gov/v1/spiceql`
+
+Right now there are two query string parameters:
+
+   1. func: The name of the function
+   2. mission: the name of the mission
+
+To test these parameters run the following URL in your browser: 
+`https://spiceql-dev.prod-asc.chs.usgs.gov/v1/spiceql?func=getMissionConfigFile&mission=mro`
+
+This should return response with the associated config file path.
+
+## Adding/Updating New Query String Parameters in CloudFormation
+
+To add new query string parameters in the CF:
+
+1. Update the following `RequestParameters` under `AWS::ApiGateway::Method`:
+
+   - `method.request.querystring.<ParameterName>: <RequiredBoolean>`
+
+2. Then add the following to `RequestParameters` under `Integration` under `AWS::ApiGateway::Method`:
+
+   - `integration.request.querystring.<ParameterName>: method.request.querystring.<ParameterName>`
+
+ *Please note that updating the CF in AWS does not always update these parameters. If you make changes and are unable to query the new parameters, you may need to delete the CF stack and create a new one with your updated template.*
+
+ 3. The lambda handler takes in an "event" that needs to be formatted in json. The API Gateway takes in these query string parameter results and formats them in json in order to be digested into the lambda function. 
+
+   - To add in new parameters into the json, update the `RequestTemplate` under `Integrations` under `AWS::ApiGateway::Method`:
+
+   ```
+   "application/json": "{"func": "$input.param('func')", 
+                         "mission": "$input.params('mission')", 
+                         "<ParameterName>": "$input.params('<ParameterName>')" }"
+   ```
+
 
