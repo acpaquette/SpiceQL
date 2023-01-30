@@ -14,12 +14,6 @@
 # For more information, see: https://docs.gitlab.com/ee/ci/yaml/index.html#stages
 image: continuumio/miniconda3:latest
 
-variables:
-  DOCKER_REGISTRY: 950438895271.dkr.ecr.us-west-2.amazonaws.com
-  APP_NAME: spiceql
-  FUNCTION_NAME: spiceqlambdadev
-
-
 stages:          # List of stages for jobs, and their order of execution
   - build
   - test
@@ -37,6 +31,8 @@ build-and-ctest:       # This job runs in the build stage, which runs first.
     SSPICE_DEBUG : y
     BUILD_TYPE : Release
   stage: build
+  tags:
+  - asc-group
   script:
     - ls $CI_PROJECT_DIR
     - git config http.sslVerify "false"
@@ -71,6 +67,8 @@ build-and-ctest:       # This job runs in the build stage, which runs first.
 
 check-install-binaries:   # This job also runs in the test stage.
   stage: test    # It can run at the same time as unit-test-job (in parallel).
+  tags:
+  - asc-group
   dependencies:
     - build-and-ctest
   script:
@@ -80,6 +78,8 @@ check-install-binaries:   # This job also runs in the test stage.
 
 check-installed-json-files:
   stage: test
+  tags:
+  - asc-group
   dependencies:
     - build-and-ctest
   script:
@@ -95,26 +95,27 @@ check-installed-json-files:
 
 deploy-job:  
   stage: deploy  # It only runs when *both* jobs in the test stage complete successfully.
+  tags:
+  - deploy
+  dependencies: []
   image: 
     name: $CI_REGISTRY/usgs-chs/chs-library/docker/images/docker:latest
   services:
     - name: $CI_REGISTRY/usgs-chs/chs-library/docker/images/docker:dind
       alias: docker
   before_script:
-    - apk add --no-cache python3
-    - python3 -m ensurepip && rm -r /usr/lib/python*/ensurepip
-    - pip3 install --no-cache --upgrade pip setuptools wheel
-    - if [ ! -e /usr/bin/pip ]; then ln -s pip3 /usr/bin/pip ; fi
+    - apk add --no-cache curl jq python3 py3-pip git
     - pip install awscli
+    - aws ecr get-login-password --region us-west-2 | docker login --username AWS --password-stdin 950438895271.dkr.ecr.us-west-2.amazonaws.com
     - aws --version
     - docker --version 
   script:
     - echo "Deploying application..."
-    - aws ecr get-login-password --region us-west-2 | docker login --username AWS --password-stdin $DOCKER_REGISTRY
-    - docker build -f aws/Dockerfile -t $APP_NAME . 
-    - docker tag $APP_NAME:latest $DOCKER_REGISTRY/$APP_NAME:latest
-    - docker push $DOCKER_REGISTRY/$APP_NAME:latest
-    - aws lambda update-function-code --region us-west-2 --function-name $FUNCTION_NAME --image-uri $DOCKER_REGISTRY/$APP_NAME:latest
+    - git submodule update --init --recursive
+    - docker build -f aws/Dockerfile -t spiceql .
+    - docker tag spiceql:latest 950438895271.dkr.ecr.us-west-2.amazonaws.com/spiceql:latest
+    - docker push 950438895271.dkr.ecr.us-west-2.amazonaws.com/spiceql:latest
+    - aws lambda update-function-code --region us-west-2 --function-name spiceqlambdadev --image-uri 950438895271.dkr.ecr.us-west-2.amazonaws.com/spiceql:latest
     - echo "Application successfully deployed."
   rules:
     - if: "$CI_COMMIT_BRANCH == 'main'"
