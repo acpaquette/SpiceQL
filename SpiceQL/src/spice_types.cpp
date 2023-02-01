@@ -11,6 +11,8 @@
 
 #include <ghc/fs_std.hpp>
 
+#include <spdlog/spdlog.h>
+
 #include "spice_types.h"
 #include "query.h"
 #include "utils.h"
@@ -167,10 +169,15 @@ namespace SpiceQL {
       Config missionConf;
       json globalConf = missionConf.globalConf();
       if (globalConf.find(mission) != globalConf.end()) {
+        spdlog::debug("Found {} in config, getting only {} sclks.", mission, mission);
         missionConf = missionConf[mission];
+      }
+      else {
+        spdlog::debug("Coudn't find {} in config explicitly, loading all sclk kernels", mission);
       }
 
       json sclks = missionConf.getLatestRecursive("sclk");
+      spdlog::debug("Got SCLKS: ", sclks);
       KernelSet sclkSet(sclks);
 
       SpiceDouble et;
@@ -178,7 +185,7 @@ namespace SpiceQL {
       checkNaifErrors();
       scs2e_c(Kernel::translateFrame(mission), sclk.c_str(), &et);
       checkNaifErrors();
-
+      spdlog::debug("sclktoet({}, {}) -> {}", mission, sclk, et);
       return et;
   }
 
