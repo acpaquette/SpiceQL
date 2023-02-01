@@ -3,20 +3,6 @@
 
 This Library provides a C++ interface querying, reading and writing Naif SPICE kernels. Built on the [Naif Toolkit](https://naif.jpl.nasa.gov/naif/toolkit.html).
 
-## Roadmap
-
-This is still a work in progress. Developed by USGS Astrogeology, this library is intended to be used as part of Astrogeology's Software portfolio. Specifically as [Ale's](https://github.com/USGS-Astrogeology/Ale) primary method for interacting with kernels.
-
-Library name will most likely change as this matures.
-
-Primary Milstones:
-
- 1. Complete basic I/O functionality. This Includes:
-    * Complete Query support for at least one mission
-    * Complete Kernel writing for CK, SPK and Text kernels from C++ types
- 2. Complete Mission Support
-    * Complate Configuration files for all missions currently supported by ISIS
- 3. Complete reading of Binary Spice kernels to C++ types
 
 ## Building The Library
 
@@ -86,6 +72,29 @@ cmake .. -DCMAKE_INSTALL_PREFIX=$CONDA_PREFIX -DSPICEQL_BUILD_DOCS=OFF -DSPICEQL
 ## Bindings
 
 The SpiceQL API is available via Python bindings in the module `pyspiceql`. The bindings are built using SWIG and are on by default. You can disable the bindings in your build by setting `SPICEQL_BUILD_BINDINGS` to `OFF` when configuring your build.
+
+## Memoization Header Library 
+
+SpiceQL has a simple memoization header only library at `Spiceql/include/memo.h`. This can cache function results on disk using a binary archive format mapped using a combined hash of a function ID and it's input parameters. 
+
+TLDR 
+```C++
+#include "memo.h"
+
+int func(int) { ... }
+memoization::disk c("cache_path");
+
+// use case 1: wrap function call
+// (function ID, the function to wrap and then params
+int result1 = c("func_id", func, 3);
+
+// use case 2: wrap function
+// (cache object, function ID, function)
+auto func_memoed = memoization::make_memoized(c, "func_id", func);
+int result2 = func_memoed(3);
+
+assert(result1 == result2);
+```
 
 
 ## Building and Testing Lambda Locally

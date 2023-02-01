@@ -14,7 +14,7 @@ namespace SpiceQL {
 
   Config::Config() {
     string dbPath = getConfigDirectory(); 
-    vector<string> json_paths = glob(dbPath, basic_regex("json"));
+    vector<string> json_paths = glob(dbPath, ".json");
 
     for(const fs::path &p : json_paths) {
       ifstream i(p);

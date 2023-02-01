@@ -6,6 +6,7 @@
 
 #include <exception>
 #include <fstream>
+#include <regex>
 
 #include <SpiceUsr.h>
 #include <SpiceZfc.h>
@@ -21,6 +22,7 @@
 
 #include "utils.h"
 #include "spice_types.h"
+
 
 using json = nlohmann::json;
 using namespace std;
@@ -82,12 +84,11 @@ namespace SpiceQL {
 
   vector<string> getPathsFromRegex(string root, json r) {
       vector<string> regexes = jsonArrayToVector(r);
-      regex reg(fmt::format("({})", fmt::join(regexes, "|")));
+      string reg = fmt::format("({})", fmt::join(regexes, "|"));
       vector<string> paths = glob(root, reg, true);
 
       return paths;
   }
-
 
   void mergeConfigs(json &baseConfig, const json &mergingConfig) {
     for (json::const_iterator it = mergingConfig.begin(); it != mergingConfig.end(); ++it) {
@@ -396,12 +397,12 @@ namespace SpiceQL {
   }
 
 
-  vector<string> glob(string const & root, regex const & reg, bool recursive) {
+  vector<string> glob(string const & root, string const & reg, bool recursive) {
     vector<string> paths;
     vector<string> files_to_search = ls(root, recursive);
     
     for (auto &f : files_to_search) {
-      if (regex_search(f.c_str(), reg)) {
+      if (regex_search(f.c_str(), basic_regex(reg, regex_constants::optimize|regex_constants::ECMAScript))) {
         paths.emplace_back(f);
       }
     }
@@ -555,7 +556,7 @@ namespace SpiceQL {
   vector<string> getAvailableConfigFiles() {
     vector<string> confs; 
     fs::path dbDir = getConfigDirectory();
-    return glob(dbDir, basic_regex("json"), false);
+    return glob(dbDir, ".json", false);
   }
 
   vector<json> getAvailableConfigs() {

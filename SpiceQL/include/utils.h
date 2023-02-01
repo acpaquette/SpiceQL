@@ -103,7 +103,7 @@ namespace SpiceQL {
     * @returns list of paths matching regex
    **/
   std::vector<std::string> glob(std::string const & root,
-                             std::regex const & reg = std::regex(".*"),
+                             std::string const & reg = ".*",
                              bool recursive=false);
 
 

@@ -8,6 +8,6 @@
 */
 
 #include "utils.h"
-#include "kernel.h"
+#include "spice_types.h"
 #include "io.h"
 #include "query.h"

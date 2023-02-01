@@ -1,6 +1,9 @@
 #include <gtest/gtest.h>
 
 #include <ghc/fs_std.hpp>
+#include <chrono>
+
+using namespace std::chrono;
 
 #include "TestUtilities.h"
 
@@ -9,19 +12,11 @@
 #include "spice_types.h"
 #include "config.h"
 #include "SpiceUsr.h"
+#include "memo.h"
+
+#include <spdlog/spdlog.h>
 
 using namespace SpiceQL;
-
-TEST(UtilTests, GetKernelType) { 
-}
-
-
-TEST(UtilTests, GetFrameCode) { 
-}
-
-
-TEST(UtilTests, GetFrameName) {  
-}
 
 
 TEST(UtilTests, findKeywords) {
@@ -243,6 +238,7 @@ TEST(UtilTests, eraseAtPointer) {
   EXPECT_EQ(j, baseJ);
 }
 
+
 TEST(UtilTests, getRootDependency) {
   std::string folder = getenv("SPICEROOT");
   folder += "/mission_2";
@@ -279,3 +275,4 @@ TEST(UtilTests, checkNaifErrors) {
     EXPECT_PRED_FORMAT2(spiceql::AssertExceptionMessage, e, "The attempt to load \"does/not/exist\" by the routine FURNSH failed.");
   }
 }
+

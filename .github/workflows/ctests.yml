@@ -23,7 +23,7 @@ jobs:
     - uses: conda-incubator/setup-miniconda@v2
       with:
           miniconda-version: "latest"
-          activate-environment: sugar_spice
+          activate-environment: spiceql
           environment-file: environment.yml
           auto-activate-base: false
           auto-update-conda: true
@@ -45,7 +45,7 @@ jobs:
 
     - name: Configure CMake
       working-directory: ${{github.workspace}}/build
-      run: cmake $GITHUB_WORKSPACE -DCMAKE_BUILD_TYPE=$BUILD_TYPE -DCSpice_DIR=$CONDA/envs/sugar_spice/lib/cmake/cspice/ -Dfmt_DIR=$CONDA/envs/sugar_spice/lib/cmake/fmt/ -DSPICEQL_BUILD_DOCS=OFF -DCMAKE_INSTALL_PREFIX=${{github.workspace}}/install
+      run: cmake $GITHUB_WORKSPACE -DCMAKE_BUILD_TYPE=$BUILD_TYPE -DCSpice_DIR=$CONDA/envs/spiceql/lib/cmake/cspice/ -Dfmt_DIR=$CONDA/envs/spiceql/lib/cmake/fmt/ -DSPICEQL_BUILD_DOCS=OFF -DCMAKE_INSTALL_PREFIX=${{github.workspace}}/install
 
     - name: Build
       working-directory: ${{github.workspace}}/build
@@ -74,7 +74,7 @@ jobs:
           elif [ "$RUNNER_OS" == "Linux" ]; then
             test -e lib/libSpiceQL.so
           fi
-          test -e include/SpiceQL/sugar_spice.h
+          test -e include/SpiceQL/spiceql.h
           rm -rf ${{github.workspace}}/build
           python -c "import pyspiceql"
 
@@ -99,7 +99,7 @@ jobs:
     - uses: conda-incubator/setup-miniconda@v2
       with:
           miniconda-version: "latest"
-          activate-environment: sugar_spice
+          activate-environment: spiceql
           environment-file: environment.yml
           auto-activate-base: false
           auto-update-conda: true
