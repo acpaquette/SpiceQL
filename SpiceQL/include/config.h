@@ -108,7 +108,7 @@ namespace SpiceQL {
        * @param pointer key or JSON pointer to recursively subgroup on 
        * @return nlohmann::json json subgroup with kernels 
        */
-      nlohmann::json getLatestRecursive(std::string pointer);
+      nlohmann::json getLatestRecursive(std::string pointer="");
 
 
       /**

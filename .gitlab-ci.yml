@@ -74,7 +74,7 @@ check-install-binaries:   # This job also runs in the test stage.
   script:
     - cd $CI_PROJECT_DIR/install/
     - test -e lib/libSpiceQL.so
-    - test -e include/SpiceQL/sugar_spice.h
+    - test -e include/SpiceQL/spiceql.h
 
 check-installed-json-files:
   stage: test

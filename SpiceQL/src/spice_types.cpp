@@ -279,7 +279,7 @@ namespace SpiceQL {
 
   KernelPool::KernelPool() : refCounts() { 
     loadLeapSecondKernel();
-    
+
     checkNaifErrors();
     // create aliases for spacecrafts 
     boddef_c("mess", -236); // NAIF uses MESSENGER, we use mess for short

@@ -36,38 +36,42 @@ if(SPICEQL_BUILD_LIB)
 
   find_package(CSpice REQUIRED)
   find_package(fmt REQUIRED)
+  find_package(cereal REQUIRED)
+  find_package(spdlog REQUIRED)
 
   set(SPICEQL_INSTALL_INCLUDE_DIR "include/SpiceQL")
-  set(SPICEQL_SRC_FILES ${CMAKE_CURRENT_SOURCE_DIR}/SpiceQL/src/utils.cpp
+  set(SPICEQL_SRC_FILES   ${CMAKE_CURRENT_SOURCE_DIR}/SpiceQL/src/spiceql.cpp 
+                          ${CMAKE_CURRENT_SOURCE_DIR}/SpiceQL/src/utils.cpp
                           ${CMAKE_CURRENT_SOURCE_DIR}/SpiceQL/src/io.cpp
                           ${CMAKE_CURRENT_SOURCE_DIR}/SpiceQL/src/query.cpp
                           ${CMAKE_CURRENT_SOURCE_DIR}/SpiceQL/src/spice_types.cpp
                           ${CMAKE_CURRENT_SOURCE_DIR}/SpiceQL/src/config.cpp)
 
-  set(SPICEQL_HEADER_FILES ${SPICEQL_BUILD_INCLUDE_DIR}/sugar_spice.h
-                              ${SPICEQL_BUILD_INCLUDE_DIR}/utils.h
-                              ${SPICEQL_BUILD_INCLUDE_DIR}/io.h
-                              ${SPICEQL_BUILD_INCLUDE_DIR}/spice_types.h
-                              ${SPICEQL_BUILD_INCLUDE_DIR}/query.h
-                            ${SPICEQL_BUILD_INCLUDE_DIR}/config.h)
+  set(SPICEQL_HEADER_FILES ${SPICEQL_BUILD_INCLUDE_DIR}/spiceql.h
+                           ${SPICEQL_BUILD_INCLUDE_DIR}/utils.h
+                           ${SPICEQL_BUILD_INCLUDE_DIR}/io.h
+                           ${SPICEQL_BUILD_INCLUDE_DIR}/memo.h 
+                           ${SPICEQL_BUILD_INCLUDE_DIR}/spice_types.h
+                           ${SPICEQL_BUILD_INCLUDE_DIR}/query.h
+                           ${SPICEQL_BUILD_INCLUDE_DIR}/config.h)
 
   set(SPICEQL_CONFIG_FILES ${CMAKE_CURRENT_SOURCE_DIR}/SpiceQL/db/apollo16.json
                            ${CMAKE_CURRENT_SOURCE_DIR}/SpiceQL/db/apollo17.json
                            ${CMAKE_CURRENT_SOURCE_DIR}/SpiceQL/db/base.json
                            ${CMAKE_CURRENT_SOURCE_DIR}/SpiceQL/db/cassini.json
                            ${CMAKE_CURRENT_SOURCE_DIR}/SpiceQL/db/clem1.json
-                              ${CMAKE_CURRENT_SOURCE_DIR}/SpiceQL/db/galileo.json
+                           ${CMAKE_CURRENT_SOURCE_DIR}/SpiceQL/db/galileo.json
                            ${CMAKE_CURRENT_SOURCE_DIR}/SpiceQL/db/juno.json
                            ${CMAKE_CURRENT_SOURCE_DIR}/SpiceQL/db/kaguya.json
-                              ${CMAKE_CURRENT_SOURCE_DIR}/SpiceQL/db/lro.json
-                              ${CMAKE_CURRENT_SOURCE_DIR}/SpiceQL/db/mess.json
+                           ${CMAKE_CURRENT_SOURCE_DIR}/SpiceQL/db/lro.json
+                           ${CMAKE_CURRENT_SOURCE_DIR}/SpiceQL/db/mess.json
                            ${CMAKE_CURRENT_SOURCE_DIR}/SpiceQL/db/mex.json
                            ${CMAKE_CURRENT_SOURCE_DIR}/SpiceQL/db/mgs.json
-                              ${CMAKE_CURRENT_SOURCE_DIR}/SpiceQL/db/mro.json
+                           ${CMAKE_CURRENT_SOURCE_DIR}/SpiceQL/db/mro.json
                            ${CMAKE_CURRENT_SOURCE_DIR}/SpiceQL/db/odyssey.json
-                              ${CMAKE_CURRENT_SOURCE_DIR}/SpiceQL/db/tgo.json
-                              ${CMAKE_CURRENT_SOURCE_DIR}/SpiceQL/db/viking1.json
-                              ${CMAKE_CURRENT_SOURCE_DIR}/SpiceQL/db/viking2.json)
+                           ${CMAKE_CURRENT_SOURCE_DIR}/SpiceQL/db/tgo.json
+                           ${CMAKE_CURRENT_SOURCE_DIR}/SpiceQL/db/viking1.json
+                           ${CMAKE_CURRENT_SOURCE_DIR}/SpiceQL/db/viking2.json)
 
   
   set(SPICEQL_KERNELS ${CMAKE_CURRENT_SOURCE_DIR}/SpiceQL/db/kernels/naif0011.tls)
@@ -85,7 +89,9 @@ if(SPICEQL_BUILD_LIB)
                             PUBLIC
                             $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/SpiceQL/include>
                             $<INSTALL_INTERFACE:include>
-                            PRIVATE)
+                            PRIVATE
+                            cereal
+                        )
 
   target_link_libraries(SpiceQL
                         PUBLIC
@@ -94,6 +100,7 @@ if(SPICEQL_BUILD_LIB)
                         nlohmann_json::nlohmann_json
                         PRIVATE
                         CSpice::cspice
+                        spdlog::spdlog_header_only
                         )
 
   install(TARGETS SpiceQL LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR})

@@ -39,6 +39,7 @@
   $result = PyObject_CallMethodObjArgs(module, jsonLoads, pythonJsonString, NULL);
 }
 
+
 namespace std {
   %template(IntVector) vector<int>;
   %template(DoubleVector) vector<double>;

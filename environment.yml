@@ -16,6 +16,8 @@ dependencies:
   - python>=3
   - swig
   - jsonschema
+  - cereal
+  - spdlog
   - pip:
     - breathe
     - sphinx-material
