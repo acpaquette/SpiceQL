@@ -11,7 +11,7 @@
 using namespace SpiceQL;
 
 TEST_F(LroKernelSet, UnitTestTranslateFrame) {
-  int res = Kernel::translateFrame("LRO_LROCWAC");
+  int res = Kernel::translateFrame("LRO_LROCWAC", "lro");
   EXPECT_EQ(res, -85620);
 }
 

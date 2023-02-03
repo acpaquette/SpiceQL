@@ -83,7 +83,7 @@ namespace SpiceQL {
   }
 
 
-  int Kernel::translateFrame(string frame) {
+  int Kernel::translateFrame(string frame, string mission) {
     // KernelPool::getInstance();
     
     SpiceInt code;
@@ -94,11 +94,17 @@ namespace SpiceQL {
     Config c;
     json config = c.globalConf();
     json j;
-    if (config.find(frame) != config.end()) {
-       j = c.getLatestRecursive("/" + frame + "/fk");
+    if (config.find(mission) != config.end()) {
+      vector<string> kernelsToGet = {"fk", "ik", "iak"};
+       j = c[mission].get(kernelsToGet);
+       json missionKernels = {};
+       missionKernels["fk"] = j["fk"];
+       missionKernels["ik"] = j["ik"];
+       missionKernels["iak"] = j["iak"];
+       j = getLatestKernels(missionKernels);
     }
     else {
-      j = c.getLatestRecursive("fk");
+      spdlog::warn("Could not find mission: \"{}\" in config. \n Either double-check mission variable or manually furnish kernels.", mission);
     }
     KernelSet kset(j);
 
@@ -168,22 +174,23 @@ namespace SpiceQL {
       // get lsk kernel
       Config missionConf;
       json globalConf = missionConf.globalConf();
+      json sclks;
       if (globalConf.find(mission) != globalConf.end()) {
         spdlog::debug("Found {} in config, getting only {} sclks.", mission, mission);
         missionConf = missionConf[mission];
+        sclks = missionConf.getLatest("sclk")["sclk"];
       }
       else {
         spdlog::debug("Coudn't find {} in config explicitly, loading all sclk kernels", mission);
+        sclks = missionConf.getLatestRecursive("sclk");
       }
 
-      json sclks = missionConf.getLatestRecursive("sclk");
-      spdlog::debug("Got SCLKS: ", sclks);
       KernelSet sclkSet(sclks);
 
       SpiceDouble et;
 
       checkNaifErrors();
-      scs2e_c(Kernel::translateFrame(mission), sclk.c_str(), &et);
+      scs2e_c(Kernel::translateFrame(mission, mission), sclk.c_str(), &et);
       checkNaifErrors();
       spdlog::debug("sclktoet({}, {}) -> {}", mission, sclk, et);
       return et;

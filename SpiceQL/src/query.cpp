@@ -72,10 +72,13 @@ namespace SpiceQL {
     vector<vector<string>> files = {};
 
     string extension = static_cast<fs::path>(kernels.at(0)).extension();
+    transform(extension.begin(), extension.end(), extension.begin(), ::tolower);
     // ensure everything is different versions of the same file
     for(const fs::path &k : kernels) {
-      if (k.extension() != extension) {
-        throw invalid_argument("The input extensions are not different versions of the same file");
+      string currentKernelExt = k.extension();
+      transform(currentKernelExt.begin(), currentKernelExt.end(), currentKernelExt.begin(), ::tolower);
+      if (currentKernelExt != extension) {
+        throw invalid_argument("The input extensions (" + (string)k.filename() + ") are not different versions of the same file " + kernels.at(0));
       }
       bool foundList = false;
       for (int i = 0; i < files.size(); i++) {

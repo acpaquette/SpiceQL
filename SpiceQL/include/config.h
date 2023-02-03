@@ -169,7 +169,7 @@ namespace SpiceQL {
        * 
        * @return nlohmann::json 
        */
-      nlohmann::json evaluateConfig();
+      nlohmann::json evaluateConfig(std::string pointerToEval = "");
 
       //! internal json config
       nlohmann::json config;
