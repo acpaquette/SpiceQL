@@ -102,49 +102,39 @@ assert(result1 == result2);
 1. Build your image locally using the `docker build` command.
 `docker build -f aws/Dockerfile -t spiceql .`
 
+2. Mount Isis Data Volume to Docker.
+`docker volume create --driver local --opt type=nfs --opt o=addr=isisdata.prod-asc.chs.usgs.gov,rw,nfsvers=4.1,rsize=1048576,wsize=1048576,hard,timeo=600,retrans=2 --opt device=:/ isisdata `
+
 2. Run your container image locally using the `docker run` command.
-`docker run -p 9000:8080 -it spiceql`
+`docker run -v isisdata:/mnt/isis_data -p 9000:8080 -it spiceql`
 
 3. From a new terminal window, post an event to the following endpoint using a `curl` command:
-`curl -XGET "http://localhost:9000/2015-03-31/functions/function/invocations" -d '{"func" : "getMissionConfigFile", "mission" : "mro"}'`
+`curl -XGET "http://localhost:9000/2015-03-31/functions/function/invocations" -d '{"func" : "<FunctionName>", "arg1" : "<FirstArgument>", "arg2": "<SecondArgument>", "arg3": "<ThirdArgument>}'`
 
 ## Interacting with Public(VPN) AWS Lambda Function
 
 The URL for interacting with the lambda function is:
-`https://spiceql-dev.prod-asc.chs.usgs.gov/v1/spiceql`
+`https://spiceql-dev.prod-asc.chs.usgs.gov/v1/`
 
-Right now there are two query string parameters:
+with the following three endpoints: spiceql, sclktoet, and utctoet:
 
-   1. func: The name of the function
-   2. mission: the name of the mission
+1. **spicql:** To test any function within the pyspiceql library run:
 
-To test these parameters run the following URL in your browser: 
-`https://spiceql-dev.prod-asc.chs.usgs.gov/v1/spiceql?func=getMissionConfigFile&mission=mro`
+   `https://spiceql-dev.prod-asc.chs.usgs.gov/v1/spiceql?func=<FunctionName>&arg1=<FirstArgument>&arg2=<SecondArgument>&arg3=<ThirdArgument>`
 
-This should return response with the associated config file path.
+   Note: This query can run with 1, 2 or 3 arguments.
 
-## Adding/Updating New Query String Parameters in CloudFormation
+   Example query: `https://spiceql-dev.prod-asc.chs.usgs.gov/v1/spiceql?func=Kernel_translateFrame&arg1=LISM_MI-VIS5&arg2=kaguya`
 
-To add new query string parameters in the CF:
+2. **sclktoet:** To run the query `sclkToEt` run:
 
-1. Update the following `RequestParameters` under `AWS::ApiGateway::Method`:
+   `https://spiceql-dev.prod-asc.chs.usgs.gov/v1/sclktoet?mission=<MissionName>&sclk=<SpacecraftClockTime>`
 
-   - `method.request.querystring.<ParameterName>: <RequiredBoolean>`
+   Example query: `https://spiceql-dev.prod-asc.chs.usgs.gov/v1/sclktoet?mission=lro&sclk=1/281199081:48971`
 
-2. Then add the following to `RequestParameters` under `Integration` under `AWS::ApiGateway::Method`:
+3. **utctoet:** To run the query `utcToEt` run:
 
-   - `integration.request.querystring.<ParameterName>: method.request.querystring.<ParameterName>`
+   `https://spiceql-dev.prod-asc.chs.usgs.gov/v1/utctoet?utc=<UtcString>`
 
- *Please note that updating the CF in AWS does not always update these parameters. If you make changes and are unable to query the new parameters, you may need to delete the CF stack and create a new one with your updated template.*
-
- 3. The lambda handler takes in an "event" that needs to be formatted in json. The API Gateway takes in these query string parameter results and formats them in json in order to be digested into the lambda function. 
-
-   - To add in new parameters into the json, update the `RequestTemplate` under `Integrations` under `AWS::ApiGateway::Method`:
-
-   ```
-   "application/json": "{"func": "$input.param('func')", 
-                         "mission": "$input.params('mission')", 
-                         "<ParameterName>": "$input.params('<ParameterName>')" }"
-   ```
 
 

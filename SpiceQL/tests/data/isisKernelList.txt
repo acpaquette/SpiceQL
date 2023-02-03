@@ -338,7 +338,6 @@
 /usgs/cpkgs/isis3/isis_data/mex/kernels/sclk/MEX_210601_STEP.TSC
 /usgs/cpkgs/isis3/isis_data/mex/kernels/sclk/MEX_210507_STEP.TSC
 /usgs/cpkgs/isis3/isis_data/mex/kernels/sclk/MEX_210325_STEP.TSC
-/usgs/cpkgs/isis3/isis_data/mex/kernels/sclk/MEX_110519_STEP.TSC-SAVE
 /usgs/cpkgs/isis3/isis_data/mex/kernels/sclk/MEX_210730_STEP.TSC
 /usgs/cpkgs/isis3/isis_data/mex/kernels/sclk/MEX_210224_STEP.TSC
 /usgs/cpkgs/isis3/isis_data/mex/kernels/sclk/MEX_211112_STEP.TSC

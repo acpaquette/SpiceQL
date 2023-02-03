@@ -102,9 +102,10 @@ namespace SpiceQL {
        * See <a href="https://naif.jpl.nasa.gov/pub/naif/toolkit_docs/C/req/naif_ids.html">NAIF's Docs on frame codes</a> for more information
        *
        * @param frame String to translate to a NAIF code
+       * @param mission Mission name as it relates to the config files
        * @return integer Naif frame code
        **/
-      static int translateFrame(std::string frame);
+      static int translateFrame(std::string frame, std::string mission);
 
 
       /**

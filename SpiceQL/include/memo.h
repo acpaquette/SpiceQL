@@ -12,6 +12,7 @@
 #include <utility>
 #include <functional>
 #include <any>
+#include <string>
 
 #include <ghc/fs_std.hpp>
 #include <spdlog/spdlog.h>
@@ -19,6 +20,7 @@
 #include <cereal/archives/binary.hpp>
 #include <cereal/types/vector.hpp>
 #include <cereal/types/string.hpp>
+
 
 
 #define CACHED(cache, func, ...) cache(#func, func, __VA_ARGS__)
@@ -174,7 +176,7 @@ namespace memoization {
 
 namespace std {
   // literally have no idea why I need to make this specialization... can't compile otherwise
-  template <> struct hash<std::vector<std::__cxx11::basic_string<char> >(const std::__cxx11::basic_string<char>&, bool)>
+  template <> struct hash<std::vector<std::string >(const std::string&, bool)>
   {
     size_t operator()(const auto & x) const {
       return 0;

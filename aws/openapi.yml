@@ -1,0 +1,138 @@
+openapi: '3.0.2'
+info:
+  title: SpiceQL
+  version: '1.0.0'
+servers:
+  - url: https://spiceql-dev.prod-asc.chs.usgs.gov/v1
+paths:
+  /:
+    get:
+      responses:
+        '200':
+          description: OK
+      x-amazon-apigateway-integration:
+        type: aws
+        httpMethod: POST
+        uri: "arn:aws:apigateway:us-west-2:lambda:path/2015-03-31/functions/arn:aws:lambda:us-west-2:950438895271:function:spiceqlambdadev/invocations"
+        responses:
+          default:
+            statusCode: '200'
+            responseTemplates: 
+                "application/json": "'$input.body'"
+  /spiceql:
+    description: "Test path"
+    get:
+      description: 'Testing lambda interactions with parameters'
+      parameters:
+      - name: "func"
+        in: "query"
+        description: "Function name"
+        required: true
+        schema:
+          type: "string"
+      - name: "arg1"
+        in: "query"
+        description: "first argument"
+        required: true
+        schema:
+          type: "string"
+      - name: "arg2"
+        in: "query"
+        description: "second argument (optional)"
+        required: false
+        schema:
+          type: "string"
+      - name: "arg3"
+        in: "query"
+        description: "third argument (optional)"
+        required: false
+        schema:
+          type: "string"
+      responses:
+        '200':
+          description: OK
+      x-amazon-apigateway-integration:
+        type: aws
+        httpMethod: POST
+        uri : "arn:aws:apigateway:us-west-2:lambda:path/2015-03-31/functions/arn:aws:lambda:us-west-2:950438895271:function:spiceqlambdadev/invocations"
+        requestTemplates : 
+          "application/json": "{\"func\": \"$input.params('func')\", \"arg1\": \"$input.params('arg1')\", \"arg2\": \"$input.params('arg2')\", \"arg3\": \"$input.params('arg3')\" }"
+        requestParameters : {
+          integration.request.querystring.func: method.request.querystring.func,
+          integration.request.querystring.arg1: method.request.querystring.arg1,
+          integration.request.querystring.arg2: method.request.querystring.arg2,
+          integration.request.querystring.arg3: method.request.querystring.arg3
+        }
+        responses:
+          default:
+            statusCode: '200'
+            responseTemplates: 
+                "application/json": "'$input.body'"
+  /sclktoet:
+    get:   
+      summary: "Converts an SCLK string to an ephemeris time"
+      description: "By passing in the mission and valid SCLK string, get the ephemeris time\n"
+      operationId: "sclktoet"
+      parameters:
+      - name: "mission"
+        in: "query"
+        description: "NAIF name for the mission"
+        required: true
+        schema:
+          type: "string"
+      - name: "sclk"
+        in: "query"
+        description: "SCLK string"
+        required: true
+        schema:
+          type: "string"
+      responses:
+        '200':
+          description: OK
+      x-amazon-apigateway-integration:
+        type: aws
+        httpMethod: POST
+        uri : "arn:aws:apigateway:us-west-2:lambda:path/2015-03-31/functions/arn:aws:lambda:us-west-2:950438895271:function:spiceqlambdadev/invocations"
+        requestTemplates : 
+          "application/json": "{\"func\": \"sclkToEt\", \"mission\": \"$input.params('mission')\", \"sclk\": \"$input.params('sclk')\" }"
+        requestParameters : {
+          integration.request.querystring.mission: method.request.querystring.mission,
+          integration.request.querystring.sclk: method.request.querystring.sclk
+        }
+        responses:
+          default:
+            statusCode: '200'
+            responseTemplates: 
+                "application/json": "'$input.body'"   
+  /utctoet:
+    get:    
+      summary: "Returns list of missions that are currently supported"
+      description: "By passing in UTC string, get the ephemeris time\n"
+      operationId: "utctoet"
+      parameters: 
+      - name: "utc"
+        in: "query"
+        description: "UTC string"
+        required: true
+        schema:
+          type: "string"
+          format: "date-time"
+      responses:
+        '200':
+          description: OK
+      x-amazon-apigateway-integration:
+        type: aws
+        httpMethod: POST
+        uri : "arn:aws:apigateway:us-west-2:lambda:path/2015-03-31/functions/arn:aws:lambda:us-west-2:950438895271:function:spiceqlambdadev/invocations"
+        requestTemplates : 
+          "application/json": "{\"func\": \"utcToEt\", \"utc\": \"$input.params('utc')\"}"
+        requestParameters : {
+          integration.request.querystring.utc: method.request.querystring.utc
+        }
+        responses:
+          default:
+            statusCode: '200'
+            responseTemplates: 
+              "application/json": "'$input.body'"
+
+

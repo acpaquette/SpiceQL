@@ -4,6 +4,7 @@
 
 #include <fstream>
 #include <sstream>
+#include <spdlog/spdlog.h>
 
 #include <ghc/fs_std.hpp>
 
@@ -98,8 +99,11 @@ namespace SpiceQL {
   }
 
 
-  json Config::evaluateConfig() {
+  json Config::evaluateConfig(string pointerToEval) {
     json::json_pointer pointer(confPointer);
+    if (pointerToEval != "") {
+      pointer = json::json_pointer(pointerToEval);
+    }
     json copyConfig(config);
 
     json::json_pointer parentPointer;
@@ -163,7 +167,7 @@ namespace SpiceQL {
 
 
   json Config::get(string pointer) {
-    string originalConfPointer = confPointer;
+    json::json_pointer getConfPointer(confPointer);
 
     if (pointer != "") {
       if (pointer.at(0) != '/')
@@ -171,17 +175,17 @@ namespace SpiceQL {
         pointer = "/" + pointer;
       }
       json::json_pointer p(pointer);
-      json::json_pointer pbase(confPointer);
-      confPointer = (pbase / p).to_string();
+      json::json_pointer pbase(getConfPointer);
+      getConfPointer = (pbase / p);
     }
-    json res = evaluateConfig();
-    confPointer = originalConfPointer;
+    json res = evaluateConfig(getConfPointer.to_string());
     return res[json::json_pointer(confPointer)];
   }
 
 
   json Config::getLatest(string pointer) {
-    json res = get(pointer);
+    json res;
+    res[pointer] = get(pointer)[pointer];
     return getLatestKernels(res);
   }
 
@@ -190,8 +194,8 @@ namespace SpiceQL {
     json eval_json;
 
     for (auto &pointer : pointers) {
-      json j = get(pointer);
-      eval_json.merge_patch(j);
+      json j = get(pointer)[pointer];
+      eval_json[pointer] = j;
     }
     return eval_json;
   }

@@ -15,7 +15,11 @@ def lambda_handler(event, context):
     try: 
         func = getattr(pyspiceql, event["func"])
         event.pop('func')
-        ret = func(**event)
+        args = list(event.values())
+        # removes empty arguments from list
+        args = ' '.join(args).split()
+        print(args)
+        ret = func(*args)
         print(ret) 
         return {
             "statusCode" : 200,

@@ -542,4 +542,5 @@ TEST_F(IsisDataDirectory, FunctionalTestListMissionKernelsMex) {
 
   expected = {"ORHM_______________00038.BSP"};
   CompareKernelSets(getKernelList(res.at("mex").at("spk").at("reconstructed")), expected);  
+
 }
