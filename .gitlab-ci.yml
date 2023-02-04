@@ -113,7 +113,7 @@ deploy-job:
     - echo "Deploying application..."
     - git submodule update --init --recursive
     - aws s3 cp aws/openapi.yml s3://spiceql-openapi-files
-    - aws apigateway put-rest-api --rest-api-id 3ywct7h7qb --mode overwrite --body 'fileb://aws/openapi.yml'
+    - aws apigateway put-rest-api --rest-api-id 3ywct7h7qb --region us-west-2 --mode overwrite --body 'fileb://aws/openapi.yml'
     - docker build -f aws/Dockerfile -t spiceql .
     - docker tag spiceql:latest 950438895271.dkr.ecr.us-west-2.amazonaws.com/spiceql:latest
     - docker push 950438895271.dkr.ecr.us-west-2.amazonaws.com/spiceql:latest
