@@ -68,12 +68,18 @@ paths:
             statusCode: '200'
             responseTemplates: 
                 "application/json": "'$input.body'"
-  /sclktoet:
+  /strsclktoet:
     get:   
       summary: "Converts an SCLK string to an ephemeris time"
       description: "By passing in the mission and valid SCLK string, get the ephemeris time\n"
       operationId: "sclktoet"
       parameters:
+      - name: "frameCode"
+        in: "query"
+        description: "Frame code for the mission"
+        required: true
+        schema:
+          type: "integer"
       - name: "mission"
         in: "query"
         description: "NAIF name for the mission"
@@ -94,8 +100,9 @@ paths:
         httpMethod: POST
         uri : "arn:aws:apigateway:us-west-2:lambda:path/2015-03-31/functions/arn:aws:lambda:us-west-2:950438895271:function:spiceqlambdadev/invocations"
         requestTemplates : 
-          "application/json": "{\"func\": \"sclkToEt\", \"mission\": \"$input.params('mission')\", \"sclk\": \"$input.params('sclk')\" }"
+          "application/json": "{\"func\": \"strSclkToEt\", \"frameCode\": $input.params('frameCode'), \"mission\": \"$input.params('mission')\", \"sclk\": \"$input.params('sclk')\" }"
         requestParameters : {
+          integration.request.querystring.frameCode: method.request.querystring.frameCode,
           integration.request.querystring.mission: method.request.querystring.mission,
           integration.request.querystring.sclk: method.request.querystring.sclk
         }
@@ -128,6 +135,40 @@ paths:
           "application/json": "{\"func\": \"utcToEt\", \"utc\": \"$input.params('utc')\"}"
         requestParameters : {
           integration.request.querystring.utc: method.request.querystring.utc
+        }
+        responses:
+          default:
+            statusCode: '200'
+            responseTemplates: 
+              "application/json": "'$input.body'"
+  /translateframe:
+    get:
+      description: "Switch between NAIF frame string code to integer frame code"
+      parameters:
+      - name: "frame"
+        in: "query"
+        description: "String to translate to a NAIF code"
+        required: true
+        schema:
+          type: "string"
+      - name: "mission"
+        in: "query"
+        description: "Mission name as it relates to the config files"
+        required: false
+        schema:
+          type: "string"
+      responses:
+        '200':
+          description: OK
+      x-amazon-apigateway-integration:
+        type: aws
+        httpMethod: POST
+        uri : "arn:aws:apigateway:us-west-2:lambda:path/2015-03-31/functions/arn:aws:lambda:us-west-2:950438895271:function:spiceqlambdadev/invocations"
+        requestTemplates : 
+          "application/json": "{\"func\": \"Kernel_translateFrame\", \"frame\": \"$input.params('frame')\", \"mission\":\"$input.params('mission')\"}"
+        requestParameters : {
+          integration.request.querystring.frame: method.request.querystring.frame,
+          integration.request.querystring.mission: method.request.querystring.mission
         }
         responses:
           default:

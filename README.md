@@ -109,7 +109,7 @@ assert(result1 == result2);
 `docker run -v isisdata:/mnt/isis_data -p 9000:8080 -it spiceql`
 
 3. From a new terminal window, post an event to the following endpoint using a `curl` command:
-`curl -XGET "http://localhost:9000/2015-03-31/functions/function/invocations" -d '{"func" : "<FunctionName>", "arg1" : "<FirstArgument>", "arg2": "<SecondArgument>", "arg3": "<ThirdArgument>}'`
+`curl -XGET "http://localhost:9000/2015-03-31/functions/function/invocations" -d '{"func" : "<FunctionName>", "arg1" : "<FirstArgument>", "arg2": "<SecondArgument>", "arg3": "<ThirdArgument>"}'`
 
 ## Interacting with Public(VPN) AWS Lambda Function
 
@@ -126,15 +126,21 @@ with the following three endpoints: spiceql, sclktoet, and utctoet:
 
    Example query: `https://spiceql-dev.prod-asc.chs.usgs.gov/v1/spiceql?func=Kernel_translateFrame&arg1=LISM_MI-VIS5&arg2=kaguya`
 
-2. **sclktoet:** To run the query `sclkToEt` run:
+2. **strsclktoet:** To run the query `strSclkToEt` run:
 
-   `https://spiceql-dev.prod-asc.chs.usgs.gov/v1/sclktoet?mission=<MissionName>&sclk=<SpacecraftClockTime>`
+   `https://spiceql-dev.prod-asc.chs.usgs.gov/v1/strsclktoet?frameCode=<FrameCode>&mission=<MissionName>&sclk=<SpacecraftClockTime>`
 
-   Example query: `https://spiceql-dev.prod-asc.chs.usgs.gov/v1/sclktoet?mission=lro&sclk=1/281199081:48971`
+   Example query: `https://spiceql-dev.prod-asc.chs.usgs.gov/v1/strsclktoet?framecode=-85&mission=lro&sclk=1/281199081:48971`
 
 3. **utctoet:** To run the query `utcToEt` run:
 
    `https://spiceql-dev.prod-asc.chs.usgs.gov/v1/utctoet?utc=<UtcString>`
+
+4. **translateframe** To run the query `translateFrame` run:
+
+   `https://spiceql-dev.prod-asc.chs.usgs.gov/v1/translateframe?frame=<FrameName>&mission=<MissionName>`
+
+   Example query: `https://spiceql-dev.prod-asc.chs.usgs.gov/v1/translateframe?frame=LRO_LROCWAC&mission=lro`
 
 
 
