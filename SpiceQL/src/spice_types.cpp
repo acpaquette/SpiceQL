@@ -88,20 +88,22 @@ namespace SpiceQL {
     
     SpiceInt code;
     SpiceBoolean found;
-
     // Get FKs 
     // load all latest until we can get smarter about it
     Config c;
     json config = c.globalConf();
     json j;
+    if (mission == ""){
+      mission = frame;
+    }
     if (config.find(mission) != config.end()) {
       vector<string> kernelsToGet = {"fk", "ik", "iak"};
-       j = c[mission].get(kernelsToGet);
-       json missionKernels = {};
-       missionKernels["fk"] = j["fk"];
-       missionKernels["ik"] = j["ik"];
-       missionKernels["iak"] = j["iak"];
-       j = getLatestKernels(missionKernels);
+      j = c[mission].get(kernelsToGet);
+      json missionKernels = {};
+      missionKernels["fk"] = j["fk"];
+      missionKernels["ik"] = j["ik"];
+      missionKernels["iak"] = j["iak"];
+      j = getLatestKernels(missionKernels);
     }
     else {
       spdlog::warn("Could not find mission: \"{}\" in config. \n Either double-check mission variable or manually furnish kernels.", mission);
@@ -113,7 +115,8 @@ namespace SpiceQL {
     checkNaifErrors();
 
     if (!found) {
-      throw invalid_argument(fmt::format("Frame code for frame name \"{}\" not Found", frame));
+      string missionKeys = getMissionKeys(config);
+      throw invalid_argument(fmt::format("Frame code for frame name \"{}\" not Found. \n Try including frame and mission name. List of available missions: [{}]. ", frame, missionKeys));
     }
 
     return code;
@@ -169,8 +172,7 @@ namespace SpiceQL {
       return et;
   }
 
-
-  double sclkToEt(string mission, string sclk) {
+  double strSclkToEt(int frameCode, string mission, string sclk) {
       // get lsk kernel
       Config missionConf;
       json globalConf = missionConf.globalConf();
@@ -184,29 +186,13 @@ namespace SpiceQL {
         spdlog::debug("Coudn't find {} in config explicitly, loading all sclk kernels", mission);
         sclks = missionConf.getLatestRecursive("sclk");
       }
-
-      KernelSet sclkSet(sclks);
-
-      SpiceDouble et;
-
-      checkNaifErrors();
-      scs2e_c(Kernel::translateFrame(mission, mission), sclk.c_str(), &et);
-      checkNaifErrors();
-      spdlog::debug("sclktoet({}, {}) -> {}", mission, sclk, et);
-      return et;
-  }
-
-  double sclkToEt(int frameCode, string sclk) {
-      // get lsk kernel
-      Config missionConf;
-
-      json sclks = missionConf.getLatestRecursive("sclk");
       KernelSet sclkSet(sclks);
 
       SpiceDouble et;
       checkNaifErrors();
       scs2e_c(frameCode, sclk.c_str(), &et);
       checkNaifErrors();
+      spdlog::debug("strsclktoet({}, {}, {}) -> {}", frameCode, mission, sclk, et);
       
       return et;
   }

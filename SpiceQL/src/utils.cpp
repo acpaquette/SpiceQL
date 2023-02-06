@@ -595,6 +595,21 @@ namespace SpiceQL {
   }
 
 
+  string getMissionKeys(json config) {
+    string missionKeys = "";
+    int i = 0;
+    int configNumKeys = config.size();
+    for (auto& [key, val] : config.items()) {
+      missionKeys += key;
+      if (i != configNumKeys - 1) {
+        missionKeys += ", ";
+      }
+      i++;
+    }
+    return missionKeys;
+  }
+
+
   void resolveConfigDependencies(json &config, const json &dependencies) {
     vector<json::json_pointer> depLists = findKeyInJson(config, "deps");
     

@@ -284,6 +284,16 @@ namespace SpiceQL {
    nlohmann::json getMissionConfig(std::string mission);
 
 
+  /**
+    * @brief Returns a string of mission keys from the JSON config file.
+    *
+    * @param config JSON config file
+    *
+    * @returns string of mission keys
+   **/
+   std::string getMissionKeys(nlohmann::json config);
+
+
    /**
     * @brief resolve the dependencies in a config in place
     *

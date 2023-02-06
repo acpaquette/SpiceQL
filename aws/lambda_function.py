@@ -17,7 +17,7 @@ def lambda_handler(event, context):
         event.pop('func')
         args = list(event.values())
         # removes empty arguments from list
-        args = ' '.join(args).split()
+        args = [arg for arg in args if arg is not None]
         print(args)
         ret = func(*args)
         print(ret) 
