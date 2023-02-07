@@ -97,27 +97,27 @@ namespace SpiceQL {
 
 
       /**
-       * @brief Switch between NAIF frame string code to integer frame code
+       * @brief Switch between NAIF frame string name to integer frame code
        *
        * See <a href="https://naif.jpl.nasa.gov/pub/naif/toolkit_docs/C/req/naif_ids.html">NAIF's Docs on frame codes</a> for more information
        *
-       * @param frame String to translate to a NAIF code
+       * @param frame String frame name to translate to a NAIF code
        * @param mission Mission name as it relates to the config files
        * @return integer Naif frame code
        **/
-      static int translateFrame(std::string frame, std::string mission="");
+      static int translateNameToCode(std::string frame, std::string mission="");
 
 
       /**
-       * @brief Switch between NAIF frame integer code to string frame code
+       * @brief Switch between NAIF frame integer code to string frame name
        *
        * See <a href="https://naif.jpl.nasa.gov/pub/naif/toolkit_docs/C/req/naif_ids.html">NAIF's Docs on frame codes</a> for more information
        *
        * @param frame int NAIF frame code to translate
-       * @return Translated string frame code
+       * @param mission Mission name as it relates to the config files
+       * @return string Naif frame name
        **/
-      static std::string translateFrame(int frame);
-
+      static std::string translateCodeToName(int frame, std::string mission = "");
 
       /**
        * @brief Instantiate a kernel from path
@@ -329,15 +329,29 @@ namespace SpiceQL {
   double utcToEt(std::string et);
 
   /**
-   * @brief Converts a given spacecraft clock time to an ephemeris time
-   * 
-   * Given a known frame code strSclkToEt converts a given spacecraft clock time
-   * to an ephemeris time
+   * @brief Converts a given string spacecraft clock time to an ephemeris time
+   *
+   * Given a known frame code strSclkToEt converts a given spacecraft clock time as a string
+   * to an ephemeris time. Call this function if your clock time looks something like:
+   * 1/281199081:48971
    *
    * @param frameCode
-   * @param mission 
+   * @param mission
    * @param sclk
    * @return double
    */
   double strSclkToEt(int frameCode,std::string mission, std::string sclk);
+  /**
+   * @brief Converts a given double spacecraft clock time to an ephemeris time
+   *
+   * Given a known frame code doubleSclkToEt converts a given spacecraft clock time as a double
+   * to an ephemeris time. Call this function if your clock time looks something like:
+   * 922997380.174174
+   *
+   * @param frameCode
+   * @param mission
+   * @param sclk
+   * @return double
+   */
+  double doubleSclkToEt(int frameCode, std::string mission, double sclk);
 }

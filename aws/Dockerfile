@@ -38,6 +38,7 @@ COPY aws/entrypoint.sh entrypoint.sh
 ENV SSPICE_DEBUG=TRUE
 ENV SPICEROOT=/mnt/isis_data/isis_data
 ENV SPICEQL_LOG_LEVEL=TRACE
+ENV SPICEQL_CACHE_DIR=/mnt/spice_cache/
 
 ENTRYPOINT [ "bash", "entrypoint.sh" ]
 

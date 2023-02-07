@@ -19,11 +19,14 @@
 #include <fmt/compile.h>
 
 #include <nlohmann/json.hpp>
+#include <spdlog/spdlog.h>
 
-#include "utils.h"
-#include "spice_types.h"
+#include "config.h"
 #include "memo.h"
 #include "memoized_functions.h"
+#include "query.h"
+#include "spice_types.h"
+#include "utils.h"
 
 using json = nlohmann::json;
 using namespace std;
@@ -148,7 +151,7 @@ namespace SpiceQL {
   }
 
 
-  targetState getTargetState(double et, string target, string observer, string frame, string abcorr) {
+  vector<double> getTargetState(double et, string target, string observer, string frame, string abcorr) {
     // convert params to spice types
     ConstSpiceChar *target_spice = target.c_str();  // better way to do this?
     ConstSpiceChar *observer_spice = observer.c_str();
@@ -164,12 +167,47 @@ namespace SpiceQL {
     checkNaifErrors();
 
     // convert to std::array for output
-    array<double, 6> starg = {0, 0, 0, 0, 0, 0};
+    vector<double> lt_starg = {0, 0, 0, 0, 0, 0, lt};
     for(int i = 0; i < 6; i++) {
-      starg[i] = starg_spice[i];
+      lt_starg[i] = starg_spice[i];
     }
 
-    return {lt, starg};
+    return lt_starg;
+  }
+
+  vector<vector<double>> getTargetStates(vector<double> ets, string target, string observer, string frame, string abcorr, string mission, Kernel::Quality ckQuality, Kernel::Quality spkQuality) {
+    spdlog::trace("Calling getTargetStates with {}, {}, {}, {}, {}, {}, {}, {}", ets.size(), target, observer, frame, abcorr, mission, Kernel::QUALITIES[(int)ckQuality], Kernel::QUALITIES[(int)spkQuality]);
+    Config config;
+    json missionJson = config.globalConf();
+
+    if (missionJson.find(mission) != missionJson.end()) {
+      spdlog::debug("Found {} in config, getting only {} sclks.", mission, mission);
+      missionJson = config.get(mission)[mission];
+    }
+    else {
+      throw invalid_argument("Couldn't find " + mission + " in config explicitly, please request a mission from the config [" + getMissionKeys(config.globalConf()) + "]");
+    }
+
+    // This will change eventiually with changes to getLatestKernels
+    missionJson["sclk"]["kernels"] = getLatestKernel(missionJson["sclk"]["kernels"]);
+    json refinedCksAndSpks = searchMissionKernels(missionJson, {ets.front(), ets.back()}, true);
+
+    json ephemKernels = {};
+    ephemKernels["ck"]["kernels"] = refinedCksAndSpks["ck"][Kernel::QUALITIES[(int)ckQuality]]["kernels"];
+    ephemKernels["spk"]["kernels"] = refinedCksAndSpks["spk"][Kernel::QUALITIES[(int)spkQuality]]["kernels"];
+    ephemKernels["pck"]["kernels"] = missionJson["pck"]["kernels"];
+    ephemKernels["tspk"]["kernels"] = missionJson["tspk"]["kernels"];
+
+    KernelSet ephemSet(ephemKernels);
+
+    vector<vector<double>> lt_stargs;
+    vector<double> lt_starg;
+    for (auto et: ets) {
+      lt_starg = getTargetState(et, target, observer, frame, abcorr);
+      lt_stargs.push_back(lt_starg);
+    }
+
+    return lt_stargs;
   }
 
   targetOrientation getTargetOrientation(double et, int toFrame, int refFrame) {
@@ -441,7 +479,7 @@ namespace SpiceQL {
 
       int niv = card_c(&coverage) / 2;
       //Convert the coverage interval start and stop times to TDB
-      double begin, end;
+      SpiceDouble begin, end;
 
       vector<pair<double, double>> res;
 

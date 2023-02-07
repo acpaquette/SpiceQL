@@ -43,6 +43,7 @@
 namespace std {
   %template(IntVector) vector<int>;
   %template(DoubleVector) vector<double>;
+  %template(VectorDoubleVector) vector< vector<double> >;
   %template(StringVector) vector<string>;
   %template(ConstCharVector) vector<const char*>;
   %template(PairDoubleVector) vector<pair<double, double>>;
@@ -64,3 +65,4 @@ namespace std {
 %include "query.i"
 %include "spice_types.i"
 %include "utils.i"
+%include "memoized_functions.i"

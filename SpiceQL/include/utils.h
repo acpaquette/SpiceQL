@@ -159,9 +159,43 @@ namespace SpiceQL {
    *           "XLT+S" - One-way light time and stellar aberration correction using a newtonian formulation
    *           "XCN"   - converged Newtonian light time correction
    *           "XCN+S" - converged Newtonian light time correction and stellar aberration correction.
-   *  @return A TargetState struct with the light time adjustment and a Nx6 state vector of positions and velocities in x,y,z,vx,vy,vz format.
+   *  @return A vector of 7 elements with a 0 - 5 index state vector of position and velocity 
+   *          in x,y,z,vx,vy,vz format followed by the light time adjustment at the 6th index.
   **/
-  targetState getTargetState(double et, std::string target, std::string observer, std::string frame="J2000", std::string abcorr="NONE");
+  std::vector<double> getTargetState(double et, std::string target, std::string observer, std::string frame="J2000", std::string abcorr="NONE");
+
+  /**
+   * @brief Gives the positions and velocities for a given frame given a set of ephemeris times
+   *
+   * Mostly a C++ wrap for NAIF's spkezr_c
+   *
+   * @param ets ephemeris times at which you want to obtain the target state
+   * @param target NAIF ID for the target frame
+   * @param observer NAIF ID for the observing frame
+   * @param frame The reference frame in which to get the positions in
+   * @param abcorr aborration correction flag, default it NONE.
+   *        This can set to:
+   *           "NONE" - No correction
+   *        For the "reception" case, i.e. photons from the target being recieved by the observer at the given time.
+   *           "LT"   - One way light time correction
+   *           "LT+S" - Correct for one-way light time and stellar aberration correction
+   *           "CN"   - Converging Newtonian light time correction
+   *           "CN+S" - Converged Newtonian light time correction and stellar aberration correction
+   *        For the "transmission" case, i.e. photons emitted from the oberver hitting at target at the given time
+   *           "XLT"   - One-way light time correction using a newtonian formulation
+   *           "XLT+S" - One-way light time and stellar aberration correction using a newtonian formulation
+   *           "XCN"   - converged Newtonian light time correction
+   *           "XCN+S" - converged Newtonian light time correction and stellar aberration correction.
+   * @param mission Config subset as it relates to the mission
+   * @param ckQuality Quality of cks to try and obtain
+   * @param spkQuality Quality of spks to try and obtain
+   *
+   * @see SpiceQL::getTargetState
+   * @return A vector of vectors with a Nx6 state vector of positions and velocities in x,y,z,vx,vy,vz format followed by the light time adjustment.
+   **/
+  std::vector<std::vector<double>> getTargetStates(std::vector<double> ets, std::string target, std::string observer, std::string frame="J2000", std::string abcorr="NONE", std::string mission="", 
+                                                   SpiceQL::Kernel::Quality ckQuality=SpiceQL::Kernel::Quality::RECONSTRUCTED, 
+                                                   SpiceQL::Kernel::Quality spkQuality=SpiceQL::Kernel::Quality::RECONSTRUCTED);
 
 
   /**

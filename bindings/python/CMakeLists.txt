@@ -14,6 +14,7 @@ set(PYSPICEQL_OUTPUT_DIR "${CMAKE_CURRENT_BINARY_DIR}/pyspiceql")
 set(PYSPICEQL_SOURCES pyspiceql.i
                       config.i
                       io.i
+                      memoized_functions.i
                       query.i
                       spice_types.i
                       utils.i)
