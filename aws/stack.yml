@@ -57,10 +57,18 @@ Resources:
           FromPort: 442
           ToPort: 2050
           CidrIp: 0.0.0.0/0 
+        - IpProtocol: tcp 
+          FromPort: 6379
+          ToPort: 6379
+          CidrIp: 0.0.0.0/0 
       SecurityGroupIngress: 
         - IpProtocol: tcp 
           FromPort: 442
           ToPort: 2050
+          CidrIp: 0.0.0.0/0 
+        - IpProtocol: tcp 
+          FromPort: 6379
+          ToPort: 6379
           CidrIp: 0.0.0.0/0 
       VpcId: vpc-004f1e36134bcaa04
 
@@ -94,7 +102,7 @@ Resources:
   SpiceQlLambda:
     Type: AWS::Lambda::Function
     Properties:
-      Timeout: 100 
+      Timeout: 300 
       Role: arn:aws:iam::950438895271:role/csr-Lambda-Role
       FunctionName: spiceqlambdadev
       PackageType: Image
@@ -108,6 +116,11 @@ Resources:
           - !Ref SpiceQlSG 
         SubnetIds: 
           - subnet-0326c18b7c38caa73
+      Environment:
+        Variables: 
+          REDIS_HOST: "spiceqlelasticachecluster.wufcwa.0001.usw2.cache.amazonaws.com"
+          REDIS_PORT: 6379
+  
   SpiceQlPermission:
     Type: AWS::Lambda::Permission
     DependsOn:
@@ -125,4 +138,22 @@ Resources:
         ]
       ] 
 
-
+  # ElastiCache
+  ElastiCacheSubnetGroup:
+    Type: AWS::ElastiCache::SubnetGroup
+    Properties:
+      Description: ElastiCacheSubnetGroup
+      SubnetIds:
+        - subnet-0326c18b7c38caa73
+  SpiceQlElastiCache:
+    Type: AWS::ElastiCache::CacheCluster
+    Properties:
+      ClusterName: SpiceQlElastiCacheCluster
+      CacheNodeType: cache.t3.medium
+      Engine: redis
+      NumCacheNodes: 1
+      VpcSecurityGroupIds: 
+        - !GetAtt 
+          - SpiceQlSG
+          - GroupId
+      CacheSubnetGroupName: !Ref ElastiCacheSubnetGroup

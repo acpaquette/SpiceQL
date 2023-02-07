@@ -1,17 +1,21 @@
 import json
+import redis
+import pyspiceql
+import os
 
 def lambda_handler(event, context):
-    import sys
+    redis_conn = None
+    redis_endpoint = None
+    redis_port = None
 
-    print(sys.executable)
-    
-    # TODO implement
-    print(f"event: ", event)
-    print(f"context: ", context)
-    
-    import pyspiceql
-    print(dir(pyspiceql)) 
-    
+    if "REDIS_HOST" in os.environ and "REDIS_PORT" in os.environ:
+        redis_endpoint = os.environ["REDIS_HOST"]
+        redis_port = os.environ["REDIS_PORT"]
+        redis_conn = redis.Redis(host=redis_endpoint, port=redis_port)
+        redis_conn.set("foo", "bar")
+        print(redis_conn.get("foo"))
+        del redis_conn
+
     try: 
         func = getattr(pyspiceql, event["func"])
         event.pop('func')
