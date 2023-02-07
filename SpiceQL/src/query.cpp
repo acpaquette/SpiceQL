@@ -11,6 +11,7 @@
 #include <SpiceUsr.h>
 
 #include <ghc/fs_std.hpp>
+#include <spdlog/spdlog.h>
 
 #include "query.h"
 #include "spice_types.h"
@@ -86,8 +87,14 @@ namespace SpiceQL {
         const fs::path &firstVecElem = files[i][0];
         string fileName = firstVecElem.filename();
         string kernelName = k.filename();
-        fileName = fileName.erase(fileName.find_first_of("0123456789"));
-        kernelName = kernelName.erase(kernelName.find_first_of("0123456789"));
+        int findRes = fileName.find_first_of("0123456789");
+        if (findRes != string::npos) {
+          fileName = fileName.erase(findRes);
+        }
+        findRes = kernelName.find_first_of("0123456789");
+        if (findRes != string::npos) {
+          kernelName = kernelName.erase(findRes);
+        }
         if (fileName == kernelName) {
           files[i].push_back(k);
           foundList = true;
@@ -254,9 +261,11 @@ namespace SpiceQL {
 
             if (isContiguous && all_of(times.cbegin(), times.cend(), isInRange)) {
               newKernels.push_back(kernel);
+              break;
             }
             else if (any_of(times.cbegin(), times.cend(), isInRange)) {
               newKernels.push_back(kernel);
+              break;
             }
           } // end of searching intervals
         } // end  of searching kernels

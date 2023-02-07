@@ -83,9 +83,7 @@ namespace SpiceQL {
   }
 
 
-  int Kernel::translateFrame(string frame, string mission) {
-    // KernelPool::getInstance();
-    
+  int Kernel::translateNameToCode(string frame, string mission) {    
     SpiceInt code;
     SpiceBoolean found;
     // Get FKs 
@@ -123,7 +121,7 @@ namespace SpiceQL {
   }
 
 
-  string Kernel::translateFrame(int frame) {
+  string Kernel::translateCodeToName(int frame, string mission) {
     KernelPool::getInstance(); 
 
     SpiceChar name[128];
@@ -183,7 +181,7 @@ namespace SpiceQL {
         sclks = missionConf.getLatest("sclk")["sclk"];
       }
       else {
-        spdlog::debug("Coudn't find {} in config explicitly, loading all sclk kernels", mission);
+        spdlog::debug("Couldn't find {} in config explicitly, loading all sclk kernels", mission);
         sclks = missionConf.getLatestRecursive("sclk");
       }
       KernelSet sclkSet(sclks);
@@ -191,6 +189,31 @@ namespace SpiceQL {
       SpiceDouble et;
       checkNaifErrors();
       scs2e_c(frameCode, sclk.c_str(), &et);
+      checkNaifErrors();
+      spdlog::debug("strsclktoet({}, {}, {}) -> {}", frameCode, mission, sclk, et);
+      
+      return et;
+  }
+
+  double doubleSclkToEt(int frameCode, string mission, double sclk) {
+      // get lsk kernel
+      Config missionConf;
+      json globalConf = missionConf.globalConf();
+      json sclks;
+      if (globalConf.find(mission) != globalConf.end()) {
+        spdlog::debug("Found {} in config, getting only {} sclks.", mission, mission);
+        missionConf = missionConf[mission];
+        sclks = missionConf.getLatest("sclk")["sclk"];
+      }
+      else {
+        spdlog::debug("Couldn't find {} in config explicitly, loading all sclk kernels", mission);
+        sclks = missionConf.getLatestRecursive("sclk");
+      }
+      KernelSet sclkSet(sclks);
+
+      SpiceDouble et;
+      checkNaifErrors();
+      sct2e_c(frameCode, sclk, &et);
       checkNaifErrors();
       spdlog::debug("strsclktoet({}, {}, {}) -> {}", frameCode, mission, sclk, et);
       

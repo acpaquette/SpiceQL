@@ -2,9 +2,11 @@
 #include "memo.h"
 #include "memoized_functions.h"
 
+#include "spice_types.h"
+
 using namespace std;
 
-namespace SpiceQL { 
+namespace SpiceQL {
 
   string Memo::getCacheDir() { 
     static string CACHE_DIRECTORY = "";
@@ -49,5 +51,19 @@ namespace SpiceQL {
     spdlog::trace("Calling ls via cache located at {}", getCacheDir());
     static auto func_memoed = make_memoized(c, "spiceql_ls", SpiceQL::ls);
     return func_memoed(root, recursive);
+  }
+
+  int Memo::translateNameToCode(string frame, string mission) {
+    ExpiringPersistantCache c(getCacheDir(), getDataDirectory());
+    spdlog::trace("Calling translateNameToCode via cache located at {}", getCacheDir());
+    static auto func_memoed = make_memoized(c, "spiceql_kernel_translateNameToCode", SpiceQL::Kernel::translateNameToCode);
+    return func_memoed(frame, mission);
+  }
+
+  string Memo::translateCodeToName(int frame, string mission) {
+    ExpiringPersistantCache c(getCacheDir(), getDataDirectory());
+    spdlog::trace("Calling translateCodeToName via cache located at {}", getCacheDir());
+    static auto func_memoed = make_memoized(c, "spiceql_kernel_translateCodeToName", SpiceQL::Kernel::translateCodeToName);
+    return func_memoed(frame, mission);
   }
 }
