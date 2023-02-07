@@ -10,19 +10,16 @@ COPY aws/lambda_function.py ${LAMBDA_TASK_ROOT}
 
 # Install miniconda
 ENV CONDA_DIR ~/conda
-RUN curl https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh -o ~/miniconda.sh && \
-     /bin/bash ~/miniconda.sh -b -p ~/conda
 
-# Put conda in path so we can use conda activate
-ENV PATH=$CONDA_DIR/bin:$PATH
+RUN curl -L -O https://github.com/conda-forge/miniforge/releases/latest/download/Mambaforge-Linux-x86_64.sh
+RUN bash Mambaforge-Linux-x86_64.sh -b -p $CONDA_DIR
 
 # Install the function's dependencies using file requirements.txt
 # from your project folder.
 
 RUN rm -rf /var/lang/
-COPY aws/requirements.yml  .
-RUN conda install -c conda-forge mamba
-RUN mamba env create --file requirements.yml --prefix /var/lang 
+COPY environment.yml  .
+RUN $CONDA_DIR/bin/mamba env create --file environment.yml --prefix /var/lang 
 
 ENV PATH=/var/lang/bin:$PATH
 

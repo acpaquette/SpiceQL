@@ -22,7 +22,8 @@
 
 #include "utils.h"
 #include "spice_types.h"
-
+#include "memo.h"
+#include "memoized_functions.h"
 
 using json = nlohmann::json;
 using namespace std;
@@ -60,6 +61,26 @@ template <> struct fmt::formatter<fs::path> {
 
 namespace SpiceQL {
 
+  string gen_random(const int len) {
+      size_t seed = 0;
+      seed = Memo::hash_combine(seed, clock(), time(NULL), getpid());
+      srand(seed);
+
+      static const char alphanum[] =
+          "0123456789"
+          "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
+          "abcdefghijklmnopqrstuvwxyz";
+      string tmp_s;
+      tmp_s.reserve(len);
+
+      for (int i = 0; i < len; ++i) {
+          tmp_s += alphanum[rand() % (sizeof(alphanum) - 1)];
+      }
+
+      return tmp_s;
+  }
+
+  
   string toUpper(string s) {
     transform(s.begin(), s.end(), s.begin(), [](unsigned char c){ return toupper(c); });
     return s;
@@ -379,6 +400,8 @@ namespace SpiceQL {
 
   vector<string> ls(string const & root, bool recursive) {
     vector<string> paths;
+    
+    spdlog::trace("ls({}, {})", root, recursive);
 
     if (fs::exists(root) && fs::is_directory(root)) {
       for (auto i = fs::recursive_directory_iterator(root); i != fs::recursive_directory_iterator(); ++i ) {
@@ -399,7 +422,7 @@ namespace SpiceQL {
 
   vector<string> glob(string const & root, string const & reg, bool recursive) {
     vector<string> paths;
-    vector<string> files_to_search = ls(root, recursive);
+    vector<string> files_to_search = Memo::ls(root, recursive);
     
     for (auto &f : files_to_search) {
       if (regex_search(f.c_str(), basic_regex(reg, regex_constants::optimize|regex_constants::ECMAScript))) {
@@ -744,5 +767,7 @@ namespace SpiceQL {
 
     throw runtime_error(errMsg);
   }
+
+
 
 }

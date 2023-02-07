@@ -23,6 +23,15 @@
  */
 namespace SpiceQL {
 
+
+  /**
+   * @brief generate a random string
+   *
+   * @param len length of the string
+   * @return new random alphanumeric string
+   */
+  std::string gen_random(const int len);
+
   /**
    * @brief force a string to upper case
    *
@@ -224,7 +233,7 @@ namespace SpiceQL {
    * 
    * @return std::string directory containing db files
    */
-  std::string getConfigDirectory();
+   std::string getConfigDirectory();
   
 
   /**
@@ -369,4 +378,5 @@ namespace SpiceQL {
    * @param reset true if NAIF status errors should be reset 
    */
   bool checkNaifErrors(bool reset=true);
+
 }

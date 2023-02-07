@@ -45,15 +45,18 @@ if(SPICEQL_BUILD_LIB)
                           ${CMAKE_CURRENT_SOURCE_DIR}/SpiceQL/src/io.cpp
                           ${CMAKE_CURRENT_SOURCE_DIR}/SpiceQL/src/query.cpp
                           ${CMAKE_CURRENT_SOURCE_DIR}/SpiceQL/src/spice_types.cpp
+                          ${CMAKE_CURRENT_SOURCE_DIR}/SpiceQL/src/memoized_functions.cpp
                           ${CMAKE_CURRENT_SOURCE_DIR}/SpiceQL/src/config.cpp)
 
   set(SPICEQL_HEADER_FILES ${SPICEQL_BUILD_INCLUDE_DIR}/spiceql.h
                            ${SPICEQL_BUILD_INCLUDE_DIR}/utils.h
+                           ${SPICEQL_BUILD_INCLUDE_DIR}/memoized_functions.h
                            ${SPICEQL_BUILD_INCLUDE_DIR}/io.h
-                           ${SPICEQL_BUILD_INCLUDE_DIR}/memo.h 
                            ${SPICEQL_BUILD_INCLUDE_DIR}/spice_types.h
                            ${SPICEQL_BUILD_INCLUDE_DIR}/query.h
                            ${SPICEQL_BUILD_INCLUDE_DIR}/config.h)
+
+  set(SPICEQL_PRIVATE_HEADER_FILES ${SPICEQL_BUILD_INCLUDE_DIR}/memo.h)
 
   set(SPICEQL_CONFIG_FILES ${CMAKE_CURRENT_SOURCE_DIR}/SpiceQL/db/apollo16.json
                            ${CMAKE_CURRENT_SOURCE_DIR}/SpiceQL/db/apollo17.json

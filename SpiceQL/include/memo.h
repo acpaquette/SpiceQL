@@ -20,12 +20,15 @@
 #include <cereal/archives/binary.hpp>
 #include <cereal/types/vector.hpp>
 #include <cereal/types/string.hpp>
+#include <cereal/types/utility.hpp>
 
-
+#include "memoized_functions.h"
 
 #define CACHED(cache, func, ...) cache(#func, func, __VA_ARGS__)
 
-namespace memoization {
+
+namespace SpiceQL {
+namespace Memo {
     template <class T>
     inline size_t _hash_combine(std::size_t& seed, const T& v) {
         spdlog::trace("_hash_combine seed: {}", seed);
@@ -45,52 +48,73 @@ namespace memoization {
         seed = _hash_combine(seed, t);
         return hash_combine(seed, params...);
     }
+    
+    class ExpiringPersistantCache  { 
+        public:
+        // if cache is older than this directory, then the cache is reloaded
+        std::string m_dependant; 
+        std::string m_path;
 
-
-    struct disk {
-        fs::path m_path;
-        disk(std::string path = fs::current_path().string())
-        :m_path(fs::path(path) / "cache") {
+        ExpiringPersistantCache(std::string path, std::string dep)
+        :  m_dependant(dep), m_path(path) {
+            spdlog::debug("dep and path: {}, {}", dep, path);
             fs::create_directories(m_path);
+
+            spdlog::debug("class dep and path: {}, {}", m_dependant, m_path);
         }
 
         template<typename Func, typename... Params>
             auto operator()(const Func& f, Params&&... params) -> decltype(f(params...))const{
                 return this->operator()("anonymous", f, std::forward<Params>(params)...);
-            }
+        }
+
         template<typename Func, typename... Params>
             auto operator()(const std::string& descr, const Func& f, Params&&... params) -> decltype(f(params...))const {
                 spdlog::trace("descr: {}", descr);
                 std::size_t seed = 0; 
                 hash_combine(seed, descr, params...);
-                spdlog::debug("seed: ", seed); 
+                spdlog::debug("seed: {}", seed); 
                 return this->operator()(descr, seed, f, std::forward<Params>(params)...);
-            }
+        }
+
         template<typename Func, typename... Params>
             auto operator()(const std::string& descr, std::size_t seed, const Func& f, Params&&... params) -> decltype(f(params...))const{
                 typedef decltype(f(params...)) retval_t;
                 std::string fn = descr + "-" + std::to_string(seed);
-                spdlog::debug("fn: ", fn);
                 
-                fn = (m_path / fn).string();
-                if(fs::exists(fn)){
+                spdlog::debug("prefix path m_path: {}", m_path);
+                spdlog::debug("path dep: {}", m_dependant);
+ 
+                spdlog::debug("cache filename: {}", fn);
+                fn = (fs::path(m_path) / fn).string();
+                spdlog::debug("cache full path: {}", fn);
+
+                if(fs::exists(fn) && fs::exists(m_dependant) && fs::last_write_time(fn) > fs::last_write_time(m_dependant)) {
+                    spdlog::debug("Cached access");
                     std::ifstream ifs(fn);
                     cereal::BinaryInputArchive  ia(ifs);
                     retval_t ret;
                     ia >> ret;
-                    spdlog::debug("Cached access from file ");
                     return ret;
                 }
-                retval_t ret = f(std::forward<Params>(params)...);
+                else if (fs::exists(fn) && fs::exists(m_dependant) && fs::last_write_time(fn) <= fs::last_write_time(m_dependant)) { 
+                    // delete and reload cache
+                    spdlog::debug("{} has expired", fn);
+                    fs::remove(fn);
+                }
+                // if dependant doesn't exist, treat it as a cache miss. Function might naturally fail.
+                
                 spdlog::debug("Non-cached access, file ");
+                retval_t ret = f(std::forward<Params>(params)...);
                 std::ofstream ofs(fn);
                 cereal::BinaryOutputArchive oa(ofs);
                 oa << ret;
+
                 return ret;
             }
     };
 
-    struct memory {
+    class Memory {
         mutable std::map<std::size_t, std::any> m_data;
 
         template<typename Func, typename... Params>
@@ -125,9 +149,9 @@ namespace memoization {
 
     template<typename Cache, typename Function>
     struct memoize{
-        const Function& m_func; // we require copying the function object here.
+        const Function m_func; // we require copying the function object here.
         std::string m_id;
-        Cache& m_fc;
+        Cache m_fc;
         memoize(Cache& fc, std::string id, const Function& f)
             :m_func(f), m_id(id), m_fc(fc){}
         template<typename... Params>
@@ -137,41 +161,15 @@ namespace memoization {
             return m_fc(m_id, m_func, std::forward<Params>(args)...);
         }
     };
-    template<class Cache, class Function>
-    struct registry{
-        static std::map<Function, std::pair<std::string, Cache*> > data;
-    };
-    template<class Cache, class Function>
-    std::map<Function, std::pair<std::string, Cache*> >
-    registry<Cache, Function>::data;
-        
+      
     template<typename Cache, typename Function>
     memoize<Cache, Function>
     make_memoized(Cache& fc, const std::string& id, Function f){
         spdlog::debug("making function with ID {}",id);   
-        
-        typedef registry<Cache,Function> reg_t;
-        auto it = reg_t::data.find(f);
-        if(it == reg_t::data.end()){
-            spdlog::debug("registering {} in registry", id);
-            reg_t::data[f] = std::make_pair(id, &fc);
-        }
         return memoize<Cache, Function>(fc, id, f);
     }
-
-    template<typename Cache, typename Function, typename...Args>
-    auto
-    memoized(Function f, Args&&... args) -> decltype(std::bind(f, args...)()){
-        typedef registry<Cache,Function> reg_t;
-        auto it = reg_t::data.find(f);
-        if(it == reg_t::data.end())
-            throw std::runtime_error("memoize function is not registered with a cache");
-        std::string id;
-        Cache* fc;
-        std::tie(id,fc) = it->second;
-        return memoize<Cache, Function>(*fc, id, f)(std::forward<Args>(args)...);
-    }
-
+ 
+}
 }
 
 namespace std {
