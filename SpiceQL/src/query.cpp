@@ -15,6 +15,7 @@
 #include "query.h"
 #include "spice_types.h"
 #include "utils.h"
+#include "memoized_functions.h"
 
 using json = nlohmann::json;
 using namespace std;
@@ -247,7 +248,7 @@ namespace SpiceQL {
         newKernels = json::array();
 
         for(auto &kernel : ckQual) {
-          vector<pair<double, double>> intervals = getTimeIntervals(kernel);
+          vector<pair<double, double>> intervals = Memo::getTimeIntervals(kernel);
           for(auto &interval : intervals) {
             auto isInRange = [&interval](double d) -> bool {return d >= interval.first && d <= interval.second;};
 

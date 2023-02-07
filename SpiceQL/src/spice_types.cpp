@@ -199,15 +199,20 @@ namespace SpiceQL {
 
 
   int KernelPool::load(string path, bool force_refurnsh) {
+    spdlog::debug("Furnishing {}, force refurnish? {}.", path, force_refurnsh);
+
     int refCount; 
 
     auto it = refCounts.find(path);
 
     if (it != refCounts.end()) {
+      spdlog::debug("{} already furnished.", path);
+
+
       // it's been furnished before, increment ref count
       it->second += 1;
       refCount = it->second; 
-
+ 
       if (force_refurnsh) {
         checkNaifErrors();
         furnsh_c(path.c_str());
@@ -215,7 +220,8 @@ namespace SpiceQL {
 
       } 
     }
-    else {  
+    else { 
+      refCount = 1;  
       // load the kernel and register in onto the kernel map 
       checkNaifErrors();
       furnsh_c(path.c_str());
@@ -223,6 +229,8 @@ namespace SpiceQL {
       refCounts.emplace(path, 1);
     }
 
+
+    spdlog::debug("refcout: {}", refCount);
     return refCount;
   }
 
