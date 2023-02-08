@@ -141,7 +141,7 @@ paths:
             statusCode: '200'
             responseTemplates: 
               "application/json": "'$input.body'"
-  /translateframe:
+  /translateNameToCode:
     get:
       description: "Switch between NAIF frame string code to integer frame code"
       parameters:
@@ -165,7 +165,7 @@ paths:
         httpMethod: POST
         uri : "arn:aws:apigateway:us-west-2:lambda:path/2015-03-31/functions/arn:aws:lambda:us-west-2:950438895271:function:spiceqlambdadev/invocations"
         requestTemplates : 
-          "application/json": "{\"func\": \"Kernel_translateFrame\", \"frame\": \"$input.params('frame')\", \"mission\":\"$input.params('mission')\"}"
+          "application/json": "{\"func\": \"Kernel_translateNameToCode\", \"frame\": \"$input.params('frame')\", \"mission\":\"$input.params('mission')\"}"
         requestParameters : {
           integration.request.querystring.frame: method.request.querystring.frame,
           integration.request.querystring.mission: method.request.querystring.mission
