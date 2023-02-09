@@ -106,12 +106,29 @@ namespace SpiceQL {
   }
 
 
-  vector<string> getPathsFromRegex(string root, json r) {
-      vector<string> regexes = jsonArrayToVector(r);
-      string reg = fmt::format("({})", fmt::join(regexes, "|"));
-      vector<string> paths = glob(root, reg, true);
+  vector<vector<string>> getPathsFromRegex(string root, json r) {
+    vector<string> files_to_search = Memo::ls(root, true);
+    vector<string> regexes = jsonArrayToVector(r);
+      
+    vector<vector<string>> kernels; 
 
-      return paths;
+    for (auto &regex : regexes) { 
+      SPDLOG_DEBUG("Searching for kernels matching: {}", regex);
+      vector<string> paths;
+
+      for (auto &f : files_to_search) {
+        if (regex_search(f.c_str(), basic_regex(regex, regex_constants::optimize|regex_constants::ECMAScript))) {
+          paths.emplace_back(f);
+        }
+      }
+
+      SPDLOG_DEBUG("found: {}", fmt::join(paths, ", "));
+      if (!paths.empty()) { 
+        kernels.push_back(paths);
+      }
+    }
+
+    return kernels;
   }
 
   void mergeConfigs(json &baseConfig, const json &mergingConfig) {
@@ -417,6 +434,47 @@ namespace SpiceQL {
     return res;
   }
 
+
+  vector<vector<string>> json2DArrayTo2DVector(json arr) {
+    vector<vector<string>> res;
+
+    if (arr.is_array()) {
+      for(auto &subarr : arr) {
+        if (subarr.empty()) {
+          continue; 
+        }
+        
+        vector<string> subres; 
+
+        if (!subarr.is_array()) { 
+          throw invalid_argument("Input json is not a valid 2D Json array: " + arr.dump());
+        }
+        for(auto &k : subarr) {
+          // should be a single element
+          if (k.empty()) { 
+            continue;
+          }
+          if (k.is_array()) { // needs to be scalar
+            throw invalid_argument("Input json is not a valid 2D Json array: " + arr.dump());
+          }
+          subres.emplace_back(k);
+        }
+        res.push_back(subres);
+      }
+    }
+    else if (arr.is_string()) {
+      vector<string> subres; 
+      subres.emplace_back(arr);
+      res.emplace_back(subres);
+    }
+    else {
+      throw invalid_argument("Input json is not a valid 2D Json array: " + arr.dump());
+    }
+
+    return res;
+  }
+
+
   vector<string> jsonArrayToVector(json arr) {
     vector<string> res;
 
@@ -429,7 +487,8 @@ namespace SpiceQL {
       res.emplace_back(arr);
     }
     else {
-      throw invalid_argument("Input json is not a valid Json array");
+      spdlog::dump_backtrace();
+      throw invalid_argument("Input json is not a valid Json array: " + arr.dump());
     }
 
     return res;
@@ -439,7 +498,7 @@ namespace SpiceQL {
   vector<string> ls(string const & root, bool recursive) {
     vector<string> paths;
     
-    spdlog::trace("ls({}, {})", root, recursive);
+    SPDLOG_TRACE("ls({}, {})", root, recursive);
 
     if (fs::exists(root) && fs::is_directory(root)) {
       for (auto i = fs::recursive_directory_iterator(root); i != fs::recursive_directory_iterator(); ++i ) {

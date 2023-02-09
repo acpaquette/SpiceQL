@@ -178,12 +178,12 @@ namespace SpiceQL {
       json globalConf = missionConf.globalConf();
       json sclks;
       if (globalConf.find(mission) != globalConf.end()) {
-        spdlog::debug("Found {} in config, getting only {} sclks.", mission, mission);
+        SPDLOG_DEBUG("Found {} in config, getting only {} sclks.", mission, mission);
         missionConf = missionConf[mission];
         sclks = missionConf.getLatest("sclk")["sclk"];
       }
       else {
-        spdlog::debug("Couldn't find {} in config explicitly, loading all sclk kernels", mission);
+        SPDLOG_DEBUG("Coudn't find {} in config explicitly, loading all sclk kernels", mission);
         sclks = missionConf.getLatestRecursive("sclk");
       }
       KernelSet sclkSet(sclks);
@@ -192,7 +192,7 @@ namespace SpiceQL {
       checkNaifErrors();
       scs2e_c(frameCode, sclk.c_str(), &et);
       checkNaifErrors();
-      spdlog::debug("strsclktoet({}, {}, {}) -> {}", frameCode, mission, sclk, et);
+      SPDLOG_DEBUG("strsclktoet({}, {}, {}) -> {}", frameCode, mission, sclk, et);
       
       return et;
   }
@@ -224,15 +224,14 @@ namespace SpiceQL {
 
 
   int KernelPool::load(string path, bool force_refurnsh) {
-    spdlog::debug("Furnishing {}, force refurnish? {}.", path, force_refurnsh);
+    SPDLOG_DEBUG("Furnishing {}, force refurnish? {}.", path, force_refurnsh);
 
     int refCount; 
 
     auto it = refCounts.find(path);
 
     if (it != refCounts.end()) {
-      spdlog::debug("{} already furnished.", path);
-
+      SPDLOG_TRACE("{} already furnished.", path);
 
       // it's been furnished before, increment ref count
       it->second += 1;
@@ -242,8 +241,7 @@ namespace SpiceQL {
         checkNaifErrors();
         furnsh_c(path.c_str());
         checkNaifErrors();
-
-      } 
+      }
     }
     else { 
       refCount = 1;  
@@ -255,7 +253,7 @@ namespace SpiceQL {
     }
 
 
-    spdlog::debug("refcout: {}", refCount);
+    SPDLOG_TRACE("refcout of {}: {}", path, refCount);
     return refCount;
   }
 
@@ -370,21 +368,18 @@ namespace SpiceQL {
 
 
   KernelSet::KernelSet(json kernels) {
+    SPDLOG_TRACE("Creating Kernelset: {}", kernels.dump());
     this->kernels = kernels;
 
-    vector<json::json_pointer> pointers = findKeyInJson(kernels, "kernels", true);
-
-    for(auto &p : pointers) {
-      json jkernels = kernels[p];
-      vector<SharedKernel> res;
-      for(auto & k : jkernels) {
-        SharedKernel sk(new Kernel(k));
-        res.emplace_back(sk);
-      }
-      loadedKernels.emplace(p, res);
+    vector<string> kv = getKernelsAsVector(kernels);
+  
+    vector<SharedKernel> res;
+    for (auto &k : kv) {
+      SPDLOG_TRACE("Creating shared kernel {}", k);
+      SharedKernel sk(new Kernel(k));
+      res.emplace_back(sk);
     }
+    loadedKernels.insert(loadedKernels.end(), res.begin(), res.end());
   }
-
-
 } 
  

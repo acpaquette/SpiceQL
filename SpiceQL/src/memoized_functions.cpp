@@ -25,15 +25,15 @@ namespace SpiceQL {
       }
 
       if (!fs::is_directory(cache_dir)) { 
-        spdlog::debug("{} does not exist, attempting to create the directory", cache_dir);
+        SPDLOG_DEBUG("{} does not exist, attempting to create the directory", cache_dir);
         fs::create_directories(cache_dir); 
       }
       
       CACHE_DIRECTORY = cache_dir;
-      spdlog::debug("Setting cache directory to: {}", CACHE_DIRECTORY);  
+      SPDLOG_DEBUG("Setting cache directory to: {}", CACHE_DIRECTORY);  
     }
     else { 
-      spdlog::debug("Cache Directory Already Set: {}", CACHE_DIRECTORY);  
+      SPDLOG_TRACE("Cache Directory Already Set: {}", CACHE_DIRECTORY);  
     }
     return CACHE_DIRECTORY;
   }
@@ -41,14 +41,14 @@ namespace SpiceQL {
 
   vector<pair<double, double>> Memo::getTimeIntervals(string kpath) {
     ExpiringPersistantCache c(getCacheDir(), kpath);
-    spdlog::trace("Calling getTimeIntervals via cache located at {}", getCacheDir());
+    SPDLOG_TRACE("Calling getTimeIntervals via cache located at {}", getCacheDir());
     static auto func_memoed = make_memoized(c, "spiceql_getTimeIntervals", SpiceQL::getTimeIntervals);
     return func_memoed(kpath); 
   }
 
   vector<string> Memo::ls(string const & root, bool recursive) {
     ExpiringPersistantCache c(getCacheDir(), root);
-    spdlog::trace("Calling ls via cache located at {}", getCacheDir());
+    SPDLOG_TRACE("Calling ls via cache located at {}", getCacheDir());
     static auto func_memoed = make_memoized(c, "spiceql_ls", SpiceQL::ls);
     return func_memoed(root, recursive);
   }

@@ -1,11 +1,11 @@
 import pytest
-from pyspiceql import getMissionConfig, getKernelList, Config, getKernelStringValue
+from pyspiceql import getMissionConfig, getKernelsAsVector, Config, getKernelStringValue
 
 def test_jsonConversion():
     lro_config = getMissionConfig('lro')
     assert isinstance(lro_config, dict)
-    kernel_list = getKernelList(lro_config)
-    assert isinstance(kernel_list, tuple)
+    kernel_list = lro_config["lro"]["ik"]["kernels"]
+    assert isinstance(kernel_list, list)
 
 def test_config():
     global_config = Config()

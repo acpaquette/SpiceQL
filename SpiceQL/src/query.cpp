@@ -13,6 +13,8 @@
 #include <ghc/fs_std.hpp>
 #include <spdlog/spdlog.h>
 
+#include <spdlog/spdlog.h>
+
 #include "query.h"
 #include "spice_types.h"
 #include "utils.h"
@@ -116,52 +118,29 @@ namespace SpiceQL {
 
 
   json getLatestKernels(json kernels) {
-    // the kernels group is now the conf with
-    for(auto &kernelType: {"ck", "spk", "tspk", "fk", "ik", "iak", "pck", "lsk"}) {
-      vector<json::json_pointer> catPointers = findKeyInJson(kernels, kernelType, true);
-      for(auto &p : catPointers) {
-        for(auto qual: Kernel::QUALITIES) {
-          if(!kernels[p].contains(qual)){
-            continue;
-          }
 
-          std::vector<string> l = jsonArrayToVector(kernels[p][qual]["kernels"]);
-          vector<string> latest;
+    vector<json::json_pointer> kptrs = findKeyInJson(kernels, "kernels", true);
+    vector<vector<string>> lastest; 
 
-          if (!l.empty()) {
-            latest = getLatestKernel(l);
-            kernels[p][qual]["kernels"] = latest;
-          }
-        }
+    for (json::json_pointer &ptr : kptrs) {  
+      vector<vector<string>> kvect = json2DArrayTo2DVector(kernels[ptr]);
+      vector<vector<string>> newLatest;
+ 
 
-        if(kernels[p].contains("kernels")) {
-          vector<string> k = jsonArrayToVector(kernels[p]["kernels"]);
-          if(!k.empty()) {
-            vector<string> latest = getLatestKernel(k);
-            kernels[p]["kernels"] = latest;
-          }
-        }
+      for (auto &vec : kvect) {
+        vector<string> latest = getLatestKernel(vec);
+        SPDLOG_TRACE("Adding Kernels To Latest: {}", fmt::join(latest, ", "));
+        newLatest.push_back(latest);
       }
+      kernels[ptr] = newLatest;
     }
 
-    vector<json::json_pointer> pointers = findKeyInJson(kernels, "sclk", true);
-    for(auto &p : pointers) {
-      if(kernels.at(p).contains("kernels")) {
-        p /= "kernels";
-      }
-
-      vector<string> k = jsonArrayToVector(kernels[p]);
-      if(!k.empty()) {
-        vector<string> latest = getLatestKernel(k);
-        kernels[p] = latest;
-      }
-    }
-
-    return kernels;
+    return kernels;     
   }
 
 
   json globKernels(string root, json conf, string kernelType) {
+    SPDLOG_TRACE("globKernels({}, {}, {})", root, conf.dump(), kernelType);
     vector<json::json_pointer> pointers = findKeyInJson(conf, kernelType, true);
 
     json ret;
@@ -192,7 +171,10 @@ namespace SpiceQL {
           continue;
         }
 
-        ret[pointer][qual]["kernels"] = getPathsFromRegex(root, category[qual].at("kernels"));
+        vector<vector<string>> binKernels = getPathsFromRegex(root, category[qual].at("kernels"));
+        if (!binKernels.empty()) {
+          ret[pointer][qual]["kernels"] = binKernels;
+        } 
 
         if (category[qual].contains("deps")) {
           if (category[qual].at("deps").contains("sclk")) {
@@ -208,6 +190,8 @@ namespace SpiceQL {
       }
     }
 
+    SPDLOG_DEBUG("Kernels To Search: {}", conf.dump());
+    SPDLOG_DEBUG("Kernels: {}", ret.dump());
     return  ret.empty() ? "{}"_json : ret;
   }
 
@@ -225,6 +209,7 @@ namespace SpiceQL {
 
   json searchMissionKernels(json kernels, std::vector<double> times, bool isContiguous)  {
     json reducedKernels;
+    SPDLOG_TRACE("In searchMissionKernels");
 
     // Load any SCLKs in the config
     vector<KernelSet> sclkKernels;
@@ -242,6 +227,8 @@ namespace SpiceQL {
     // refine cks for every instrument/category
     for (auto &p : pointers) {
       json cks = kernels[p];
+      SPDLOG_TRACE("In searchMissionKernels: searching for {}", cks.dump());
+
       if(cks.is_null() ) {
         continue;
       }
@@ -254,22 +241,30 @@ namespace SpiceQL {
         json ckQual = cks[qual]["kernels"];
         newKernels = json::array();
 
-        for(auto &kernel : ckQual) {
-          vector<pair<double, double>> intervals = Memo::getTimeIntervals(kernel);
-          for(auto &interval : intervals) {
-            auto isInRange = [&interval](double d) -> bool {return d >= interval.first && d <= interval.second;};
+        for(auto &subArr : ckQual) {
+          for (auto &kernel : subArr) {
+            json newKernelsSubArr = json::array();
 
-            if (isContiguous && all_of(times.cbegin(), times.cend(), isInRange)) {
-              newKernels.push_back(kernel);
-              break;
-            }
-            else if (any_of(times.cbegin(), times.cend(), isInRange)) {
-              newKernels.push_back(kernel);
-              break;
-            }
-          } // end of searching intervals
-        } // end  of searching kernels
+            vector<pair<double, double>> intervals = Memo::getTimeIntervals(kernel);
+            for(auto &interval : intervals) {
+              auto isInRange = [&interval](double d) -> bool {return d >= interval.first && d <= interval.second;};
 
+              if (isContiguous && all_of(times.cbegin(), times.cend(), isInRange)) {
+                newKernelsSubArr.push_back(kernel);
+              }
+              else if (any_of(times.cbegin(), times.cend(), isInRange)) {  
+                newKernelsSubArr.push_back(kernel);
+              }
+            } // end of searching subarr
+            
+            SPDLOG_TRACE("kernel list found: {}", newKernelsSubArr.dump());
+            if (!newKernelsSubArr.empty()) {
+              newKernels.push_back(newKernelsSubArr);
+            }
+          } // end  of searching arr
+        } // end of iterating qualities
+        
+        SPDLOG_TRACE("newKernels {}", newKernels);
         reducedKernels[p/qual/"kernels"] = newKernels;
         reducedKernels[p]["deps"] = kernels[p]["deps"];
       }
@@ -285,33 +280,55 @@ namespace SpiceQL {
   }
 
 
-  vector<string> getKernelList(json kernels) {
-    vector<json::json_pointer> pointers = findKeyInJson(kernels, "kernels");
+  vector<string> getKernelsAsVector(json kernels) {
+    SPDLOG_TRACE("geKernelsAsVector json: {}}", kernels.dump());
 
+    vector<json::json_pointer> pointers = findKeyInJson(kernels, "kernels");
     vector<string> kernelVect;
 
-    for (auto & p : pointers) {
-      vector<string> k = jsonArrayToVector(kernels[p]);
-      kernelVect.insert(kernelVect.end(), k.begin(), k.end());
-    }    
-
+    if (pointers.empty() && kernels.is_array()) {
+      vector<vector<string>> ks = json2DArrayTo2DVector(kernels);
+      for (auto &subarr : ks) { 
+        kernelVect.insert(kernelVect.end(), subarr.begin(), subarr.end());
+      } 
+    }
+    else {
+      for (auto & p : pointers) {
+        vector<vector<string>> ks = json2DArrayTo2DVector(kernels[p]);
+        for (auto &subarr : ks) { 
+          kernelVect.insert(kernelVect.end(), subarr.begin(), subarr.end());
+        }
+      }    
+    }
     return kernelVect;
   }
 
 
-  set<string> getKernelSet(json kernels) {
+  set<string> getKernelsAsSet(json kernels) {
     vector<json::json_pointer> pointers = findKeyInJson(kernels, "kernels");
 
-    set<string> kernelSet;
-
-    for (auto & p : pointers) {
-      vector<string> ks = jsonArrayToVector(kernels[p]);
-      for (auto &k : ks) {
-        kernelSet.emplace(k);
+    set<string> kset;
+    
+    if (pointers.empty() && kernels.is_array()) {
+      vector<vector<string>> ks = json2DArrayTo2DVector(kernels);
+      for (auto &subarr : ks) {
+        for (auto &k : subarr) {
+          kset.emplace(k);
+        }
+      }
+    }
+    else {
+      for (auto & p : pointers) {
+        vector<vector<string>> ks = json2DArrayTo2DVector(kernels[p]);
+        for (auto &subarr : ks) {
+          for (auto &k : subarr) {
+            kset.emplace(k);
+          }
+        }
       }
     }    
 
-    return kernelSet;
+    return kset;
   }
 
 }

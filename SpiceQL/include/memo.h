@@ -31,7 +31,7 @@ namespace SpiceQL {
 namespace Memo {
     template <class T>
     inline size_t _hash_combine(std::size_t& seed, const T& v) {
-        spdlog::trace("_hash_combine seed: {}", seed);
+        SPDLOG_TRACE("_hash_combine seed: {}", seed);
 
         std::hash<T> hasher;
         seed ^= hasher(v) + 0x9e3779b9 + (seed<<6) + (seed>>2);
@@ -57,10 +57,8 @@ namespace Memo {
 
         ExpiringPersistantCache(std::string path, std::string dep)
         :  m_dependant(dep), m_path(path) {
-            spdlog::debug("dep and path: {}, {}", dep, path);
             fs::create_directories(m_path);
-
-            spdlog::debug("class dep and path: {}, {}", m_dependant, m_path);
+            SPDLOG_TRACE("Dep and path: {}, {}", m_dependant, m_path);
         }
 
         template<typename Func, typename... Params>
@@ -70,27 +68,24 @@ namespace Memo {
 
         template<typename Func, typename... Params>
             auto operator()(const std::string& descr, const Func& f, Params&&... params) -> decltype(f(params...))const {
-                spdlog::trace("descr: {}", descr);
                 std::size_t seed = 0; 
                 hash_combine(seed, descr, params...);
-                spdlog::debug("seed: {}", seed); 
                 return this->operator()(descr, seed, f, std::forward<Params>(params)...);
         }
 
         template<typename Func, typename... Params>
             auto operator()(const std::string& descr, std::size_t seed, const Func& f, Params&&... params) -> decltype(f(params...))const{
                 typedef decltype(f(params...)) retval_t;
-                std::string fn = descr + "-" + std::to_string(seed);
+                std::string name = descr + "-" + std::to_string(seed);
                 
-                spdlog::debug("prefix path m_path: {}", m_path);
-                spdlog::debug("path dep: {}", m_dependant);
- 
-                spdlog::debug("cache filename: {}", fn);
-                fn = (fs::path(m_path) / fn).string();
-                spdlog::debug("cache full path: {}", fn);
+                SPDLOG_TRACE("Cache name: {}", name);
+
+                std::string fn = (fs::path(m_path) / name).string();
+                
+                SPDLOG_TRACE("cache full path: {}", fn);
 
                 if(fs::exists(fn) && fs::exists(m_dependant) && fs::last_write_time(fn) > fs::last_write_time(m_dependant)) {
-                    spdlog::debug("Cached access");
+                    SPDLOG_TRACE("Cached access of {}", name);
                     std::ifstream ifs(fn);
                     cereal::BinaryInputArchive  ia(ifs);
                     retval_t ret;
@@ -99,12 +94,12 @@ namespace Memo {
                 }
                 else if (fs::exists(fn) && fs::exists(m_dependant) && fs::last_write_time(fn) <= fs::last_write_time(m_dependant)) { 
                     // delete and reload cache
-                    spdlog::debug("{} has expired", fn);
+                    SPDLOG_TRACE("{} is newer, {} has expired", m_dependant, fn);
                     fs::remove(fn);
                 }
                 // if dependant doesn't exist, treat it as a cache miss. Function might naturally fail.
                 
-                spdlog::debug("Non-cached access, file ");
+                SPDLOG_TRACE("Non-cached access, creating cache {}", fn);
                 retval_t ret = f(std::forward<Params>(params)...);
                 std::ofstream ofs(fn);
                 cereal::BinaryOutputArchive oa(ofs);
@@ -136,11 +131,11 @@ namespace Memo {
                 typedef decltype(f(params...)) retval_t;
                 auto it = m_data.find(seed);
                 if(it != m_data.end()){
-                    spdlog::debug("Cached access from memory");
+                    SPDLOG_TRACE("Cached access from memory");
                     return std::any_cast<retval_t>(it->second);
                 }
                 retval_t ret = f(std::forward<Params>(params)...);
-                spdlog::debug("Non-cached access");
+                SPDLOG_TRACE("Non-cached access");
                 m_data[seed] = ret;
                 return ret;
             }
@@ -157,7 +152,7 @@ namespace Memo {
         template<typename... Params>
         auto operator()(Params&&... args) 
                 -> decltype(std::bind(m_func, args...)()) {
-            spdlog::debug("Calling a memo func with ID: {}", m_id);
+            SPDLOG_TRACE("Calling a memo func with ID: {}", m_id);
             return m_fc(m_id, m_func, std::forward<Params>(args)...);
         }
     };
@@ -165,7 +160,7 @@ namespace Memo {
     template<typename Cache, typename Function>
     memoize<Cache, Function>
     make_memoized(Cache& fc, const std::string& id, Function f){
-        spdlog::debug("making function with ID {}",id);   
+        SPDLOG_TRACE("Making function with ID {}",id);   
         return memoize<Cache, Function>(fc, id, f);
     }
  

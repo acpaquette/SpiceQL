@@ -72,7 +72,7 @@ namespace SpiceQL {
     * @param r json list of regexes
     * @returns vector of paths
    **/
-  std::vector<std::string> getPathsFromRegex (std::string root, nlohmann::json r);
+  std::vector<std::vector<std::string>> getPathsFromRegex (std::string root, nlohmann::json r);
 
 
   /**
@@ -376,6 +376,19 @@ namespace SpiceQL {
    **/
    std::vector<std::string> jsonArrayToVector(nlohmann::json arr);
 
+
+  /**
+    * @brief Returns std::vector<std::vector<string>> interpretation of a json array.
+    *
+    * Attempts to convert the json array to a C++ array. Also handles
+    * strings in cases where one element arrays are stored as scalars.
+    * Throws exception if the json obj is not an array.
+    *
+    * @param arr input json arr
+    *
+    * @returns string vector containing arr data
+   **/
+   std::vector<std::vector<std::string>> json2DArrayTo2DVector(nlohmann::json arr);
 
   /**
     * @brief Returns std::vector<string> interpretation of a json array.

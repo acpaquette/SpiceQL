@@ -130,7 +130,7 @@ namespace SpiceQL {
         }
       }
 
-      vector<string> res = getPathsFromRegex(fsDataPath, eval_json[json_pointer]);
+      vector<vector<string>> res = getPathsFromRegex(fsDataPath, eval_json[json_pointer]);
       eval_json[json_pointer] = res;
     }
     copyConfig[pointer] = eval_json;
