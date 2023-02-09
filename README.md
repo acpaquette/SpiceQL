@@ -116,9 +116,9 @@ assert(result1 == result2);
 The URL for interacting with the lambda function is:
 `https://spiceql-dev.prod-asc.chs.usgs.gov/v1/`
 
-with the following three endpoints: spiceql, sclktoet, and utctoet:
+with the following endpoints:
 
-1. **spicql:** To test any function within the pyspiceql library run:
+1. **spiceql:** To test any function within the pyspiceql library run:
 
    `https://spiceql-dev.prod-asc.chs.usgs.gov/v1/spiceql?func=<FunctionName>&arg1=<FirstArgument>&arg2=<SecondArgument>&arg3=<ThirdArgument>`
 
@@ -126,23 +126,43 @@ with the following three endpoints: spiceql, sclktoet, and utctoet:
 
    Example query: `https://spiceql-dev.prod-asc.chs.usgs.gov/v1/spiceql?func=Kernel_translateFrame&arg1=LISM_MI-VIS5&arg2=kaguya`
 
-2. **strsclktoet:** To run the query `strSclkToEt` run:
+2. **strSclkToEt:** To run the query `strSclkToEt` run:
 
-   `https://spiceql-dev.prod-asc.chs.usgs.gov/v1/strsclktoet?frameCode=<FrameCode>&mission=<MissionName>&sclk=<SpacecraftClockTime>`
+   `https://spiceql-dev.prod-asc.chs.usgs.gov/v1/strSclkToEt?frameCode=<FrameCode>&mission=<MissionName>&sclk=<SpacecraftClockTime>`
 
-   Example query: `https://spiceql-dev.prod-asc.chs.usgs.gov/v1/strsclktoet?framecode=-85&mission=lro&sclk=1/281199081:48971`
+   Example query: `https://spiceql-dev.prod-asc.chs.usgs.gov/v1/strSclkToEt?framecode=-85&mission=lro&sclk=1/281199081:48971`
 
-3. **utctoet:** To run the query `utcToEt` run:
+3. **doubleSclkToEt:** To run the query `doubleSclkToEt` run:
 
-   `https://spiceql-dev.prod-asc.chs.usgs.gov/v1/utctoet?utc=<UtcString>`
+   `https://spiceql-dev.prod-asc.chs.usgs.gov/v1/doubleSclkToEt?frameCode=<FrameCode>&mission=<MissionName>&sclk=<SpacecraftClockTime>`
 
-   Example query: `https://spiceql-dev.prod-asc.chs.usgs.gov/v1/utctoet?utc=2016-11-26 22:32:14.582000`
+   Example query: `https://spiceql-dev.prod-asc.chs.usgs.gov/v1/doubleSclkToEt?framecode=-131&mission=kaguya&sclk=922997380.174174`
 
-4. **translateframe** To run the query `translateFrame` run:
+4. **utcToEt:** To run the query `utcToEt` run:
 
-   `https://spiceql-dev.prod-asc.chs.usgs.gov/v1/translateframe?frame=<FrameName>&mission=<MissionName>`
+   `https://spiceql-dev.prod-asc.chs.usgs.gov/v1/utcToEt?utc=<UtcString>`
 
-   Example query: `https://spiceql-dev.prod-asc.chs.usgs.gov/v1/translateframe?frame=LRO_LROCWAC&mission=lro`
+   Example query: `https://spiceql-dev.prod-asc.chs.usgs.gov/v1/utcToEt?utc=2016-11-26 22:32:14.582000`
+
+5. **translateNameToCode** To run the query `translateNameToCode` run:
+
+   `https://spiceql-dev.prod-asc.chs.usgs.gov/v1/translateNameToCode?frame=<FrameName>&mission=<MissionName>`
+
+   Example query: `https://spiceql-dev.prod-asc.chs.usgs.gov/v1/translateNameToCode?frame=LRO_LROCWAC&mission=lro`
+
+6. **translateCodeToName** To run the query `translateCodeToName` run:
+
+   `https://spiceql-dev.prod-asc.chs.usgs.gov/v1/translateCodeToName?frameCode=<FrameName>&mission=<MissionName>`
+
+   Example query: `https://spiceql-dev.prod-asc.chs.usgs.gov/v1/translateCodeToName?frameCode=-85&mission=lro`
+
+7. **getTargetStates** To run the query `getTargetStates` run:
+
+   `https://spiceql-dev.prod-asc.chs.usgs.gov/v1/getTargetStates?ets=<EphemerisTimes>&target=<TargetName>&observer=<ObservingBody>&frame=<FrameName>&abcorr=<AbCorrection>&mission<MissionName>`
+
+
+
+
 
 
 

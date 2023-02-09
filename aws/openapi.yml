@@ -68,11 +68,10 @@ paths:
             statusCode: '200'
             responseTemplates: 
                 "application/json": "'$input.body'"
-  /strsclktoet:
+  /strSclkToEt:
     get:   
       summary: "Converts an SCLK string to an ephemeris time"
       description: "By passing in the mission and valid SCLK string, get the ephemeris time\n"
-      operationId: "sclktoet"
       parameters:
       - name: "frameCode"
         in: "query"
@@ -111,11 +110,53 @@ paths:
             statusCode: '200'
             responseTemplates: 
                 "application/json": "'$input.body'"   
-  /utctoet:
+  /doubleSclkToEt:
+    get:   
+      summary: "Converts a given double spacecraft clock time to an ephemeris time"
+      description: "Given a known frame code doubleSclkToEt converts a given spacecraft clock time as a double to an ephemeris time. Call this function if your clock time looks something like: 922997380.174174"
+      parameters:
+      - name: "frameCode"
+        in: "query"
+        description: "Frame code for the mission"
+        required: true
+        schema:
+          type: "integer"
+      - name: "mission"
+        in: "query"
+        description: "NAIF name for the mission"
+        required: true
+        schema:
+          type: "string"
+      - name: "sclk"
+        in: "query"
+        description: "SCLK double"
+        required: true
+        schema:
+          type: "number"
+          format: "double"
+      responses:
+        '200':
+          description: OK
+      x-amazon-apigateway-integration:
+        type: aws
+        httpMethod: POST
+        uri : "arn:aws:apigateway:us-west-2:lambda:path/2015-03-31/functions/arn:aws:lambda:us-west-2:950438895271:function:spiceqlambdadev/invocations"
+        requestTemplates : 
+          "application/json": "{\"func\": \"doubleSclkToEt\", \"frameCode\": $input.params('frameCode'), \"mission\": \"$input.params('mission')\", \"sclk\": $input.params('sclk') }"
+        requestParameters : {
+          integration.request.querystring.frameCode: method.request.querystring.frameCode,
+          integration.request.querystring.mission: method.request.querystring.mission,
+          integration.request.querystring.sclk: method.request.querystring.sclk
+        }
+        responses:
+          default:
+            statusCode: '200'
+            responseTemplates: 
+                "application/json": "'$input.body'"  
+  /utcToEt:
     get:    
       summary: "Returns list of missions that are currently supported"
       description: "By passing in UTC string, get the ephemeris time\n"
-      operationId: "utctoet"
       parameters: 
       - name: "utc"
         in: "query"
@@ -143,7 +184,7 @@ paths:
               "application/json": "'$input.body'"
   /translateNameToCode:
     get:
-      description: "Switch between NAIF frame string code to integer frame code"
+      description: "Switch between NAIF frame string name to integer frame code"
       parameters:
       - name: "frame"
         in: "query"
@@ -168,6 +209,40 @@ paths:
           "application/json": "{\"func\": \"Kernel_translateNameToCode\", \"frame\": \"$input.params('frame')\", \"mission\":\"$input.params('mission')\"}"
         requestParameters : {
           integration.request.querystring.frame: method.request.querystring.frame,
+          integration.request.querystring.mission: method.request.querystring.mission
+        }
+        responses:
+          default:
+            statusCode: '200'
+            responseTemplates: 
+              "application/json": "'$input.body'"
+  /translateCodeToName:
+    get:
+      description: "Switch between NAIF frame integer code to string frame name"
+      parameters:
+      - name: "frameCode"
+        in: "query"
+        description: "int NAIF frame code to translate"
+        required: true
+        schema:
+          type: "integer"
+      - name: "mission"
+        in: "query"
+        description: "Mission name as it relates to the config files"
+        required: false
+        schema:
+          type: "string"
+      responses:
+        '200':
+          description: OK
+      x-amazon-apigateway-integration:
+        type: aws
+        httpMethod: POST
+        uri : "arn:aws:apigateway:us-west-2:lambda:path/2015-03-31/functions/arn:aws:lambda:us-west-2:950438895271:function:spiceqlambdadev/invocations"
+        requestTemplates : 
+          "application/json": "{\"func\": \"Kernel_translateCodeToName\", \"frame\": $input.params('frameCode'), \"mission\":\"$input.params('mission')\"}"
+        requestParameters : {
+          integration.request.querystring.frame: method.request.querystring.frameCode,
           integration.request.querystring.mission: method.request.querystring.mission
         }
         responses:
