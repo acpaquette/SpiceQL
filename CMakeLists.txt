@@ -88,6 +88,9 @@ if(SPICEQL_BUILD_LIB)
                                   VERSION ${PROJECT_VERSION}
                                   SOVERSION 0)
 
+
+  target_compile_definitions(SpiceQL PRIVATE SPDLOG_ACTIVE_LEVEL=SPDLOG_LEVEL_DEBUG)
+  
   target_include_directories(SpiceQL
                             PUBLIC
                             $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/SpiceQL/include>

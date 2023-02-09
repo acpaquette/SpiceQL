@@ -1,6 +1,5 @@
 cmake_minimum_required(VERSION 3.10)
 
-
 set(CMAKE_CXX_STANDARD 20)
 
 set(SPICEQL_TEST_DIRECTORY ${CMAKE_SOURCE_DIR}/SpiceQL/tests/)
@@ -18,6 +17,9 @@ set (SPICEQL_TEST_SOURCE    ${SPICEQL_TEST_DIRECTORY}/TestUtilities.cpp
 
 # setup test executable
 add_executable(runSpiceQLTests TestMain.cpp ${SPICEQL_TEST_SOURCE})
+
+target_compile_definitions(runSpiceQLTests PUBLIC SPDLOG_ACTIVE_LEVEL=SPDLOG_LEVEL_TRACE)
+
 target_link_libraries(runSpiceQLTests
                       PRIVATE
                       SpiceQL

@@ -28,8 +28,8 @@ TEST(UtilTests, testHashCollisions) {
   size_t seed2 = 0; 
   seed1 = Memo::_hash_combine(seed1, s1);
   seed2 = Memo::_hash_combine(seed2, s2);
-  spdlog::debug("seed1 {}", seed1);
-  spdlog::debug("seed2 {}", seed2);
+  SPDLOG_DEBUG("seed1 {}", seed1);
+  SPDLOG_DEBUG("seed2 {}", seed2);
  
   EXPECT_NE(seed1, seed2);
 
@@ -38,8 +38,8 @@ TEST(UtilTests, testHashCollisions) {
 
   seed1 = Memo::hash_combine(seed1, s1, false);
   seed2 = Memo::hash_combine(seed2, s1, true);
-  spdlog::debug("seed1 {}", seed1);
-  spdlog::debug("seed2 {}", seed2);
+  SPDLOG_DEBUG("seed1 {}", seed1);
+  SPDLOG_DEBUG("seed2 {}", seed2);
 
   EXPECT_NE(seed1, seed2);
 }
@@ -66,23 +66,23 @@ TEST(UtilTests, testGetKernelTimes) {
   Kernel sclk(sclkPath);
   std::vector<std::pair<double, double>> v_nonmemo = getTimeIntervals(path);
 
-  spdlog::debug("non-cached times");
+  SPDLOG_DEBUG("non-cached times");
   for (auto &e : v_nonmemo) { 
-    spdlog::debug("{}, {}", e.first, e.second);
+    SPDLOG_DEBUG("{}, {}", e.first, e.second);
   }  
 
   std::vector<std::pair<double, double>> v_memo_init = Memo::getTimeIntervals(path);
 
-  spdlog::debug("cached times");
+  SPDLOG_DEBUG("cached times");
   for (auto &e : v_memo_init) { 
-    spdlog::debug("{}, {}", e.first, e.second);
+    SPDLOG_DEBUG("{}, {}", e.first, e.second);
   }  
 
   std::vector<std::pair<double, double>> v_memo = Memo::getTimeIntervals(path);
 
-  spdlog::debug("times from memo");
+  SPDLOG_DEBUG("times from memo");
   for (auto &e : v_memo) { 
-    spdlog::debug("{}, {}", e.first, e.second);
+    SPDLOG_DEBUG("{}, {}", e.first, e.second);
   }  
 
   EXPECT_EQ(v_nonmemo, v_memo);
@@ -102,24 +102,23 @@ TEST(UtilTests, testExiringCache) {
   fs::create_directory(t / "t3");
 
   vector<string> v1 = Memo::ls(t, false);
-  spdlog::debug("first ls results {}", fmt::join(v1, ", "));
+  SPDLOG_DEBUG("first ls results {}", fmt::join(v1, ", "));
   
   // this should hit the cache
   vector<string> v2 = Memo::ls(t, false);
-  spdlog::debug("second ls results {}", fmt::join(v2, ", "));
+  SPDLOG_DEBUG("second ls results {}", fmt::join(v2, ", "));
 
   // they should be the same 
   EXPECT_EQ(v1, v2);
   fs::create_directory(t / "t4");
-  spdlog::debug("added {}", (t / "t4").string());
+  SPDLOG_DEBUG("added {}", (t / "t4").string());
 
   vector<string> v3 = Memo::ls(t, false);
-  spdlog::debug("third ls results {}", fmt::join(v3, ", "));
+  SPDLOG_DEBUG("third ls results {}", fmt::join(v3, ", "));
   
   EXPECT_NE(v2, v3);
 
 }
-
 
 TEST(UtilTests, testCacheDeleteDep) { 
   string tempname = "spiceql-cachetest-" + SpiceQL::gen_random(10); 
@@ -132,14 +131,14 @@ TEST(UtilTests, testCacheDeleteDep) {
   fs::create_directories(t / "t3");
 
   vector<string> v1 = Memo::ls(t, false);
-  spdlog::debug("first ls results {}", fmt::join(v1, ", "));
+  SPDLOG_DEBUG("first ls results {}", fmt::join(v1, ", "));
   
   // delete a folder
   fs::remove_all(t / "t1");
 
   // this should miss
   vector<string> v2 = Memo::ls(t, false);
-  spdlog::debug("second ls results {}", fmt::join(v2, ", "));
+  SPDLOG_DEBUG("second ls results {}", fmt::join(v2, ", "));
 
   EXPECT_NE(v1, v2); 
 }

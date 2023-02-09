@@ -22,7 +22,7 @@ namespace SpiceQL {
       * @returns list of paths
     **/
     std::vector<std::string> ls(std::string const & root, bool recursive);
-    
+
   
   /**
     * @brief Get start and stop times a kernel.

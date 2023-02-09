@@ -310,7 +310,7 @@ namespace SpiceQL {
     ~KernelSet() = default;
 
     //! map of path to kernel pointers
-    std::unordered_map<std::string, std::vector<SharedKernel>> loadedKernels;
+    std::vector<SharedKernel> loadedKernels;
     
     //! json used to populate the loadedKernels
     nlohmann::json kernels; 

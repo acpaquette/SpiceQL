@@ -54,7 +54,7 @@ namespace SpiceQL {
         spdlog::set_default_logger(console);
         
         spdlog::set_level(severityMap[SpiceQL::toLower(log_level_string)]);
-        spdlog::set_pattern("SpiceQL [%H:%M:%S %z] %v"); 
+        spdlog::set_pattern("SpiceQL [%H:%M:%S %z] [%l] [%s@%# %!] %v"); 
         
         // check for log file
         const char* log_dir = getenv("SPICEQL_LOG_DIR");
@@ -76,9 +76,11 @@ namespace SpiceQL {
           log_dir = "NULL";
         }
         
-        spdlog::debug("Using log dir: {}", log_dir); 
-        spdlog::debug("Log level: {}", log_level_string); 
-        spdlog::debug("Log level enum: {}", log_level);
+        SPDLOG_DEBUG("Using log dir: {}", log_dir); 
+        SPDLOG_DEBUG("Log level: {}", log_level_string); 
+        SPDLOG_DEBUG("Log level enum: {}", log_level);
+
+        SPDLOG_TRACE("Log level enum: {}", log_level);
       } 
     }
   };

@@ -276,3 +276,90 @@ TEST(UtilTests, checkNaifErrors) {
   }
 }
 
+
+TEST(UtilTests, testGetPathsFromRegex) {
+  // create a temp work area 
+  fs::path temp = fs::temp_directory_path() / SpiceQL::gen_random(10); 
+  fs::create_directories(temp);
+
+  // create some files 
+  fstream fs;
+  
+  fs.open((temp/"test12345.ti").string(), ios::out);
+  fs.close();
+  fs.open((temp/"test44444.ti").string(), ios::out);
+  fs.close();
+  fs.open((temp/"test55555.ti").string(), ios::out);
+  fs.close();
+
+  fs.open((temp/"test1.spk").string(), ios::out);
+  fs.close();
+  fs.open((temp/"test2.spk").string(), ios::out);
+  fs.close();
+
+
+  nlohmann::json kernels = R"( ["test[0-9]{5}.ti", "test[0-9].spk"] )"_json;
+  std::vector<std::vector<std::string>> res; 
+  res = getPathsFromRegex(temp, kernels);
+
+  // just enforce the shape
+  EXPECT_EQ(res.size(), 2); 
+  EXPECT_EQ(res.at(0).size(), 3); 
+  EXPECT_EQ(res.at(1).size(), 2); 
+ 
+}
+
+
+TEST(UtilTests, testGetPathsFromRegexSingleRegex) {
+  // create a temp work area 
+  fs::path temp = fs::temp_directory_path() / SpiceQL::gen_random(10); 
+  fs::create_directories(temp);
+
+  // create some files 
+  fstream fs;
+  fs.open((temp/"test1.spk").string(), ios::out);
+  fs.close();
+  fs.open((temp/"test2.spk").string(), ios::out);
+  fs.close();
+
+  nlohmann::json kernels = R"( ["test[0-9].spk"] )"_json;
+  std::vector<std::vector<std::string>> res; 
+  res = getPathsFromRegex(temp, kernels);
+
+  // just enforce the shape, this should still be "2D"
+  EXPECT_EQ(res.size(), 1); 
+  EXPECT_EQ(res.at(0).size(), 2); 
+}
+
+
+TEST(UtilTests, testJson2DArrayTo2DVector) { 
+  nlohmann::json arrays = R"({
+      "2D Array" : [["1.bc", "2.bc", "3.bc"], ["1.bc", "2.bc"]],
+      "string" : "1.bc",
+      "1D Array" : ["1.bc", "2.bc", "3.bc"]
+  })"_json; 
+
+  vector<vector<string>> res = json2DArrayTo2DVector(arrays["2D Array"]);
+  ASSERT_EQ(res.size(), 2);
+  ASSERT_EQ(res.at(0).size(), 3);
+  ASSERT_EQ(res.at(1).size(), 2);
+
+  vector<string> truth = {"1.bc", "2.bc", "3.bc"}; 
+  EXPECT_THAT(res.at(0), truth);
+  truth = {"1.bc", "2.bc"}; 
+  EXPECT_THAT(res.at(1), truth);
+
+  res = json2DArrayTo2DVector(arrays["string"]);
+  ASSERT_EQ(res.size(), 1);
+  ASSERT_EQ(res.at(0).size(), 1);
+  ASSERT_EQ(res.at(0).at(0), "1.bc"); 
+
+
+  try { 
+    res = json2DArrayTo2DVector(arrays["1D Array"]);
+    FAIL() << "Should throw" << std::endl;
+  }
+  catch (invalid_argument &e) {
+    EXPECT_PRED_FORMAT2(spiceql::AssertExceptionMessage, e, "Input json is not a valid 2D Json array:");
+  } 
+}

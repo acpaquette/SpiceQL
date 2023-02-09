@@ -8,6 +8,8 @@
 
 #include "SpiceUsr.h"
 
+#include "spdlog/spdlog.h"
+
 using namespace SpiceQL;
 
 TEST_F(LroKernelSet, UnitTestTranslateFrame) {
@@ -65,13 +67,16 @@ TEST_F(LroKernelSet, UnitTestStackedKernelCopyConstructor) {
 TEST_F(LroKernelSet, UnitTestStackedKernelSetConstructorDestructor) {
   // load all available kernels
   nlohmann::json kernels = listMissionKernels(root, conf);
+  SPDLOG_DEBUG("results from listMissionKernels, {}", kernels);
 
   // do a time query
   kernels = searchMissionKernels(kernels, {110000000, 120000001}, false);
-
+  SPDLOG_DEBUG("Kernels after search: {} ", kernels);
   // get only latest versions
   kernels = getLatestKernels(kernels);
 
+  SPDLOG_DEBUG("results from getLatest: {} ", kernels);
+  
   // all the kernels in the group are now furnished.
   KernelSet ks(kernels);
 

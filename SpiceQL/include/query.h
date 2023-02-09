@@ -138,7 +138,7 @@ namespace SpiceQL {
    * @param kernels json object with kernel query results
    * @return vector<string> list of kernels
    */
-  std::vector<std::string> getKernelList(nlohmann::json kernels);
+  std::vector<std::string> getKernelsAsVector(nlohmann::json kernels);
 
 
  /**
@@ -150,5 +150,5 @@ namespace SpiceQL {
    * @param kernels json object with kernel query results
    * @return set<string> set of kernels
    */
-  std::set<std::string> getKernelSet(nlohmann::json kernels); 
+  std::set<std::string> getKernelsAsSet(nlohmann::json kernels); 
   }

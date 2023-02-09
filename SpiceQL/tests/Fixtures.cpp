@@ -123,7 +123,7 @@ void IsisDataDirectory::compareKernelSets(string name, set<string> expectedDiff)
   
   nlohmann::json res = listMissionKernels("doesn't matter", conf);
 
-  set<string> kernels = getKernelSet(res);
+  set<string> kernels = getKernelsAsSet(res);
   set<string> expectedKernels = missionMap.at(name);
   set<string> diff;
   set<string> diffDiff;
