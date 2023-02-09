@@ -152,3 +152,9 @@ TEST_F(LroKernelSet, UnitTestStrSclkToEt) {
   EXPECT_DOUBLE_EQ(et, 312778347.97478431);
 }
 
+
+TEST_F(LroKernelSet, UnitTestUtcToEt) {
+  double et = utcToEt("2016-11-26 22:32:14.582000");
+
+  EXPECT_DOUBLE_EQ(et, 533471602.76499087);
+}

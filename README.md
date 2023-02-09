@@ -136,6 +136,8 @@ with the following three endpoints: spiceql, sclktoet, and utctoet:
 
    `https://spiceql-dev.prod-asc.chs.usgs.gov/v1/utctoet?utc=<UtcString>`
 
+   Example query: `https://spiceql-dev.prod-asc.chs.usgs.gov/v1/utctoet?utc=2016-11-26 22:32:14.582000`
+
 4. **translateframe** To run the query `translateFrame` run:
 
    `https://spiceql-dev.prod-asc.chs.usgs.gov/v1/translateframe?frame=<FrameName>&mission=<MissionName>`

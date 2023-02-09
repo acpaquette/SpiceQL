@@ -158,13 +158,15 @@ namespace SpiceQL {
 
   double utcToEt(string utc) {
       // get lsk kernel
-      json conf = getMissionConfig("base");
-      conf = globKernels(getDataDirectory(), conf, "lsk");
-      KernelSet lsk(getLatestKernel(conf.at("base").at("lsk").at("kernels")));
+      Config conf;
+      conf = conf["base"];
+
+      json lsks = conf.getLatest("lsk")["lsk"];
+      KernelSet lsk(lsks);
 
       SpiceDouble et;
       checkNaifErrors();
-      utc2et_c(utc.c_str(), &et);
+      str2et_c(utc.c_str(), &et);
       checkNaifErrors();
 
       return et;
