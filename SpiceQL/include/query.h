@@ -68,6 +68,17 @@ namespace SpiceQL {
   std::string getKernelStringValue(std::string key);
 
 
+  /**
+    * @brief returns kernel values for a specific mission in the form of a json
+    *
+    *  Takes in a kernel key and returns the value associated with the inputted mission as a json
+    * 
+    * @param key key - Kernel to get values from 
+    * @param mission mission name
+    * @returns json of values
+   **/
+  nlohmann::json findMissionKeywords(std::string key, std::string mission);
+
 
   /**
    * @brief Returns all kernels available for a mission
