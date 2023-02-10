@@ -113,52 +113,7 @@ assert(result1 == result2);
 
 ## Interacting with Public(VPN) AWS Lambda Function
 
-The URL for interacting with the lambda function is:
-`https://spiceql-dev.prod-asc.chs.usgs.gov/v1/`
-
-with the following endpoints:
-
-1. **spiceql:** To test any function within the pyspiceql library run:
-
-   `https://spiceql-dev.prod-asc.chs.usgs.gov/v1/spiceql?func=<FunctionName>&arg1=<FirstArgument>&arg2=<SecondArgument>&arg3=<ThirdArgument>`
-
-   Note: This query can run with 1, 2 or 3 arguments.
-
-   Example query: `https://spiceql-dev.prod-asc.chs.usgs.gov/v1/spiceql?func=Kernel_translateFrame&arg1=LISM_MI-VIS5&arg2=kaguya`
-
-2. **strSclkToEt:** To run the query `strSclkToEt` run:
-
-   `https://spiceql-dev.prod-asc.chs.usgs.gov/v1/strSclkToEt?frameCode=<FrameCode>&mission=<MissionName>&sclk=<SpacecraftClockTime>`
-
-   Example query: `https://spiceql-dev.prod-asc.chs.usgs.gov/v1/strSclkToEt?framecode=-85&mission=lro&sclk=1/281199081:48971`
-
-3. **doubleSclkToEt:** To run the query `doubleSclkToEt` run:
-
-   `https://spiceql-dev.prod-asc.chs.usgs.gov/v1/doubleSclkToEt?frameCode=<FrameCode>&mission=<MissionName>&sclk=<SpacecraftClockTime>`
-
-   Example query: `https://spiceql-dev.prod-asc.chs.usgs.gov/v1/doubleSclkToEt?framecode=-131&mission=kaguya&sclk=922997380.174174`
-
-4. **utcToEt:** To run the query `utcToEt` run:
-
-   `https://spiceql-dev.prod-asc.chs.usgs.gov/v1/utcToEt?utc=<UtcString>`
-
-   Example query: `https://spiceql-dev.prod-asc.chs.usgs.gov/v1/utcToEt?utc=2016-11-26 22:32:14.582000`
-
-5. **translateNameToCode** To run the query `translateNameToCode` run:
-
-   `https://spiceql-dev.prod-asc.chs.usgs.gov/v1/translateNameToCode?frame=<FrameName>&mission=<MissionName>`
-
-   Example query: `https://spiceql-dev.prod-asc.chs.usgs.gov/v1/translateNameToCode?frame=LRO_LROCWAC&mission=lro`
-
-6. **translateCodeToName** To run the query `translateCodeToName` run:
-
-   `https://spiceql-dev.prod-asc.chs.usgs.gov/v1/translateCodeToName?frameCode=<FrameName>&mission=<MissionName>`
-
-   Example query: `https://spiceql-dev.prod-asc.chs.usgs.gov/v1/translateCodeToName?frameCode=-85&mission=lro`
-
-7. **getTargetStates** To run the query `getTargetStates` run:
-
-   `https://spiceql-dev.prod-asc.chs.usgs.gov/v1/getTargetStates?ets=<EphemerisTimes>&target=<TargetName>&observer=<ObservingBody>&frame=<FrameName>&abcorr=<AbCorrection>&mission<MissionName>`
+See [openapi.yml](https://code.chs.usgs.gov/asc/SpiceQL/-/blob/main/aws/openapi.yml) for documentation on querying the API.
 
 
 

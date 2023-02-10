@@ -30,18 +30,21 @@ paths:
         required: true
         schema:
           type: "string"
+        example: "Kernel_translateFrame"
       - name: "arg1"
         in: "query"
         description: "first argument"
         required: true
         schema:
           type: "string"
+        example: "LISM_MI-VIS5"
       - name: "arg2"
         in: "query"
         description: "second argument (optional)"
         required: false
         schema:
           type: "string"
+        example: "kaguya"
       - name: "arg3"
         in: "query"
         description: "third argument (optional)"
@@ -79,18 +82,21 @@ paths:
         required: true
         schema:
           type: "integer"
+        example: -85
       - name: "mission"
         in: "query"
         description: "NAIF name for the mission"
         required: true
         schema:
           type: "string"
+        example: "lro"
       - name: "sclk"
         in: "query"
         description: "SCLK string"
         required: true
         schema:
           type: "string"
+        example: "1/281199081:48971"
       responses:
         '200':
           description: OK
@@ -121,12 +127,14 @@ paths:
         required: true
         schema:
           type: "integer"
+        example: -131
       - name: "mission"
         in: "query"
         description: "NAIF name for the mission"
         required: true
         schema:
           type: "string"
+        example: "kaguya"
       - name: "sclk"
         in: "query"
         description: "SCLK double"
@@ -134,6 +142,7 @@ paths:
         schema:
           type: "number"
           format: "double"
+        example: "922997380.174174"
       responses:
         '200':
           description: OK
@@ -165,6 +174,7 @@ paths:
         schema:
           type: "string"
           format: "date-time"
+        example: "2016-11-26 22:32:14.582000"
       responses:
         '200':
           description: OK
@@ -192,12 +202,14 @@ paths:
         required: true
         schema:
           type: "string"
+        example: "LRO_LROCWAC"
       - name: "mission"
         in: "query"
         description: "Mission name as it relates to the config files"
         required: false
         schema:
           type: "string"
+        example: "lro"
       responses:
         '200':
           description: OK
@@ -226,12 +238,14 @@ paths:
         required: true
         schema:
           type: "integer"
+        example: -85
       - name: "mission"
         in: "query"
         description: "Mission name as it relates to the config files"
         required: false
         schema:
           type: "string"
+        example: "lro"
       responses:
         '200':
           description: OK
@@ -308,6 +322,42 @@ paths:
           integration.request.querystring.observer: method.request.querystring.observer,
           integration.request.querystring.frame: method.request.querystring.frame,
           integration.request.querystring.abcorr: method.request.querystring.abcorr,
+          integration.request.querystring.mission: method.request.querystring.mission
+        }
+        responses:
+          default:
+            statusCode: '200'
+            responseTemplates: 
+              "application/json": "'$input.body'"
+  /findMissionKeywords:
+    get:
+      description: 'Takes in a kernel key and returns the value associated with the inputted mission as a json'
+      parameters: 
+      - name: "key"
+        in: "query"
+        description: "key - Kernel to get values from "
+        required: true
+        schema:
+          type: "string"
+        example: "INS-236820_CCD_CENTER"
+      - name: "mission"
+        in: "query"
+        description: "Mission name as it relates to the config files"
+        required: true
+        schema:
+          type: "string"
+        example: "mdis"
+      responses:
+        '200':
+          description: OK
+      x-amazon-apigateway-integration:
+        type: aws
+        httpMethod: POST
+        uri : "arn:aws:apigateway:us-west-2:lambda:path/2015-03-31/functions/arn:aws:lambda:us-west-2:950438895271:function:spiceqlambdadev/invocations"
+        requestTemplates : 
+          "application/json": "{\"func\": \"findMissionKeywords\", \"key\": \"$input.params('key')\", \"mission\":\"$input.params('mission')\"}"
+        requestParameters : {
+          integration.request.querystring.key: method.request.querystring.key,
           integration.request.querystring.mission: method.request.querystring.mission
         }
         responses:
