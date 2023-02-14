@@ -116,6 +116,31 @@ assert(result1 == result2);
 See [openapi.yml](https://code.chs.usgs.gov/asc/SpiceQL/-/blob/main/aws/openapi.yml) for documentation on querying the API.
 
 
+## Devs Adding new Endpoints to API
+
+To expose a new function as an endpoint to the API:
+
+1. Create a new lambda function in [aws/lambda_function.py](https://code.chs.usgs.gov/asc/SpiceQL/-/blob/main/aws/lambda_function.py) that calls the pyspiceql wrapper function associated with the function you wish to expose.
+
+2. Add a new endpoint path to [aws/openapi.yml](https://code.chs.usgs.gov/asc/SpiceQL/-/blob/main/aws/openapi.yml) with associated function parameters. 
+
+   For uri: `"arn:aws:apigateway:us-west-2:lambda:path/2015-03-31/functions/arn:aws:lambda:us-west-2:950438895271:function:<functionName>lambda/invocations"`
+
+3. Add new `AWS::Lambda::Function` and `AWS::Lambda::Permission` resources to [aws/SpiceQLambdaStack.yml](https://code.chs.usgs.gov/asc/SpiceQL/-/blob/main/aws/SpiceQLambdaStack.yml).
+
+   Be sure that the function name matches the one added in the uri of the openapi.yml.
+
+   Update the ImageConfig command to match the function name in lambda_function.py: `Command: ["lambda_function.lambda_<functionName>"]`
+
+   In the `AWS::Lambda::Permission` resource, set the SourceArn specific to the endpoint you set up in openapi.yml. 
+
+5. Add `aws lambda update-function-code --region us-west-2 --function-name <functionName>lambda --image-uri 950438895271.dkr.ecr.us-west-2.amazonaws.com/spiceql:latest` to [gitlab-ci.yml](https://code.chs.usgs.gov/asc/SpiceQL/-/blob/main/.gitlab-ci.yml).
+
+6. Once these updated files are merged into the main branch, The CI will automatically update the Cloudformation and API Gateway to include the new endpoints. 
+
+
+
+
 
 
 

@@ -5,20 +5,6 @@ info:
 servers:
   - url: https://spiceql-dev.prod-asc.chs.usgs.gov/v1
 paths:
-  /:
-    get:
-      responses:
-        '200':
-          description: OK
-      x-amazon-apigateway-integration:
-        type: aws
-        httpMethod: POST
-        uri: "arn:aws:apigateway:us-west-2:lambda:path/2015-03-31/functions/arn:aws:lambda:us-west-2:950438895271:function:spiceqlambdadev/invocations"
-        responses:
-          default:
-            statusCode: '200'
-            responseTemplates: 
-                "application/json": "'$input.body'"
   /spiceql:
     description: "Test path"
     get:
@@ -30,7 +16,7 @@ paths:
         required: true
         schema:
           type: "string"
-        example: "Kernel_translateFrame"
+        example: "Memo_translateNameToCode"
       - name: "arg1"
         in: "query"
         description: "first argument"
@@ -103,9 +89,9 @@ paths:
       x-amazon-apigateway-integration:
         type: aws
         httpMethod: POST
-        uri : "arn:aws:apigateway:us-west-2:lambda:path/2015-03-31/functions/arn:aws:lambda:us-west-2:950438895271:function:spiceqlambdadev/invocations"
+        uri : "arn:aws:apigateway:us-west-2:lambda:path/2015-03-31/functions/arn:aws:lambda:us-west-2:950438895271:function:strSclkToEtlambda/invocations"
         requestTemplates : 
-          "application/json": "{\"func\": \"strSclkToEt\", \"frameCode\": $input.params('frameCode'), \"mission\": \"$input.params('mission')\", \"sclk\": \"$input.params('sclk')\" }"
+          "application/json": "{\"frameCode\": $input.params('frameCode'), \"mission\": \"$input.params('mission')\", \"sclk\": \"$input.params('sclk')\" }"
         requestParameters : {
           integration.request.querystring.frameCode: method.request.querystring.frameCode,
           integration.request.querystring.mission: method.request.querystring.mission,
@@ -149,9 +135,9 @@ paths:
       x-amazon-apigateway-integration:
         type: aws
         httpMethod: POST
-        uri : "arn:aws:apigateway:us-west-2:lambda:path/2015-03-31/functions/arn:aws:lambda:us-west-2:950438895271:function:spiceqlambdadev/invocations"
+        uri : "arn:aws:apigateway:us-west-2:lambda:path/2015-03-31/functions/arn:aws:lambda:us-west-2:950438895271:function:doubleSclkToEtlambda/invocations"
         requestTemplates : 
-          "application/json": "{\"func\": \"doubleSclkToEt\", \"frameCode\": $input.params('frameCode'), \"mission\": \"$input.params('mission')\", \"sclk\": $input.params('sclk') }"
+          "application/json": "{\"frameCode\": $input.params('frameCode'), \"mission\": \"$input.params('mission')\", \"sclk\": $input.params('sclk') }"
         requestParameters : {
           integration.request.querystring.frameCode: method.request.querystring.frameCode,
           integration.request.querystring.mission: method.request.querystring.mission,
@@ -181,9 +167,9 @@ paths:
       x-amazon-apigateway-integration:
         type: aws
         httpMethod: POST
-        uri : "arn:aws:apigateway:us-west-2:lambda:path/2015-03-31/functions/arn:aws:lambda:us-west-2:950438895271:function:spiceqlambdadev/invocations"
+        uri : "arn:aws:apigateway:us-west-2:lambda:path/2015-03-31/functions/arn:aws:lambda:us-west-2:950438895271:function:utcToEtlambda/invocations"
         requestTemplates : 
-          "application/json": "{\"func\": \"utcToEt\", \"utc\": \"$input.params('utc')\"}"
+          "application/json": "{\"utc\": \"$input.params('utc')\"}"
         requestParameters : {
           integration.request.querystring.utc: method.request.querystring.utc
         }
@@ -216,9 +202,9 @@ paths:
       x-amazon-apigateway-integration:
         type: aws
         httpMethod: POST
-        uri : "arn:aws:apigateway:us-west-2:lambda:path/2015-03-31/functions/arn:aws:lambda:us-west-2:950438895271:function:spiceqlambdadev/invocations"
+        uri : "arn:aws:apigateway:us-west-2:lambda:path/2015-03-31/functions/arn:aws:lambda:us-west-2:950438895271:function:translateNameToCodelambda/invocations"
         requestTemplates : 
-          "application/json": "{\"func\": \"Kernel_translateNameToCode\", \"frame\": \"$input.params('frame')\", \"mission\":\"$input.params('mission')\"}"
+          "application/json": "{\"frame\": \"$input.params('frame')\", \"mission\":\"$input.params('mission')\"}"
         requestParameters : {
           integration.request.querystring.frame: method.request.querystring.frame,
           integration.request.querystring.mission: method.request.querystring.mission
@@ -252,9 +238,9 @@ paths:
       x-amazon-apigateway-integration:
         type: aws
         httpMethod: POST
-        uri : "arn:aws:apigateway:us-west-2:lambda:path/2015-03-31/functions/arn:aws:lambda:us-west-2:950438895271:function:spiceqlambdadev/invocations"
+        uri : "arn:aws:apigateway:us-west-2:lambda:path/2015-03-31/functions/arn:aws:lambda:us-west-2:950438895271:function:translateCodeToNamelambda/invocations"
         requestTemplates : 
-          "application/json": "{\"func\": \"Kernel_translateCodeToName\", \"frame\": $input.params('frameCode'), \"mission\":\"$input.params('mission')\"}"
+          "application/json": "{\"frame\": $input.params('frameCode'), \"mission\":\"$input.params('mission')\"}"
         requestParameters : {
           integration.request.querystring.frame: method.request.querystring.frameCode,
           integration.request.querystring.mission: method.request.querystring.mission
@@ -313,9 +299,9 @@ paths:
       x-amazon-apigateway-integration:
         type: aws
         httpMethod: POST
-        uri : "arn:aws:apigateway:us-west-2:lambda:path/2015-03-31/functions/arn:aws:lambda:us-west-2:950438895271:function:spiceqlambdadev/invocations"
+        uri : "arn:aws:apigateway:us-west-2:lambda:path/2015-03-31/functions/arn:aws:lambda:us-west-2:950438895271:function:getTargetStateslambda/invocations"
         requestTemplates : 
-          "application/json": "{\"func\": \"getTargetStates\", \"ets\": $input.params('ets'), \"target\":\"$input.params('target')\", \"observer\":\"$input.params('observer')\", \"frame\":\"$input.params('frame')\", \"abcorr\":\"$input.params('abcorr')\", \"mission\":\"$input.params('mission')\"}"
+          "application/json": "{\"ets\": $input.params('ets'), \"target\":\"$input.params('target')\", \"observer\":\"$input.params('observer')\", \"frame\":\"$input.params('frame')\", \"abcorr\":\"$input.params('abcorr')\", \"mission\":\"$input.params('mission')\"}"
         requestParameters : {
           integration.request.querystring.ets: method.request.querystring.ets,
           integration.request.querystring.target: method.request.querystring.target,
@@ -353,9 +339,9 @@ paths:
       x-amazon-apigateway-integration:
         type: aws
         httpMethod: POST
-        uri : "arn:aws:apigateway:us-west-2:lambda:path/2015-03-31/functions/arn:aws:lambda:us-west-2:950438895271:function:spiceqlambdadev/invocations"
+        uri : "arn:aws:apigateway:us-west-2:lambda:path/2015-03-31/functions/arn:aws:lambda:us-west-2:950438895271:function:findMissionKeywordslambda/invocations"
         requestTemplates : 
-          "application/json": "{\"func\": \"findMissionKeywords\", \"key\": \"$input.params('key')\", \"mission\":\"$input.params('mission')\"}"
+          "application/json": "{\"key\": \"$input.params('key')\", \"mission\":\"$input.params('mission')\"}"
         requestParameters : {
           integration.request.querystring.key: method.request.querystring.key,
           integration.request.querystring.mission: method.request.querystring.mission

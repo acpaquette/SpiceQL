@@ -11,7 +11,7 @@ COPY aws/lambda_function.py ${LAMBDA_TASK_ROOT}
 # Install miniconda
 ENV CONDA_DIR ~/conda
 
-RUN curl -L -O https://github.com/conda-forge/miniforge/releases/latest/download/Mambaforge-Linux-x86_64.sh
+RUN curl -L -O https://github.com/conda-forge/miniforge/releases/latest/download/Mambaforge-Linux-x86_64.sh --insecure
 RUN bash Mambaforge-Linux-x86_64.sh -b -p $CONDA_DIR
 
 # Install the function's dependencies using file requirements.txt
