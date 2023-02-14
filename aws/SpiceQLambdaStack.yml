@@ -1,0 +1,269 @@
+# Lambda Stack
+Parameters: 
+  AccessPointResourceArn: 
+    Type: String
+  SpiceQlSgId:
+    Type: String
+  SpiceQlRestfulApiId:
+    Type: String
+Resources:
+
+  #spiceql endpoint
+  SpiceQLambdaDev:
+    Type: AWS::Lambda::Function
+    Properties:
+      Timeout: 300 
+      Role: arn:aws:iam::950438895271:role/csr-Lambda-Role
+      FunctionName: spiceqlambdadev
+      PackageType: Image
+      FileSystemConfigs: 
+        - Arn: !Ref AccessPointResourceArn
+          LocalMountPath: '/mnt/isis_data'
+      ImageConfig:
+        Command: ["lambda_function.lambda_handler"]
+      Code:
+        ImageUri: 950438895271.dkr.ecr.us-west-2.amazonaws.com/spiceql:latest
+      VpcConfig:
+        SecurityGroupIds: 
+          - !Ref SpiceQlSgId 
+        SubnetIds: 
+          - subnet-0326c18b7c38caa73
+      Environment:
+        Variables: 
+          REDIS_HOST: "spiceqlelasticachecluster.wufcwa.0001.usw2.cache.amazonaws.com"
+          REDIS_PORT: 6379
+  SpiceQLambdaPermission:
+    Type: AWS::Lambda::Permission
+    DependsOn:
+      - SpiceQLambdaDev
+    Properties:
+      Action: lambda:InvokeFunction
+      FunctionName: !Ref SpiceQLambdaDev
+      Principal: apigateway.amazonaws.com
+      SourceArn: !Sub "arn:aws:execute-api:us-west-2:950438895271:${SpiceQlRestfulApiId}/*/GET/spiceql"
+
+  #strSclkToEt endpoint
+  StrSclkToEtLambda:
+    Type: AWS::Lambda::Function
+    Properties:
+      Timeout: 300 
+      Role: arn:aws:iam::950438895271:role/csr-Lambda-Role
+      FunctionName: strSclkToEtlambda
+      PackageType: Image
+      FileSystemConfigs: 
+        - Arn: !Ref AccessPointResourceArn
+          LocalMountPath: '/mnt/isis_data'
+      ImageConfig:
+        Command: ["lambda_function.lambda_strSclkToEt"]
+      Code:
+        ImageUri: 950438895271.dkr.ecr.us-west-2.amazonaws.com/spiceql:latest
+      VpcConfig:
+        SecurityGroupIds: 
+          - !Ref SpiceQlSgId 
+        SubnetIds: 
+          - subnet-0326c18b7c38caa73
+      Environment:
+        Variables: 
+          REDIS_HOST: "spiceqlelasticachecluster.wufcwa.0001.usw2.cache.amazonaws.com"
+          REDIS_PORT: 6379
+  StrSclkToEtLambdaPermission:
+    Type: AWS::Lambda::Permission
+    Properties:
+      Action: lambda:InvokeFunction
+      FunctionName: !Ref StrSclkToEtLambda
+      Principal: apigateway.amazonaws.com
+      SourceArn: !Sub "arn:aws:execute-api:us-west-2:950438895271:${SpiceQlRestfulApiId}/*/GET/strSclkToEt"
+
+  #doubleSclkToEt endpoint
+  DoubleSclkToEtLambda:
+    Type: AWS::Lambda::Function
+    Properties:
+      Timeout: 300 
+      Role: arn:aws:iam::950438895271:role/csr-Lambda-Role
+      FunctionName: doubleSclkToEtlambda
+      PackageType: Image
+      FileSystemConfigs: 
+        - Arn: !Ref AccessPointResourceArn
+          LocalMountPath: '/mnt/isis_data'
+      ImageConfig:
+        Command: ["lambda_function.lambda_doubleSclkToEt"]
+      Code:
+        ImageUri: 950438895271.dkr.ecr.us-west-2.amazonaws.com/spiceql:latest
+      VpcConfig:
+        SecurityGroupIds: 
+          - !Ref SpiceQlSgId 
+        SubnetIds: 
+          - subnet-0326c18b7c38caa73
+      Environment:
+        Variables: 
+          REDIS_HOST: "spiceqlelasticachecluster.wufcwa.0001.usw2.cache.amazonaws.com"
+          REDIS_PORT: 6379
+  DoubleSclkToEtLambdaPermission:
+    Type: AWS::Lambda::Permission
+    Properties:
+      Action: lambda:InvokeFunction
+      FunctionName: !Ref DoubleSclkToEtLambda
+      Principal: apigateway.amazonaws.com
+      SourceArn: !Sub "arn:aws:execute-api:us-west-2:950438895271:${SpiceQlRestfulApiId}/*/GET/doubleSclkToEt"
+ 
+  #utcToEt endpoint
+  UtcToEtLambda:
+    Type: AWS::Lambda::Function
+    Properties:
+      Timeout: 300 
+      Role: arn:aws:iam::950438895271:role/csr-Lambda-Role
+      FunctionName: utcToEtlambda
+      PackageType: Image
+      FileSystemConfigs: 
+        - Arn: !Ref AccessPointResourceArn
+          LocalMountPath: '/mnt/isis_data'
+      ImageConfig:
+        Command: ["lambda_function.lambda_utcToEt"]
+      Code:
+        ImageUri: 950438895271.dkr.ecr.us-west-2.amazonaws.com/spiceql:latest
+      VpcConfig:
+        SecurityGroupIds: 
+          - !Ref SpiceQlSgId 
+        SubnetIds: 
+          - subnet-0326c18b7c38caa73
+      Environment:
+        Variables: 
+          REDIS_HOST: "spiceqlelasticachecluster.wufcwa.0001.usw2.cache.amazonaws.com"
+          REDIS_PORT: 6379
+  UtcToEtLambdaPermission:
+    Type: AWS::Lambda::Permission
+    Properties:
+      Action: lambda:InvokeFunction
+      FunctionName: !Ref UtcToEtLambda
+      Principal: apigateway.amazonaws.com
+      SourceArn: !Sub "arn:aws:execute-api:us-west-2:950438895271:${SpiceQlRestfulApiId}/*/GET/utcToEt"
+
+  #translateNameToCode endpoint
+  TranslateNameToCodeLambda:
+    Type: AWS::Lambda::Function
+    Properties:
+      Timeout: 300 
+      Role: arn:aws:iam::950438895271:role/csr-Lambda-Role
+      FunctionName: translateNameToCodelambda
+      PackageType: Image
+      FileSystemConfigs: 
+        - Arn: !Ref AccessPointResourceArn
+          LocalMountPath: '/mnt/isis_data'
+      ImageConfig:
+        Command: ["lambda_function.lambda_translateNameToCode"]
+      Code:
+        ImageUri: 950438895271.dkr.ecr.us-west-2.amazonaws.com/spiceql:latest
+      VpcConfig:
+        SecurityGroupIds: 
+          - !Ref SpiceQlSgId 
+        SubnetIds: 
+          - subnet-0326c18b7c38caa73
+      Environment:
+        Variables: 
+          REDIS_HOST: "spiceqlelasticachecluster.wufcwa.0001.usw2.cache.amazonaws.com"
+          REDIS_PORT: 6379
+  TranslateNameToCodeLambdaPermission:
+    Type: AWS::Lambda::Permission
+    Properties:
+      Action: lambda:InvokeFunction
+      FunctionName: !Ref TranslateNameToCodeLambda
+      Principal: apigateway.amazonaws.com
+      SourceArn: !Sub "arn:aws:execute-api:us-west-2:950438895271:${SpiceQlRestfulApiId}/*/GET/translateNameToCode"
+  
+  #translateCodeToName endpoint
+  TranslateCodeToNameLambda:
+    Type: AWS::Lambda::Function
+    Properties:
+      Timeout: 300 
+      Role: arn:aws:iam::950438895271:role/csr-Lambda-Role
+      FunctionName: translateCodeToNamelambda
+      PackageType: Image
+      FileSystemConfigs: 
+        - Arn: !Ref AccessPointResourceArn
+          LocalMountPath: '/mnt/isis_data'
+      ImageConfig:
+        Command: ["lambda_function.lambda_translateCodeToName"]
+      Code:
+        ImageUri: 950438895271.dkr.ecr.us-west-2.amazonaws.com/spiceql:latest
+      VpcConfig:
+        SecurityGroupIds: 
+          - !Ref SpiceQlSgId 
+        SubnetIds: 
+          - subnet-0326c18b7c38caa73
+      Environment:
+        Variables: 
+          REDIS_HOST: "spiceqlelasticachecluster.wufcwa.0001.usw2.cache.amazonaws.com"
+          REDIS_PORT: 6379
+  TranslateCodeToNameLambdaPermission:
+    Type: AWS::Lambda::Permission
+    Properties:
+      Action: lambda:InvokeFunction
+      FunctionName: !Ref TranslateCodeToNameLambda
+      Principal: apigateway.amazonaws.com
+      SourceArn: !Sub "arn:aws:execute-api:us-west-2:950438895271:${SpiceQlRestfulApiId}/*/GET/translateCodeToName"
+
+
+  #getTargetStates endpoint
+  GetTargetStatesLambda:
+    Type: AWS::Lambda::Function
+    Properties:
+      Timeout: 300 
+      Role: arn:aws:iam::950438895271:role/csr-Lambda-Role
+      FunctionName: getTargetStateslambda
+      PackageType: Image
+      FileSystemConfigs: 
+        - Arn: !Ref AccessPointResourceArn
+          LocalMountPath: '/mnt/isis_data'
+      ImageConfig:
+        Command: ["lambda_function.lambda_getTargetStates"]
+      Code:
+        ImageUri: 950438895271.dkr.ecr.us-west-2.amazonaws.com/spiceql:latest
+      VpcConfig:
+        SecurityGroupIds: 
+          - !Ref SpiceQlSgId 
+        SubnetIds: 
+          - subnet-0326c18b7c38caa73
+      Environment:
+        Variables: 
+          REDIS_HOST: "spiceqlelasticachecluster.wufcwa.0001.usw2.cache.amazonaws.com"
+          REDIS_PORT: 6379
+  GetTargetStatesLambdaPermission:
+    Type: AWS::Lambda::Permission
+    Properties:
+      Action: lambda:InvokeFunction
+      FunctionName: !Ref GetTargetStatesLambda
+      Principal: apigateway.amazonaws.com
+      SourceArn: !Sub "arn:aws:execute-api:us-west-2:950438895271:${SpiceQlRestfulApiId}/*/GET/getTargetStates"
+
+
+  #findMissionKeywords endpoint
+  findMissionKeywordsLambda:
+    Type: AWS::Lambda::Function
+    Properties:
+      Timeout: 300 
+      Role: arn:aws:iam::950438895271:role/csr-Lambda-Role
+      FunctionName: findMissionKeywordslambda
+      PackageType: Image
+      FileSystemConfigs: 
+        - Arn: !Ref AccessPointResourceArn
+          LocalMountPath: '/mnt/isis_data'
+      ImageConfig:
+        Command: ["lambda_function.lambda_findMissionKeywords"]
+      Code:
+        ImageUri: 950438895271.dkr.ecr.us-west-2.amazonaws.com/spiceql:latest
+      VpcConfig:
+        SecurityGroupIds: 
+          - !Ref SpiceQlSgId 
+        SubnetIds: 
+          - subnet-0326c18b7c38caa73
+      Environment:
+        Variables: 
+          REDIS_HOST: "spiceqlelasticachecluster.wufcwa.0001.usw2.cache.amazonaws.com"
+          REDIS_PORT: 6379
+  findMissionKeywordsLambdaPermission:
+    Type: AWS::Lambda::Permission
+    Properties:
+      Action: lambda:InvokeFunction
+      FunctionName: !Ref findMissionKeywordsLambda
+      Principal: apigateway.amazonaws.com
+      SourceArn: !Sub "arn:aws:execute-api:us-west-2:950438895271:${SpiceQlRestfulApiId}/*/GET/findMissionKeywords"

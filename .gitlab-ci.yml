@@ -93,7 +93,46 @@ check-installed-json-files:
           jsonschema --instance "$file" schema/spiceMissionSchmea.schema.json 
       done;
 
-deploy-job:  
+update-openApi:
+  stage: deploy
+  tags: 
+  - deploy
+  image: 
+    name: $CI_REGISTRY/usgs-chs/chs-library/docker/images/docker:latest
+  dependencies: []
+  rules:
+    - if: "$CI_COMMIT_BRANCH == 'main'"
+      changes:
+      - aws/openapi.yml
+  before_script:
+    - apk add --no-cache curl jq python3 py3-pip
+    - pip install awscli
+  script:
+    - aws s3 cp aws/openapi.yml s3://spiceql-openapi-files
+    - aws apigateway put-rest-api --rest-api-id 3ywct7h7qb --region us-west-2 --mode overwrite --body 'fileb://aws/openapi.yml'
+    - aws apigateway create-deployment --rest-api-id 3ywct7h7qb --region us-west-2 --stage-name v1
+
+update-stacks:
+  stage: deploy
+  tags: 
+  - deploy
+  image: 
+    name: $CI_REGISTRY/usgs-chs/chs-library/docker/images/docker:latest
+  dependencies: []
+  rules:
+    - if: "$CI_COMMIT_BRANCH == 'main'"
+      changes:
+      - aws/SpiceQlMainStack.yml
+      - aws/SpiceQLambdaStack.yml
+  before_script:
+    - apk add --no-cache curl jq python3 py3-pip
+    - pip install awscli
+  script:
+    - aws s3 cp aws/SpiceQLambdaStack.yml s3://cf-templates-1bxumkby1rqpi-us-west-2/spiceql-cf-templates/
+    - aws s3 cp aws/SpiceQlMainStack.yml s3://cf-templates-1bxumkby1rqpi-us-west-2/spiceql-cf-templates/
+    - aws cloudformation update-stack --region us-west-2 --stack-name spiceql-dev --template-url https://s3.amazonaws.com/cf-templates-1bxumkby1rqpi-us-west-2/spiceql-cf-templates/SpiceQlMainStack.yml
+  
+update-image:  
   stage: deploy
   tags:
   - deploy
@@ -107,19 +146,19 @@ deploy-job:
     - apk add --no-cache curl jq python3 py3-pip git
     - pip install awscli
     - aws ecr get-login-password --region us-west-2 | docker login --username AWS --password-stdin 950438895271.dkr.ecr.us-west-2.amazonaws.com
-    - aws --version
-    - docker --version 
   script:
-    - echo "Deploying application..."
     - git submodule update --init --recursive
-    - aws s3 cp aws/openapi.yml s3://spiceql-openapi-files
-    - aws apigateway put-rest-api --rest-api-id 3ywct7h7qb --region us-west-2 --mode overwrite --body 'fileb://aws/openapi.yml'
-    - aws apigateway create-deployment --rest-api-id 3ywct7h7qb --region us-west-2 --stage-name v1
     - docker build -f aws/Dockerfile -t spiceql .
     - docker tag spiceql:latest 950438895271.dkr.ecr.us-west-2.amazonaws.com/spiceql:latest
     - docker push 950438895271.dkr.ecr.us-west-2.amazonaws.com/spiceql:latest
     - aws lambda update-function-code --region us-west-2 --function-name spiceqlambdadev --image-uri 950438895271.dkr.ecr.us-west-2.amazonaws.com/spiceql:latest
-    - echo "Application successfully deployed."
+    - aws lambda update-function-code --region us-west-2 --function-name strSclkToEtlambda --image-uri 950438895271.dkr.ecr.us-west-2.amazonaws.com/spiceql:latest
+    - aws lambda update-function-code --region us-west-2 --function-name doubleSclkToEtlambda --image-uri 950438895271.dkr.ecr.us-west-2.amazonaws.com/spiceql:latest
+    - aws lambda update-function-code --region us-west-2 --function-name utcToEtlambda --image-uri 950438895271.dkr.ecr.us-west-2.amazonaws.com/spiceql:latest
+    - aws lambda update-function-code --region us-west-2 --function-name translateNameToCodelambda --image-uri 950438895271.dkr.ecr.us-west-2.amazonaws.com/spiceql:latest
+    - aws lambda update-function-code --region us-west-2 --function-name translateCodeToNamelambda --image-uri 950438895271.dkr.ecr.us-west-2.amazonaws.com/spiceql:latest
+    - aws lambda update-function-code --region us-west-2 --function-name getTargetStateslambda --image-uri 950438895271.dkr.ecr.us-west-2.amazonaws.com/spiceql:latest
+    - aws lambda update-function-code --region us-west-2 --function-name findMissionKeywordslambda --image-uri 950438895271.dkr.ecr.us-west-2.amazonaws.com/spiceql:latest
   rules:
     - if: "$CI_COMMIT_BRANCH == 'main'"
       changes:

@@ -326,7 +326,7 @@ namespace SpiceQL {
    * @param et UTC string, e.g. "1988 June 13, 12:29:48 TDB"
    * @returns double precision ephemeris time
    **/
-  double utcToEt(std::string et);
+  double utcToEt(std::string utc);
 
   /**
    * @brief Converts a given string spacecraft clock time to an ephemeris time
