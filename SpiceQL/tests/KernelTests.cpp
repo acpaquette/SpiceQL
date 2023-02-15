@@ -13,8 +13,11 @@
 using namespace SpiceQL;
 
 TEST_F(LroKernelSet, UnitTestTranslateFrame) {
-  int res = Kernel::translateNameToCode("LRO_LROCWAC", "lro");
-  EXPECT_EQ(res, -85620);
+  int frameCode = Kernel::translateNameToCode("LRO_LROCWAC", "lro");
+  EXPECT_EQ(frameCode, -85620);
+
+  string frameName = Kernel::translateCodeToName(-85, "lro");
+  EXPECT_EQ(frameName, "LUNAR RECONNAISSANCE ORBITER");
 }
 
 

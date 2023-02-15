@@ -86,35 +86,23 @@ namespace SpiceQL {
   int Kernel::translateNameToCode(string frame, string mission) {    
     SpiceInt code;
     SpiceBoolean found;
-    // Get FKs 
-    // load all latest until we can get smarter about it
-    Config c;
-    json config = c.globalConf();
-    json j;
+
     if (mission == ""){
       mission = frame;
-    }
-    if (config.find(mission) != config.end()) {
-      vector<string> kernelsToGet = {"fk", "ik", "iak"};
-      j = c[mission].get(kernelsToGet);
-      json missionKernels = {};
-      missionKernels["fk"] = j["fk"];
-      missionKernels["ik"] = j["ik"];
-      missionKernels["iak"] = j["iak"];
-      j = getLatestKernels(missionKernels);
-    }
-    else {
-      spdlog::warn("Could not find mission: \"{}\" in config. \n Either double-check mission variable or manually furnish kernels.", mission);
-    }
-    KernelSet kset(j);
+    } 
+    KernelSet kset(loadTranslationKernels(mission));
 
     checkNaifErrors();
     bodn2c_c(frame.c_str(), &code, &found);
     checkNaifErrors();
 
     if (!found) {
-      string missionKeys = getMissionKeys(config);
-      throw invalid_argument(fmt::format("Frame code for frame name \"{}\" not Found. \n Try including frame and mission name. List of available missions: [{}]. ", frame, missionKeys));
+      namfrm_c(frame.c_str(), &code);
+      checkNaifErrors();
+    }
+
+    if (code == 0) {
+      throw invalid_argument(fmt::format("Frame code for frame name \"{}\" not found.", frame));
     }
 
     return code;
@@ -127,14 +115,23 @@ namespace SpiceQL {
     SpiceChar name[128];
     SpiceBoolean found;
 
+    if (mission != ""){
+      KernelSet kset(loadTranslationKernels(mission));
+    }
+    
     checkNaifErrors();
     bodc2n_c(frame, 128, name, &found);
     checkNaifErrors();
 
-    if(!found) {
-      throw invalid_argument(fmt::format("Frame name for code {} not Found", frame));
+    if(!found) {  
+      frmnam_c(frame, 128, name);
+      checkNaifErrors();
     }
 
+    if(strlen(name) == 0) {
+       throw invalid_argument(fmt::format("Frame name for code {} not found.", frame));
+    }
+    
     return string(name);
   }
 

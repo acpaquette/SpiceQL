@@ -426,4 +426,11 @@ namespace SpiceQL {
    */
   bool checkNaifErrors(bool reset=true);
 
+
+   /**
+   * @brief Loads translation kernels (fk, ik, and iaks) associated to mission name.
+   * 
+   * @param mission mission name of the config file
+   */
+  nlohmann::json loadTranslationKernels(std::string mission);
 }
