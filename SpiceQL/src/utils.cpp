@@ -865,6 +865,24 @@ namespace SpiceQL {
     throw runtime_error(errMsg);
   }
 
-
-
+  json loadTranslationKernels(string mission) {
+    Config c;
+    json config = c.globalConf();
+    json j;
+    
+    if (config.find(mission) != config.end()) {
+      vector<string> kernelsToGet = {"fk", "ik", "iak"};
+      j = c[mission].get(kernelsToGet);
+      json missionKernels = {};
+      missionKernels["fk"] = j["fk"];
+      missionKernels["ik"] = j["ik"];
+      missionKernels["iak"] = j["iak"];
+      j = getLatestKernels(missionKernels);
+    }
+    else {
+      string missionKeys = getMissionKeys(config);
+      spdlog::warn("Could not find mission: \"{}\" in config. \n Double-check mission variable, manually furnish kernels, or try including frame and mission name. List of available missions: [{}].", mission, missionKeys);
+    }
+    return j;
+  }
 }
