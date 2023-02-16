@@ -2,9 +2,29 @@ include(CMakeDependentOption)
 cmake_minimum_required(VERSION 3.10)
 project(SpiceQL VERSION 0.0.1 DESCRIPTION "Syntax Sugar for cspice")
 
-set(CMAKE_MODULE_PATH "${PROJECT_SOURCE_DIR}/cmake" ${CMAKE_MODULE_PATH})
+list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
 
-set(CMAKE_CXX_STANDARD 20)
+message(STATUS "CMake Module Path: " ${CMAKE_MODULE_PATH})
+
+# A lot of linux OSes do not support C++20
+if (APPLE)
+  set(CMAKE_CXX_STANDARD 20)
+else()
+  set(CMAKE_CXX_STANDARD 17)
+endif()
+
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+
+# Set up Anaconda prefix in the case with a non-default conda env is activated
+if(EXISTS $ENV{CONDA_PREFIX})
+  message("CONDA PREFIX: $ENV{CONDA_PREFIX}")
+  list(APPEND CMAKE_FIND_ROOT_PATH $ENV{CONDA_PREFIX}
+                                   $ENV{CONDA_PREFIX}/lib/cmake/Qt5)
+endif()
+
+list(APPEND CMAKE_FIND_ROOT_PATH /var/lang/)
+
+message(STATUS "find path: " ${CMAKE_FIND_ROOT_PATH})
 
 # Variables required by multiple build options
 set(SPICEQL_BUILD_INCLUDE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/SpiceQL/include/")
@@ -30,7 +50,9 @@ option (SPICEQL_BUILD_LIB "Build the SpiceQL Library" ON)
 if(SPICEQL_BUILD_LIB)
 
   set(JSON_BuildTests OFF CACHE INTERNAL "")
+  set(REDIS_PLUS_PLUS_BUILD_TEST OFF CACHE INTERNAL "")
 
+  add_subdirectory("submodules/redis-plus-plus")
   add_subdirectory("submodules/gularkfilesystem")
   add_subdirectory("submodules/json")
 
@@ -81,21 +103,21 @@ if(SPICEQL_BUILD_LIB)
 
   add_library(SpiceQL SHARED ${SPICEQL_SRC_FILES})
 
-  ADD_DEFINITIONS(-D_SOURCE_PREFIX="${CMAKE_CURRENT_SOURCE_DIR}")
-
-
   set_target_properties(SpiceQL PROPERTIES
                                   VERSION ${PROJECT_VERSION}
                                   SOVERSION 0)
 
 
-  target_compile_definitions(SpiceQL PRIVATE SPDLOG_ACTIVE_LEVEL=SPDLOG_LEVEL_DEBUG)
+  target_compile_definitions(SpiceQL PRIVATE SPDLOG_ACTIVE_LEVEL=SPDLOG_LEVEL_TRACE 
+                                     PUBLIC -D_SOURCE_PREFIX="${CMAKE_CURRENT_SOURCE_DIR}")
   
+  message(STATUS "redis++ inc: "  ${hiredis_INCLUDE_DIRS})
   target_include_directories(SpiceQL
                             PUBLIC
                             $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/SpiceQL/include>
                             $<INSTALL_INTERFACE:include>
                             PRIVATE
+                            ${CMAKE_CURRENT_SOURCE_DIR}/submodules/redis-plus-plus/src/
                             cereal
                         )
 
@@ -105,6 +127,7 @@ if(SPICEQL_BUILD_LIB)
                         fmt::fmt-header-only
                         nlohmann_json::nlohmann_json
                         PRIVATE
+                        redis++ 
                         CSpice::cspice
                         spdlog::spdlog_header_only
                         )

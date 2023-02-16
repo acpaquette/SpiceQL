@@ -99,16 +99,9 @@ assert(result1 == result2);
 
 ## Building and Testing Lambda Locally
 
-1. Build your image locally using the `docker build` command.
-`docker build -f aws/Dockerfile -t spiceql .`
+1. Use docker compose to run the container: `docker compose up -d --build`
 
-2. Mount Isis Data Volume to Docker.
-`docker volume create --driver local --opt type=nfs --opt o=addr=isisdata.prod-asc.chs.usgs.gov,rw,nfsvers=4.1,rsize=1048576,wsize=1048576,hard,timeo=600,retrans=2 --opt device=:/ isisdata `
-
-2. Run your container image locally using the `docker run` command.
-`docker run -v isisdata:/mnt/isis_data -p 9000:8080 -it spiceql`
-
-3. From a new terminal window, post an event to the following endpoint using a `curl` command:
+2. Post an event to the following endpoint using a `curl` command:
 `curl -XGET "http://localhost:9000/2015-03-31/functions/function/invocations" -d '{"func" : "<FunctionName>", "arg1" : "<FirstArgument>", "arg2": "<SecondArgument>", "arg3": "<ThirdArgument>"}'`
 
 ## Interacting with Public(VPN) AWS Lambda Function

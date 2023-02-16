@@ -36,6 +36,8 @@ build-and-ctest:       # This job runs in the build stage, which runs first.
   script:
     - ls $CI_PROJECT_DIR
     - git config http.sslVerify "false"
+    - git config --global url."https://github.com/".insteadOf "git@github.com:"
+    - git config --global url."https://".insteadOf git://
     - GIT_SSL_NO_VERIFY=true git submodule update --init --recursive
     - touch /etc/pip.conf
     - echo -e "[global]\n
@@ -148,7 +150,7 @@ update-image:
     - aws ecr get-login-password --region us-west-2 | docker login --username AWS --password-stdin 950438895271.dkr.ecr.us-west-2.amazonaws.com
   script:
     - git submodule update --init --recursive
-    - docker build -f aws/Dockerfile -t spiceql .
+    - docker build -t spiceql .
     - docker tag spiceql:latest 950438895271.dkr.ecr.us-west-2.amazonaws.com/spiceql:latest
     - docker push 950438895271.dkr.ecr.us-west-2.amazonaws.com/spiceql:latest
     - aws lambda update-function-code --region us-west-2 --function-name spiceqlambdadev --image-uri 950438895271.dkr.ecr.us-west-2.amazonaws.com/spiceql:latest

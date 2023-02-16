@@ -26,10 +26,9 @@ ENV PATH=/var/lang/bin:$PATH
 RUN mkdir /repo 
 COPY . /repo/
 
-COPY CMakeLists.txt /repo/
-RUN cd /repo && \
+RUN ls -lrt /var/lang/include/ && cd /repo && \
     mkdir -p build && \
-    cd build &&  cmake /repo -DCMAKE_INSTALL_PREFIX=/var/lang/ -DSPICEQL_BUILD_DOCS=NO -DSPICEQL_BUILD_TESTS=NO && \
+    cd build && cmake .. -DCMAKE_INSTALL_PREFIX=/var/lang/ -DSPICEQL_BUILD_DOCS=NO -DSPICEQL_BUILD_TESTS=NO && \
     make install
 RUN cd /repo/build/bindings/python/ && python setup.py install --prefix=/var/lang
 RUN chmod 755 -R /repo
