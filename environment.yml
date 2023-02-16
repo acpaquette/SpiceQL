@@ -19,8 +19,6 @@ dependencies:
   - jsonschema
   - cereal
   - spdlog
-  - redis-py
-  - redis-server
   - pip:
     - breathe
     - sphinx-material
