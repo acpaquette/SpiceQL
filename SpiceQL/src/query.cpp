@@ -95,6 +95,39 @@ namespace SpiceQL {
     }
   }
 
+  vector<double> getTargetValues(string target, string key, string mission) {
+    SpiceDouble values[3];
+    SpiceInt dim;
+    ConstSpiceChar *target_spice = target.c_str(); 
+    ConstSpiceChar *key_spice = key.c_str();
+
+    Config missionConf;
+    json globalConf = missionConf.globalConf();
+    json pcks;
+    if (globalConf.find(mission) != globalConf.end()) {
+      SPDLOG_DEBUG("Found {} in config, getting only {} pcks.", mission, mission);
+      missionConf = missionConf[mission];
+      pcks = missionConf.getLatest("pck")["pck"];
+    }
+    else {
+      SPDLOG_DEBUG("Coudn't find {} in config explicitly, loading all pck kernels", mission);
+      pcks = missionConf.getLatestRecursive("pck");
+    }
+    KernelSet pckSet(pcks);
+
+    checkNaifErrors();
+    bodvrd_c(target_spice, key_spice, 3, &dim, values);
+    checkNaifErrors();
+
+    // convert to std::array for output
+    vector<double> ret_values = {0, 0, 0};
+    for (int i = 0; i < 3; i++) {
+      ret_values[i] = values[i];
+    }
+
+    return ret_values;
+  }
+
 
   vector<string> getLatestKernel(vector<string> kernels) {
     if(kernels.empty()) {

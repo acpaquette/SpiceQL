@@ -161,6 +161,7 @@ update-image:
     - aws lambda update-function-code --region us-west-2 --function-name translateCodeToNamelambda --image-uri 950438895271.dkr.ecr.us-west-2.amazonaws.com/spiceql:latest
     - aws lambda update-function-code --region us-west-2 --function-name getTargetStateslambda --image-uri 950438895271.dkr.ecr.us-west-2.amazonaws.com/spiceql:latest
     - aws lambda update-function-code --region us-west-2 --function-name findMissionKeywordslambda --image-uri 950438895271.dkr.ecr.us-west-2.amazonaws.com/spiceql:latest
+    - aws lambda update-function-code --region us-west-2 --function-name getTargetValueslambda --image-uri 950438895271.dkr.ecr.us-west-2.amazonaws.com/spiceql:latest
   rules:
     - if: "$CI_COMMIT_BRANCH == 'main'"
       changes:
