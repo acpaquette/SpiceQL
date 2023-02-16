@@ -59,3 +59,4 @@ lambda_translateNameToCode = create_lambda_call(pyspiceql.Memo_translateNameToCo
 lambda_translateCodeToName = create_lambda_call(pyspiceql.Memo_translateCodeToName)
 lambda_getTargetStates = create_lambda_call(pyspiceql.getTargetStates)
 lambda_findMissionKeywords = create_lambda_call(pyspiceql.findMissionKeywords)
+lambda_getTargetValues = create_lambda_call(pyspiceql.getTargetValues)

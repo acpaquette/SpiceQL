@@ -81,6 +81,19 @@ namespace SpiceQL {
 
 
   /**
+    * @brief returns Target values in the form of a vector
+    *
+    *  Takes in a target and key and returns the value associated in the form of vector.
+    *  Note: This function is mainly for obtaining the target radii. For obtaining other values, use getKernelVectorValue or getKernelStringValue.
+    * 
+    * @param key keyword for desired values
+    * @param mission mission name as it relates to the config files
+    * @returns vector of values
+  **/
+  std::vector<double> getTargetValues(std::string target, std::string key, std::string mission="");
+
+
+  /**
    * @brief Returns all kernels available for a mission
    *
    * Returns a structured json object containing all available kernels for a specified mission
