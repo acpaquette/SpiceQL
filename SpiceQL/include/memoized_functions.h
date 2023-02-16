@@ -7,8 +7,6 @@
 namespace SpiceQL {
   namespace  Memo {
 
-    std::string getCacheDir();
-
     /**
       * @brief ls, like in unix, kinda. Also it's a function. This 
       * is memoized so it'll load from cache if run multiple times with the same 
@@ -37,6 +35,7 @@ namespace SpiceQL {
    **/
     std::vector<std::pair<double, double>> getTimeIntervals(std::string kpath);
 
+
   /**
     * @brief Memoized wrapper for translateNameToCode
     * 
@@ -50,6 +49,7 @@ namespace SpiceQL {
     * @returns int
    **/
     int translateNameToCode(std::string frame, std::string mission);
+
 
   /**
     * @brief Memoized wrapper for translateCodeToName

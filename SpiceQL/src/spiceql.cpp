@@ -14,7 +14,7 @@ using namespace std;
 #include "memoized_functions.h"
 
 namespace SpiceQL { 
-// puting log init in a anonymous namespace 
+  // putting log init in a anonymous namespace 
   struct initializer {    
 
     ~initializer() {

@@ -110,6 +110,10 @@ TEST(UtilTests, testExiringCache) {
 
   // they should be the same 
   EXPECT_EQ(v1, v2);
+
+  // clock is pretty low res
+  sleep(2);
+
   fs::create_directory(t / "t4");
   SPDLOG_DEBUG("added {}", (t / "t4").string());
 
@@ -119,6 +123,7 @@ TEST(UtilTests, testExiringCache) {
   EXPECT_NE(v2, v3);
 
 }
+
 
 TEST(UtilTests, testCacheDeleteDep) { 
   string tempname = "spiceql-cachetest-" + SpiceQL::gen_random(10); 
@@ -132,7 +137,10 @@ TEST(UtilTests, testCacheDeleteDep) {
 
   vector<string> v1 = Memo::ls(t, false);
   SPDLOG_DEBUG("first ls results {}", fmt::join(v1, ", "));
-  
+
+  // clock is pretty low res
+  sleep(2);
+
   // delete a folder
   fs::remove_all(t / "t1");
 

@@ -14,3 +14,7 @@
 	path = extern/pybind11
 	url = ../../pybind/pybind11
 	branch = stable
+
+[submodule "submodules/redis-plus-plus"]
+	path = submodules/redis-plus-plus
+	url = https://github.com/sewenew/redis-plus-plus.git

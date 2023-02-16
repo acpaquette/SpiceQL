@@ -30,8 +30,9 @@ Resources:
           - subnet-0326c18b7c38caa73
       Environment:
         Variables: 
-          REDIS_HOST: "spiceqlelasticachecluster.wufcwa.0001.usw2.cache.amazonaws.com"
-          REDIS_PORT: 6379
+          SPICEQL_REDIS_HOST: "spiceqlelasticachecluster.wufcwa.0001.usw2.cache.amazonaws.com"
+          SPICEQL_REDIS_PORT: 6379
+          SPICEQL_LOG_LEVEL: trace
   SpiceQLambdaPermission:
     Type: AWS::Lambda::Permission
     DependsOn:
@@ -64,8 +65,9 @@ Resources:
           - subnet-0326c18b7c38caa73
       Environment:
         Variables: 
-          REDIS_HOST: "spiceqlelasticachecluster.wufcwa.0001.usw2.cache.amazonaws.com"
-          REDIS_PORT: 6379
+          SPICEQL_REDIS_HOST: "spiceqlelasticachecluster.wufcwa.0001.usw2.cache.amazonaws.com"
+          SPICEQL_REDIS_PORT: 6379
+          SPICEQL_LOG_LEVEL: trace
   StrSclkToEtLambdaPermission:
     Type: AWS::Lambda::Permission
     Properties:
@@ -96,8 +98,9 @@ Resources:
           - subnet-0326c18b7c38caa73
       Environment:
         Variables: 
-          REDIS_HOST: "spiceqlelasticachecluster.wufcwa.0001.usw2.cache.amazonaws.com"
-          REDIS_PORT: 6379
+          SPICEQL_REDIS_HOST: "spiceqlelasticachecluster.wufcwa.0001.usw2.cache.amazonaws.com"
+          SPICEQL_REDIS_PORT: 6379
+          SPICEQL_LOG_LEVEL: trace
   DoubleSclkToEtLambdaPermission:
     Type: AWS::Lambda::Permission
     Properties:
@@ -128,8 +131,9 @@ Resources:
           - subnet-0326c18b7c38caa73
       Environment:
         Variables: 
-          REDIS_HOST: "spiceqlelasticachecluster.wufcwa.0001.usw2.cache.amazonaws.com"
-          REDIS_PORT: 6379
+          SPICEQL_REDIS_HOST: "spiceqlelasticachecluster.wufcwa.0001.usw2.cache.amazonaws.com"
+          SPICEQL_REDIS_PORT: 6379
+          SPICEQL_LOG_LEVEL: trace
   UtcToEtLambdaPermission:
     Type: AWS::Lambda::Permission
     Properties:
@@ -160,8 +164,9 @@ Resources:
           - subnet-0326c18b7c38caa73
       Environment:
         Variables: 
-          REDIS_HOST: "spiceqlelasticachecluster.wufcwa.0001.usw2.cache.amazonaws.com"
-          REDIS_PORT: 6379
+          SPICEQL_REDIS_HOST: "spiceqlelasticachecluster.wufcwa.0001.usw2.cache.amazonaws.com"
+          SPICEQL_REDIS_PORT: 6379
+          SPICEQL_LOG_LEVEL: trace
   TranslateNameToCodeLambdaPermission:
     Type: AWS::Lambda::Permission
     Properties:
@@ -192,8 +197,9 @@ Resources:
           - subnet-0326c18b7c38caa73
       Environment:
         Variables: 
-          REDIS_HOST: "spiceqlelasticachecluster.wufcwa.0001.usw2.cache.amazonaws.com"
-          REDIS_PORT: 6379
+          SPICEQL_REDIS_HOST: "spiceqlelasticachecluster.wufcwa.0001.usw2.cache.amazonaws.com"
+          SPICEQL_REDIS_PORT: 6379
+          SPICEQL_LOG_LEVEL: trace
   TranslateCodeToNameLambdaPermission:
     Type: AWS::Lambda::Permission
     Properties:
@@ -225,8 +231,9 @@ Resources:
           - subnet-0326c18b7c38caa73
       Environment:
         Variables: 
-          REDIS_HOST: "spiceqlelasticachecluster.wufcwa.0001.usw2.cache.amazonaws.com"
-          REDIS_PORT: 6379
+          SPICEQL_REDIS_HOST: "spiceqlelasticachecluster.wufcwa.0001.usw2.cache.amazonaws.com"
+          SPICEQL_REDIS_PORT: 6379
+          SPICEQL_LOG_LEVEL: trace
   GetTargetStatesLambdaPermission:
     Type: AWS::Lambda::Permission
     Properties:
@@ -258,8 +265,9 @@ Resources:
           - subnet-0326c18b7c38caa73
       Environment:
         Variables: 
-          REDIS_HOST: "spiceqlelasticachecluster.wufcwa.0001.usw2.cache.amazonaws.com"
-          REDIS_PORT: 6379
+          SPICEQL_REDIS_HOST: "spiceqlelasticachecluster.wufcwa.0001.usw2.cache.amazonaws.com"
+          SPICEQL_REDIS_PORT: 6379
+          SPICEQL_LOG_LEVEL: trace
   findMissionKeywordsLambdaPermission:
     Type: AWS::Lambda::Permission
     Properties:

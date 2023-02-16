@@ -1,0 +1,31 @@
+version: '2'
+services:
+  redis:
+    image: grokzen/redis-cluster:latest
+    restart: always
+    ports:
+      - '6379:6379'
+      - 7000:7000
+
+  spiceql: 
+    build: .
+    ports: 
+      - 9000:8080
+    environment:
+      - 'SPICEQL_LOG_LEVEL=trace'
+      - 'SPICEQL_REDIS_HOST=redis'
+      - 'SPICEQL_REDIS_PORT=7000' 
+    volumes:
+      - type: volume
+        source: isisdata
+        target: /mnt/isis_data
+        volume:
+          nocopy: true
+
+volumes:
+  isisdata:
+    driver_opts:
+      type: "nfs" 
+      o: "addr=isisdata.prod-asc.chs.usgs.gov,rw,nfsvers=4.1,rsize=1048576,wsize=1048576,hard,timeo=600,retrans=2"
+      device: ":/"
+
