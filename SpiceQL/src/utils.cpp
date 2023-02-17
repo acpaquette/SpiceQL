@@ -865,23 +865,38 @@ namespace SpiceQL {
     throw runtime_error(errMsg);
   }
 
-  json loadTranslationKernels(string mission) {
+  json loadTranslationKernels(string mission, bool loadFk, bool loadIk, bool loadIak) {
     Config c;
     json config = c.globalConf();
     json j;
-    
+    vector<string> kernelsToGet = {};
+
+    if (!(loadFk || loadIk || loadIak)) {
+      throw invalid_argument("Not loading any kernels. Please select a set of translation kernels to load.");
+    }
+    else {
+      if (loadFk)
+        kernelsToGet.push_back("fk");
+      if (loadIk)
+        kernelsToGet.push_back("ik");
+      if (loadIak)
+        kernelsToGet.push_back("iak");
+    }
+
     if (config.find(mission) != config.end()) {
-      vector<string> kernelsToGet = {"fk", "ik", "iak"};
       j = c[mission].get(kernelsToGet);
       json missionKernels = {};
-      missionKernels["fk"] = j["fk"];
-      missionKernels["ik"] = j["ik"];
-      missionKernels["iak"] = j["iak"];
+      if (loadFk)
+        missionKernels["fk"] = j["fk"];
+      if (loadIk)
+        missionKernels["ik"] = j["ik"];
+      if (loadIak)
+        missionKernels["iak"] = j["iak"];
       j = getLatestKernels(missionKernels);
     }
     else {
       string missionKeys = getMissionKeys(config);
-      spdlog::warn("Could not find mission: \"{}\" in config. \n Double-check mission variable, manually furnish kernels, or try including frame and mission name. List of available missions: [{}].", mission, missionKeys);
+      SPDLOG_WARN("Could not find mission: \"{}\" in config. \n Double-check mission variable, manually furnish kernels, or try including frame and mission name. List of available missions: [{}].", mission, missionKeys);
     }
     return j;
   }

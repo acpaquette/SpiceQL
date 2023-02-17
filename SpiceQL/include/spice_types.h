@@ -97,29 +97,6 @@ namespace SpiceQL {
 
 
       /**
-       * @brief Switch between NAIF frame string name to integer frame code
-       *
-       * See <a href="https://naif.jpl.nasa.gov/pub/naif/toolkit_docs/C/req/naif_ids.html">NAIF's Docs on frame codes</a> for more information
-       *
-       * @param frame String frame name to translate to a NAIF code
-       * @param mission Mission name as it relates to the config files
-       * @return integer Naif frame code
-       **/
-      static int translateNameToCode(std::string frame, std::string mission="");
-
-
-      /**
-       * @brief Switch between NAIF frame integer code to string frame name
-       *
-       * See <a href="https://naif.jpl.nasa.gov/pub/naif/toolkit_docs/C/req/naif_ids.html">NAIF's Docs on frame codes</a> for more information
-       *
-       * @param frame int NAIF frame code to translate
-       * @param mission Mission name as it relates to the config files
-       * @return string Naif frame name
-       **/
-      static std::string translateCodeToName(int frame, std::string mission = "");
-
-      /**
        * @brief Instantiate a kernel from path
        *
        * Load a kernel into memory by opening the kernel and furnishing.
@@ -354,4 +331,37 @@ namespace SpiceQL {
    * @return double
    */
   double doubleSclkToEt(int frameCode, std::string mission, double sclk);
+
+  /**
+   * @brief Get the center, class id, and class of a given frame
+   *
+   * See <a href="https://naif.jpl.nasa.gov/pub/naif/toolkit_docs/C/req/naif_ids.html">NAIF's Docs on frame codes</a> for more information
+   *
+   * @param frame String frame name to translate to a NAIF code
+   * @param mission Mission name as it relates to the config files
+   * @return 3 element vector of the given frames center, class id, and class
+  **/
+  std::vector<int> getFrameInfo(int frame, std::string mission);
+
+  /**
+   * @brief Switch between NAIF frame string name to integer frame code
+   *
+   * See <a href="https://naif.jpl.nasa.gov/pub/naif/toolkit_docs/C/req/naif_ids.html">NAIF's Docs on frame codes</a> for more information
+   *
+   * @param frame String frame name to translate to a NAIF code
+   * @param mission Mission name as it relates to the config files
+   * @return integer Naif frame code
+  **/
+  int translateNameToCode(std::string frame, std::string mission = "");
+
+  /**
+   * @brief Switch between NAIF frame integer code to string frame name
+   *
+   * See <a href="https://naif.jpl.nasa.gov/pub/naif/toolkit_docs/C/req/naif_ids.html">NAIF's Docs on frame codes</a> for more information
+   *
+   * @param frame int NAIF frame code to translate
+   * @param mission Mission name as it relates to the config files
+   * @return string Naif frame name
+  **/
+  std::string translateCodeToName(int frame, std::string mission = "");
 }

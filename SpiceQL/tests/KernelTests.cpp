@@ -1,6 +1,8 @@
 #include <gtest/gtest.h>
 #include <fmt/format.h>
 
+#include <HippoMocks/hippomocks.h>
+
 #include "utils.h"
 #include "Fixtures.h"
 #include "spice_types.h"
@@ -13,11 +15,17 @@
 using namespace SpiceQL;
 
 TEST_F(LroKernelSet, UnitTestTranslateFrame) {
-  int frameCode = Kernel::translateNameToCode("LRO_LROCWAC", "lro");
+  MockRepository mocks;
+  nlohmann::json translationKernels;
+  translationKernels["fk"]["kernels"] = {{fkPath}};
+  mocks.OnCallFunc(loadTranslationKernels).Return(translationKernels);
+
+  string expectedFrameName = "LRO_LROCWAC";
+  int frameCode = translateNameToCode(expectedFrameName, "lroc");
   EXPECT_EQ(frameCode, -85620);
 
-  string frameName = Kernel::translateCodeToName(-85, "lro");
-  EXPECT_EQ(frameName, "LUNAR RECONNAISSANCE ORBITER");
+  string frameName = translateCodeToName(frameCode, "lroc");
+  EXPECT_EQ(frameName, expectedFrameName);
 }
 
 
@@ -165,4 +173,17 @@ TEST_F(LroKernelSet, UnitTestUtcToEt) {
   double et = utcToEt("2016-11-26 22:32:14.582000");
 
   EXPECT_DOUBLE_EQ(et, 533471602.76499087);
+}
+
+
+TEST_F(LroKernelSet, UnitTestGetFrameInfo) {
+  MockRepository mocks;
+  nlohmann::json translationKernels;
+  translationKernels["fk"]["kernels"] = {{fkPath}};
+  mocks.OnCallFunc(loadTranslationKernels).Return(translationKernels);
+
+  vector<int> res = getFrameInfo(-85620, "lroc");
+  EXPECT_EQ(res[0], -85);
+  EXPECT_EQ(res[1], 3);
+  EXPECT_EQ(res[2], -85620);
 }
