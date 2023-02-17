@@ -83,7 +83,7 @@ namespace SpiceQL {
   }
 
 
-  int Kernel::translateNameToCode(string frame, string mission) {    
+  int translateNameToCode(string frame, string mission) {    
     SpiceInt code;
     SpiceBoolean found;
 
@@ -109,16 +109,16 @@ namespace SpiceQL {
   }
 
 
-  string Kernel::translateCodeToName(int frame, string mission) {
-    KernelPool::getInstance(); 
-
+  string translateCodeToName(int frame, string mission) {
     SpiceChar name[128];
     SpiceBoolean found;
+    json kernelsToLoad = {};
 
     if (mission != ""){
-      KernelSet kset(loadTranslationKernels(mission));
+      kernelsToLoad = loadTranslationKernels(mission);
     }
-    
+    KernelSet kset(kernelsToLoad);
+
     checkNaifErrors();
     bodc2n_c(frame, 128, name, &found);
     checkNaifErrors();
@@ -135,6 +135,30 @@ namespace SpiceQL {
     return string(name);
   }
 
+  vector<int> getFrameInfo(int frame, string mission) {
+    SpiceInt cent;
+    SpiceInt frclss;
+    SpiceInt clssid;
+    SpiceBoolean found;
+
+    json kernelsToLoad = {};
+
+    if (mission != "") {
+      kernelsToLoad = loadTranslationKernels(mission, true, false, false);
+    }
+    KernelSet kset(kernelsToLoad);
+
+    checkNaifErrors();
+    frinfo_c(frame, &cent, &frclss, &clssid, &found);
+    checkNaifErrors();
+    SPDLOG_TRACE("RETURN FROM FRINFO: {}, {}, {}, {}", cent, frclss, clssid, found);
+
+    if (!found) {
+       throw invalid_argument(fmt::format("Frame info for code {} not found.", frame));
+    }
+
+    return {cent, frclss, clssid};
+  }
 
   Kernel::Kernel(string path) {
     this->path = path;

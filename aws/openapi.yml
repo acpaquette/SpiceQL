@@ -395,3 +395,39 @@ paths:
             statusCode: '200'
             responseTemplates: 
               "application/json": "'$input.body'"
+  /getFrameInfo:
+    get:
+      description: ''
+      parameters:
+      - name: "frameCode"
+        in: "query"
+        description: "int NAIF frame code to get information on"
+        required: true
+        schema:
+          type: "integer"
+        example: -85000
+      - name: "mission"
+        in: "query"
+        description: "Mission name as it relates to the config files"
+        required: true
+        schema:
+          type: "string"
+        example: "lroc"
+      responses:
+        '200':
+          description: OK
+      x-amazon-apigateway-integration:
+              type: aws
+              httpMethod: POST
+              uri : "arn:aws:apigateway:us-west-2:lambda:path/2015-03-31/functions/arn:aws:lambda:us-west-2:950438895271:function:getFrameInfo/invocations"
+              requestTemplates : 
+                "application/json": "{\"frame\": $input.params('frameCode'), \"mission\":\"$input.params('mission')\"}"
+              requestParameters : {
+                integration.request.querystring.ets: method.request.querystring.frameCode,
+                integration.request.querystring.mission: method.request.querystring.mission
+              }
+              responses:
+                default:
+                  statusCode: '200'
+                  responseTemplates: 
+                    "application/json": "'$input.body'"
