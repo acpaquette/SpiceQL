@@ -139,6 +139,9 @@ update-image:
   tags:
   - deploy
   dependencies: []
+  variables:
+    IMAGEURI: 950438895271.dkr.ecr.us-west-2.amazonaws.com/spiceql:latest
+    REGION: us-west-2
   image: 
     name: $CI_REGISTRY/usgs-chs/chs-library/docker/images/docker:latest
   services:
@@ -147,22 +150,17 @@ update-image:
   before_script:
     - apk add --no-cache curl jq python3 py3-pip git
     - pip install awscli
-    - aws ecr get-login-password --region us-west-2 | docker login --username AWS --password-stdin 950438895271.dkr.ecr.us-west-2.amazonaws.com
+    - aws ecr get-login-password --region $REGION | docker login --username AWS --password-stdin 950438895271.dkr.ecr.us-west-2.amazonaws.com
   script:
     - git submodule update --init --recursive
     - docker build -t spiceql .
-    - docker tag spiceql:latest 950438895271.dkr.ecr.us-west-2.amazonaws.com/spiceql:latest
-    - docker push 950438895271.dkr.ecr.us-west-2.amazonaws.com/spiceql:latest
-    - aws lambda update-function-code --region us-west-2 --function-name spiceqlambdadev --image-uri 950438895271.dkr.ecr.us-west-2.amazonaws.com/spiceql:latest
-    - aws lambda update-function-code --region us-west-2 --function-name strSclkToEtlambda --image-uri 950438895271.dkr.ecr.us-west-2.amazonaws.com/spiceql:latest
-    - aws lambda update-function-code --region us-west-2 --function-name doubleSclkToEtlambda --image-uri 950438895271.dkr.ecr.us-west-2.amazonaws.com/spiceql:latest
-    - aws lambda update-function-code --region us-west-2 --function-name utcToEtlambda --image-uri 950438895271.dkr.ecr.us-west-2.amazonaws.com/spiceql:latest
-    - aws lambda update-function-code --region us-west-2 --function-name translateNameToCodelambda --image-uri 950438895271.dkr.ecr.us-west-2.amazonaws.com/spiceql:latest
-    - aws lambda update-function-code --region us-west-2 --function-name translateCodeToNamelambda --image-uri 950438895271.dkr.ecr.us-west-2.amazonaws.com/spiceql:latest
-    - aws lambda update-function-code --region us-west-2 --function-name getTargetStateslambda --image-uri 950438895271.dkr.ecr.us-west-2.amazonaws.com/spiceql:latest
-    - aws lambda update-function-code --region us-west-2 --function-name findMissionKeywordslambda --image-uri 950438895271.dkr.ecr.us-west-2.amazonaws.com/spiceql:latest
-    - aws lambda update-function-code --region us-west-2 --function-name getTargetValueslambda --image-uri 950438895271.dkr.ecr.us-west-2.amazonaws.com/spiceql:latest
-    - aws lambda update-function-code --region us-west-2 --function-name getFrameInfolambda --image-uri 950438895271.dkr.ecr.us-west-2.amazonaws.com/spiceql:latest
+    - docker tag spiceql:latest $IMAGEURI
+    - docker push $IMAGEURI
+    - functions=("spiceqlambdadev", "strSclkToEtlambda", "doubleSclkToEtlambda", "utcToEtlambda", "translateNameToCodelambda", "translateCodeToNamelambda", "getTargetStateslambda", "findMissionKeywordslambda", "getTargetValueslambda", "getTargetFrameInfolambda", "getFrameInfolambda")
+    - for func in ${functions[*]}
+      do
+        aws lambda update-function-code --region $REGION --function-name $func --image-uri $IMAGEURI
+      done
   rules:
     - if: "$CI_COMMIT_BRANCH == 'main'"
       changes:

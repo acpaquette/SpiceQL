@@ -94,7 +94,7 @@ namespace SpiceQL {
        * @return Kernel::Type representation of the kernel type, eg. "reconstructed" returns Kernel::Quality::Reconstructed
        **/
       static Quality translateQuality(std::string qa);
-
+      
 
       /**
        * @brief Instantiate a kernel from path
@@ -318,6 +318,7 @@ namespace SpiceQL {
    * @return double
    */
   double strSclkToEt(int frameCode,std::string mission, std::string sclk);
+
   /**
    * @brief Converts a given double spacecraft clock time to an ephemeris time
    *
@@ -364,4 +365,40 @@ namespace SpiceQL {
    * @return string Naif frame name
   **/
   std::string translateCodeToName(int frame, std::string mission = "");
+
+  /**
+    * @brief returns kernel values for a specific mission in the form of a json
+    *
+    *  Takes in a kernel key and returns the value associated with the inputted mission as a json
+    * 
+    * @param key key - Kernel to get values from 
+    * @param mission mission name
+    * @returns json of values
+  **/
+  nlohmann::json findMissionKeywords(std::string key, std::string mission);
+
+  /**
+    * @brief returns Target values in the form of a vector
+    *
+    *  Takes in a target and key and returns the value associated in the form of vector.
+    *  Note: This function is mainly for obtaining the target radii. For obtaining other values, use getKernelVectorValue or getKernelStringValue.
+    * 
+    * @param target target name
+    * @param key keyword for desired values
+    * @param mission mission name as it relates to the config files
+    * @returns vector of values
+  **/
+  std::vector<double> getTargetValues(std::string target, std::string key, std::string mission);
+
+  /**
+    * @brief returns frame name and frame code associated to the target ID.
+    *
+    *  Takes in a target id and returns the frame name and frame code in json format
+    * 
+    * @param targetId target ID
+    * @param mission mission name as it relates to the config files
+    * @returns json of frame name and frame code
+  **/
+  nlohmann::json getTargetFrameInfo(int targetId, std::string mission);
+
 }

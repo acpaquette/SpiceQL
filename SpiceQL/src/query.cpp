@@ -68,66 +68,6 @@ namespace SpiceQL {
     }
   }
 
-  json findMissionKeywords(string key, string mission) {
-    Config missionConf;
-    json globalConf = missionConf.globalConf();
-    json j;
-    if (globalConf.find(mission) != globalConf.end()) {
-      vector<string> kernelsToGet = {"ik", "iak"};
-      j = missionConf[mission].get(kernelsToGet);
-      json missionKernels = {};
-      missionKernels["ik"] = j["ik"];
-      missionKernels["iak"] = j["iak"];
-      j = getLatestKernels(missionKernels);
-    }
-    else {
-      throw invalid_argument(fmt::format("Could not find mission: \"{}\" in config.", mission));
-    }
-    KernelSet kset(j);
-
-    // check to make sure the key exists when calling findKeywords(key)
-    if (findKeywords(key).contains(key)){
-      return findKeywords(key);
-    }
-    // throw exception
-    else {
-      throw invalid_argument(fmt::format("key: {} not in kernels for mission: {}", key, mission));
-    }
-  }
-
-  vector<double> getTargetValues(string target, string key, string mission) {
-    SpiceDouble values[3];
-    SpiceInt dim;
-    ConstSpiceChar *target_spice = target.c_str(); 
-    ConstSpiceChar *key_spice = key.c_str();
-
-    Config missionConf;
-    json globalConf = missionConf.globalConf();
-    json pcks;
-    if (globalConf.find(mission) != globalConf.end()) {
-      SPDLOG_DEBUG("Found {} in config, getting only {} pcks.", mission, mission);
-      missionConf = missionConf[mission];
-      pcks = missionConf.getLatest("pck")["pck"];
-    }
-    else {
-      SPDLOG_DEBUG("Coudn't find {} in config explicitly, loading all pck kernels", mission);
-      pcks = missionConf.getLatestRecursive("pck");
-    }
-    KernelSet pckSet(pcks);
-
-    checkNaifErrors();
-    bodvrd_c(target_spice, key_spice, 3, &dim, values);
-    checkNaifErrors();
-
-    // convert to std::array for output
-    vector<double> ret_values = {0, 0, 0};
-    for (int i = 0; i < 3; i++) {
-      ret_values[i] = values[i];
-    }
-
-    return ret_values;
-  }
-
 
   vector<string> getLatestKernel(vector<string> kernels) {
     if(kernels.empty()) {

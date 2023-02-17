@@ -417,17 +417,51 @@ paths:
         '200':
           description: OK
       x-amazon-apigateway-integration:
-              type: aws
-              httpMethod: POST
-              uri : "arn:aws:apigateway:us-west-2:lambda:path/2015-03-31/functions/arn:aws:lambda:us-west-2:950438895271:function:getFrameInfo/invocations"
-              requestTemplates : 
-                "application/json": "{\"frame\": $input.params('frameCode'), \"mission\":\"$input.params('mission')\"}"
-              requestParameters : {
-                integration.request.querystring.ets: method.request.querystring.frameCode,
-                integration.request.querystring.mission: method.request.querystring.mission
-              }
-              responses:
-                default:
-                  statusCode: '200'
-                  responseTemplates: 
-                    "application/json": "'$input.body'"
+        type: aws
+        httpMethod: POST
+        uri : "arn:aws:apigateway:us-west-2:lambda:path/2015-03-31/functions/arn:aws:lambda:us-west-2:950438895271:function:getFrameInfolambda/invocations"
+        requestTemplates : 
+          "application/json": "{\"frame\": $input.params('frameCode'), \"mission\":\"$input.params('mission')\"}"
+        requestParameters : {
+          integration.request.querystring.frameCode: method.request.querystring.frameCode,
+          integration.request.querystring.mission: method.request.querystring.mission
+        }
+        responses:
+          default:
+            statusCode: '200'
+            responseTemplates: 
+              "application/json": "'$input.body'"
+  /getTargetFrameInfo:
+    get:
+      description: 'Takes in a target id and returns the frame name and frame code in json format.'
+      parameters: 
+      - name: "targetId"
+        in: "query"
+        description: "Target ID"
+        required: true
+        schema:
+          type: integer
+        example: 499
+      - name: "mission"
+        in: "query"
+        description: "Mission name as it relates to the config files"
+        required: false
+        schema:
+          type: "string"
+        example: "mro"
+      x-amazon-apigateway-integration:
+        type: aws
+        httpMethod: POST
+        uri : "arn:aws:apigateway:us-west-2:lambda:path/2015-03-31/functions/arn:aws:lambda:us-west-2:950438895271:function:getTargetFrameInfolambda/invocations"
+        requestTemplates : 
+          "application/json": "{\"target\": $input.params('target'), \"mission\":\"$input.params('mission')\"}"
+        requestParameters : {
+          integration.request.querystring.target: method.request.querystring.target,
+          integration.request.querystring.mission: method.request.querystring.mission
+        }
+        responses:
+          default:
+            statusCode: '200'
+            responseTemplates: 
+              "application/json": "'$input.body'"
+

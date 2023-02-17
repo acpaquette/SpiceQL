@@ -301,6 +301,7 @@ Resources:
         Variables: 
           SPICEQL_REDIS_HOST: "spiceqlelasticachecluster.wufcwa.0001.usw2.cache.amazonaws.com"
           SPICEQL_REDIS_PORT: 6379
+          SPICEQL_LOG_LEVEL: trace
   getTargetValuesLambdaPermission:
     Type: AWS::Lambda::Permission
     Properties:
@@ -342,3 +343,37 @@ Resources:
       FunctionName: !Ref GetFrameInfoLambda
       Principal: apigateway.amazonaws.com
       SourceArn: !Sub "arn:aws:execute-api:us-west-2:950438895271:${SpiceQlRestfulApiId}/*/GET/getFrameInfo"
+
+
+  #GetTargetFrameInfo endpoint
+  GetTargetFrameInfoLambda:
+    Type: AWS::Lambda::Function
+    Properties:
+      Timeout: 300 
+      Role: arn:aws:iam::950438895271:role/csr-Lambda-Role
+      FunctionName: getTargetValueslambda
+      PackageType: Image
+      FileSystemConfigs: 
+        - Arn: !Ref AccessPointResourceArn
+          LocalMountPath: '/mnt/isis_data'
+      ImageConfig:
+        Command: ["lambda_function.lambda_getTargetFrameInfo"]
+      Code:
+        ImageUri: 950438895271.dkr.ecr.us-west-2.amazonaws.com/spiceql:latest
+      VpcConfig:
+        SecurityGroupIds: 
+          - !Ref SpiceQlSgId 
+        SubnetIds: 
+          - subnet-0326c18b7c38caa73
+      Environment:
+        Variables: 
+          SPICEQL_REDIS_HOST: "spiceqlelasticachecluster.wufcwa.0001.usw2.cache.amazonaws.com"
+          SPICEQL_REDIS_PORT: 6379
+          SPICEQL_LOG_LEVEL: trace
+  GetTargetFrameInfoLambdaPermission:
+    Type: AWS::Lambda::Permission
+    Properties:
+      Action: lambda:InvokeFunction
+      FunctionName: !Ref GetTargetFrameInfoLambda
+      Principal: apigateway.amazonaws.com
+      SourceArn: !Sub "arn:aws:execute-api:us-west-2:950438895271:${SpiceQlRestfulApiId}/*/GET/getTargetFrameInfo"

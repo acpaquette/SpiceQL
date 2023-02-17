@@ -900,4 +900,22 @@ namespace SpiceQL {
     }
     return j;
   }
+
+  json loadPckKernels(string mission) {
+    Config missionConf;
+    json globalConf = missionConf.globalConf();
+    json pcks;
+
+    if (globalConf.find(mission) != globalConf.end()) {
+      SPDLOG_TRACE("Found {} in config, getting only {} pcks.", mission, mission);
+      missionConf = missionConf[mission];
+      pcks = missionConf.getLatest("pck")["pck"];
+    }
+    else {
+      SPDLOG_TRACE("Coudn't find {} in config explicitly, loading all pck kernels", mission);
+      pcks = missionConf.getLatestRecursive("pck");
+    }
+
+    return pcks;
+  }
 }
