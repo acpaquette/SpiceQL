@@ -433,4 +433,12 @@ namespace SpiceQL {
    * @param mission mission name of the config file
    */
   nlohmann::json loadTranslationKernels(std::string mission, bool loadFk=true, bool loadIk=true, bool loadIak=true);
+
+
+  /**
+   * @brief Loads PCK kernels associated to mission name.
+   * 
+   * @param mission mission name of the config file
+   */
+  nlohmann::json loadPckKernels(std::string mission);
 }

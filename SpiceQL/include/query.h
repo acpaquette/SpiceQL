@@ -56,7 +56,7 @@ namespace SpiceQL {
   std::vector<std::string> getKernelVectorValue(std::string key);
 
 
-    /**
+  /**
     * @brief return's kernel value from key
     *
     *  Takes in a kernel key and returns the value associated with that kernel as a string 
@@ -66,31 +66,6 @@ namespace SpiceQL {
     * @returns string of value associated with key
    **/
   std::string getKernelStringValue(std::string key);
-
-
-  /**
-    * @brief returns kernel values for a specific mission in the form of a json
-    *
-    *  Takes in a kernel key and returns the value associated with the inputted mission as a json
-    * 
-    * @param key key - Kernel to get values from 
-    * @param mission mission name
-    * @returns json of values
-   **/
-  nlohmann::json findMissionKeywords(std::string key, std::string mission);
-
-
-  /**
-    * @brief returns Target values in the form of a vector
-    *
-    *  Takes in a target and key and returns the value associated in the form of vector.
-    *  Note: This function is mainly for obtaining the target radii. For obtaining other values, use getKernelVectorValue or getKernelStringValue.
-    * 
-    * @param key keyword for desired values
-    * @param mission mission name as it relates to the config files
-    * @returns vector of values
-  **/
-  std::vector<double> getTargetValues(std::string target, std::string key, std::string mission="");
 
 
   /**

@@ -169,6 +169,13 @@ TEST_F(LroKernelSet, UnitTestStrSclkToEt) {
 }
 
 
+TEST_F(LroKernelSet, UnitTestDoubleSclkToEt) {
+  double et = doubleSclkToEt(-85, "lro", 922997380.174174);
+
+  EXPECT_DOUBLE_EQ(et, 31593348.006268278);
+}
+
+
 TEST_F(LroKernelSet, UnitTestUtcToEt) {
   double et = utcToEt("2016-11-26 22:32:14.582000");
 
@@ -186,4 +193,25 @@ TEST_F(LroKernelSet, UnitTestGetFrameInfo) {
   EXPECT_EQ(res[0], -85);
   EXPECT_EQ(res[1], 3);
   EXPECT_EQ(res[2], -85620);
+}
+
+
+TEST_F(LroKernelSet, UnitTestFindMissionKeywords) {
+  nlohmann::json keywords = findMissionKeywords("INS-85600_CCD_CENTER", "lro");
+
+  nlohmann::json expectedResults;
+  expectedResults["INS-85600_CCD_CENTER"] = {2531.3, 0.4};
+
+  EXPECT_EQ(keywords, expectedResults);
+}
+
+
+TEST_F(LroKernelSet, UnitTestGetTargetFrameInfo) {
+  nlohmann::json frameInfo = getTargetFrameInfo(499, "lro");
+
+  nlohmann::json expectedResults;
+  expectedResults["frameCode"] = 10014;
+  expectedResults["frameName"] = "IAU_MARS";
+
+  EXPECT_EQ(frameInfo, expectedResults);
 }

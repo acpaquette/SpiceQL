@@ -193,6 +193,7 @@ namespace SpiceQL {
       return et;
   }
 
+
   double strSclkToEt(int frameCode, string mission, string sclk) {
       // get lsk kernel
       Config missionConf;
@@ -218,6 +219,7 @@ namespace SpiceQL {
       return et;
   }
 
+
   double doubleSclkToEt(int frameCode, string mission, double sclk) {
       // get lsk kernel
       Config missionConf;
@@ -241,6 +243,89 @@ namespace SpiceQL {
       spdlog::debug("strsclktoet({}, {}, {}) -> {}", frameCode, mission, sclk, et);
       
       return et;
+  }
+
+
+  json findMissionKeywords(string key, string mission) {
+    Config missionConf;
+    json globalConf = missionConf.globalConf();
+    json j;
+    if (globalConf.find(mission) != globalConf.end()) {
+      vector<string> kernelsToGet = {"ik", "iak"};
+      j = missionConf[mission].get(kernelsToGet);
+      json missionKernels = {};
+      missionKernels["ik"] = j["ik"];
+      missionKernels["iak"] = j["iak"];
+      j = getLatestKernels(missionKernels);
+    }
+    else {
+      throw invalid_argument(fmt::format("Could not find mission: \"{}\" in config.", mission));
+    }
+    KernelSet kset(j);
+
+    // check to make sure the key exists when calling findKeywords(key)
+    if (findKeywords(key).contains(key)){
+      return findKeywords(key);
+    }
+    // throw exception
+    else {
+      throw invalid_argument(fmt::format("key: {} not in kernels for mission: {}", key, mission));
+    }
+  }
+
+
+  vector<double> getTargetValues(string target, string key, string mission) {
+    SpiceDouble values[3];
+    SpiceInt dim;
+    ConstSpiceChar *target_spice = target.c_str(); 
+    ConstSpiceChar *key_spice = key.c_str();
+
+    json kernelsToLoad = {};
+
+    if (mission != "") {
+      kernelsToLoad = loadPckKernels(mission);
+    }
+    KernelSet kset(kernelsToLoad);
+
+    checkNaifErrors();
+    bodvrd_c(target_spice, key_spice, 3, &dim, values);
+    checkNaifErrors();
+
+    // convert to std::array for output
+    vector<double> ret_values = {0, 0, 0};
+    for (int i = 0; i < 3; i++) {
+      ret_values[i] = values[i];
+    }
+
+    return ret_values;
+  }
+
+
+  json getTargetFrameInfo(int targetId, string mission) {
+    SpiceInt frameCode;
+    SpiceChar frameName[128];
+    SpiceBoolean found;
+
+    json frameInfo;
+    json kernelsToLoad = {};
+
+    if (mission != "") {
+      kernelsToLoad = loadPckKernels(mission);
+    }
+    KernelSet kset(kernelsToLoad);
+
+    checkNaifErrors();
+    cidfrm_c(targetId, 128, &frameCode, frameName, &found);
+    checkNaifErrors();
+
+    if(!found) {  
+      throw invalid_argument(fmt::format("Frame info for target id {} not found.", targetId));
+    }
+
+    frameInfo["frameCode"] = frameCode;
+    frameInfo["frameName"] = frameName;
+
+    return frameInfo;
   }
 
 

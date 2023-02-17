@@ -127,7 +127,7 @@ To expose a new function as an endpoint to the API:
 
    In the `AWS::Lambda::Permission` resource, set the SourceArn specific to the endpoint you set up in openapi.yml. 
 
-5. Add `aws lambda update-function-code --region us-west-2 --function-name <functionName>lambda --image-uri 950438895271.dkr.ecr.us-west-2.amazonaws.com/spiceql:latest` to [gitlab-ci.yml](https://code.chs.usgs.gov/asc/SpiceQL/-/blob/main/.gitlab-ci.yml).
+5. Add lambda function name to "functions" list in the [gilab-ci.yml](https://code.chs.usgs.gov/asc/SpiceQL/-/blob/main/.gitlab-ci.yml#L159).
 
 6. Once these updated files are merged into the main branch, The CI will automatically update the Cloudformation and API Gateway to include the new endpoints. 
 
