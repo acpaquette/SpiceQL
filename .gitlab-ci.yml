@@ -142,6 +142,7 @@ update-image:
   variables:
     IMAGEURI: 950438895271.dkr.ecr.us-west-2.amazonaws.com/spiceql:latest
     REGION: us-west-2
+    FUNCTIONS: spiceqlambdadev strSclkToEtlambda doubleSclkToEtlambda utcToEtlambda translateNameToCodelambda translateCodeToNamelambda getTargetStateslambda findMissionKeywordslambda getTargetValueslambda getTargetFrameInfolambda getFrameInfolambda 
   image: 
     name: $CI_REGISTRY/usgs-chs/chs-library/docker/images/docker:latest
   services:
@@ -156,11 +157,11 @@ update-image:
     - docker build -t spiceql .
     - docker tag spiceql:latest $IMAGEURI
     - docker push $IMAGEURI
-    - functions=("spiceqlambdadev", "strSclkToEtlambda", "doubleSclkToEtlambda", "utcToEtlambda", "translateNameToCodelambda", "translateCodeToNamelambda", "getTargetStateslambda", "findMissionKeywordslambda", "getTargetValueslambda", "getTargetFrameInfolambda", "getFrameInfolambda")
-    - for func in ${functions[*]}
-      do
-        aws lambda update-function-code --region $REGION --function-name $func --image-uri $IMAGEURI
-      done
+    - |
+      for func in $FUNCTIONS
+        do
+          aws lambda update-function-code --region $REGION --function-name $func --image-uri $IMAGEURI
+        done
   rules:
     - if: "$CI_COMMIT_BRANCH == 'main'"
       changes:
