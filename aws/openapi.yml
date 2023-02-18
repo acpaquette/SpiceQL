@@ -454,9 +454,9 @@ paths:
         httpMethod: POST
         uri : "arn:aws:apigateway:us-west-2:lambda:path/2015-03-31/functions/arn:aws:lambda:us-west-2:950438895271:function:getTargetFrameInfolambda/invocations"
         requestTemplates : 
-          "application/json": "{\"target\": $input.params('target'), \"mission\":\"$input.params('mission')\"}"
+          "application/json": "{\"targetId\": $input.params('targetId'), \"mission\":\"$input.params('mission')\"}"
         requestParameters : {
-          integration.request.querystring.target: method.request.querystring.target,
+          integration.request.querystring.targetId: method.request.querystring.targetId,
           integration.request.querystring.mission: method.request.querystring.mission
         }
         responses:
