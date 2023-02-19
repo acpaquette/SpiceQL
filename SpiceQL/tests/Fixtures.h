@@ -57,6 +57,7 @@ class LroKernelSet : public ::testing::Test  {
     string ckPath2;
     string spkPath1;
     string spkPath2;
+    string spkPath3;
     string ikPath1;
     string ikPath2;
     string fkPath;

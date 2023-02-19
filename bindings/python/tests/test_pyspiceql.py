@@ -1,5 +1,5 @@
 import pytest
-from pyspiceql import getMissionConfig, getKernelsAsVector, Config, getKernelStringValue
+from pyspiceql import getMissionConfig, Config, getKernelStringValue
 
 def test_jsonConversion():
     lro_config = getMissionConfig('lro')
