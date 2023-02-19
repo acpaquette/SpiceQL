@@ -131,13 +131,6 @@ namespace SpiceQL {
 
 
   /**
-   * @brief Simple struct for holding target states
-   */
-  //! @cond Doxygen_Suppress
-  struct targetState {double lt; std::array<double,6> starg;};
-  //! @endcond
-
-  /**
    * @brief Gives the position and velocity for a given frame at some ephemeris time
    *
    * Mostly a C++ wrap for NAIF's spkezr_c
@@ -187,23 +180,15 @@ namespace SpiceQL {
    *           "XCN"   - converged Newtonian light time correction
    *           "XCN+S" - converged Newtonian light time correction and stellar aberration correction.
    * @param mission Config subset as it relates to the mission
-   * @param ckQuality Quality of cks to try and obtain
-   * @param spkQuality Quality of spks to try and obtain
+   * @param ckQuality string describing the quality of cks to try and obtain
+   * @param spkQuality string describing the quality of spks to try and obtain
    *
    * @see SpiceQL::getTargetState
-   * @return A vector of vectors with a Nx6 state vector of positions and velocities in x,y,z,vx,vy,vz format followed by the light time adjustment.
+   * @see Kernel::Quality
+   *
+   * @return A vector of vectors with a Nx7 state vector of positions and velocities in x,y,z,vx,vy,vz format followed by the light time adjustment.
    **/
-  std::vector<std::vector<double>> getTargetStates(std::vector<double> ets, std::string target, std::string observer, std::string frame="J2000", std::string abcorr="NONE", std::string mission="", 
-                                                   SpiceQL::Kernel::Quality ckQuality=SpiceQL::Kernel::Quality::RECONSTRUCTED, 
-                                                   SpiceQL::Kernel::Quality spkQuality=SpiceQL::Kernel::Quality::RECONSTRUCTED);
-
-
-  /**
-   * @brief simple struct for holding target orientations
-   */
-  //! @cond Doxygen_Suppress
-  struct targetOrientation {std::array<double,4> quat; std::optional<std::array<double,3>> av;};
-  //! @endcond
+  std::vector<std::vector<double>> getTargetStates(std::vector<double> ets, std::string target, std::string observer, std::string frame="J2000", std::string abcorr="NONE", std::string mission="", std::string ckQuality="reconstructed", std::string spkQuality="reconstructed");
 
   /**
    * @brief Gives quaternion and angular velocity for a given frame at a given ephemeris time
@@ -215,10 +200,45 @@ namespace SpiceQL {
    * @param et ephemeris time at which you want to optain the target pointing
    * @param toframe the source frame's NAIF code.
    * @param refframe the reference frame's NAIF code, orientations are relative to this reference frame
-   * @returns SPICE-style quaternions (w,x,y,z) and optional angular velocity
+   * @returns SPICE-style quaternions (w,x,y,z) and optional angular velocity (4 element without angular velocity, 7 element with)
   **/
-  targetOrientation getTargetOrientation(double et, int toframe, int refframe=1); // use j2000 for default reference frame
+  std::vector<double> getTargetOrientation(double et, int toframe, int refframe = 1); // use j2000 for default reference frame
 
+  /**
+   * @brief Gives quaternion and angular velocity for a given frame at a set of ephemeris times
+   *
+   * Orientations for an input frame in some reference frame.
+   * The orientations returned from this function can be used to transform a position
+   * in the source frame to the ref frame.
+   *
+   * @param ets ephemeris times at which you want to optain the target pointing
+   * @param toframe the source frame's NAIF code.
+   * @param refframe the reference frame's NAIF code, orientations are relative to this reference frame
+   * @param mission Config subset as it relates to the mission
+   * @param ckQuality string describing the quality of cks to try and obtain
+   *
+   * @see SpiceQL::getTargetOrientation
+   *
+   * @returns Vector of SPICE-style quaternions (w,x,y,z) and optional angular velocity (4 element without angular velocity, 7 element with)
+  **/
+  std::vector<std::vector<double>> getTargetOrientations(std::vector<double> ets, int toframe, int refframe=1, std::string mission="", std::string ckQuality="reconstructed"); // use j2000 for default reference frame
+
+
+  /**
+   * @brief Given an ephemeris time and a starting frame, find the path from that starting frame to J2000 (1)
+   *
+   * This function uses NAIF routines and builds a path from the initalframe to J2000 making
+   * note of all the in between frames
+   *
+   * @param et ephemeris times at which you want to optain the frame trace
+   * @param initialFrame the initial frame's NAIF code.
+   * @param mission Config subset as it relates to the mission
+   * @param ckQuality int describing the quality of cks to try and obtain
+   *
+   * @returns A two element vector of vectors ints, where the first element is the sequence of time dependent frames
+   * and the second is the sequence of constant frames
+  **/
+  std::vector<std::vector<int>> frameTrace(double et, int initialFrame, std::string mission="", std::string ckQuality="reconstructed");
 
   /**
     * @brief finds key:values in kernel pool

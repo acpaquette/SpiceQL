@@ -192,13 +192,29 @@ namespace SpiceQL {
     return lt_starg;
   }
 
-  vector<vector<double>> getTargetStates(vector<double> ets, string target, string observer, string frame, string abcorr, string mission, Kernel::Quality ckQuality, Kernel::Quality spkQuality) {
-    spdlog::trace("Calling getTargetStates with {}, {}, {}, {}, {}, {}, {}, {}", ets.size(), target, observer, frame, abcorr, mission, Kernel::QUALITIES[(int)ckQuality], Kernel::QUALITIES[(int)spkQuality]);
+  vector<vector<double>> getTargetStates(vector<double> ets, string target, string observer, string frame, string abcorr, string mission, string ckQuality, string spkQuality) {
+    SPDLOG_TRACE("Calling getTargetStates with {}, {}, {}, {}, {}, {}, {}, {}", ets.size(), target, observer, frame, abcorr, mission, ckQuality, spkQuality);
     Config config;
     json missionJson = config.globalConf();
 
-    if (missionJson.find(mission) != missionJson.end()) {
-      spdlog::debug("Found {} in config, getting only {} sclks.", mission, mission);
+    try {
+      Kernel::translateQuality(ckQuality);
+    }
+    catch (invalid_argument &e) {
+      SPDLOG_WARN("{} not a valid kernel quality, setting ckQuality to RECONSTRUCTED", ckQuality);
+      ckQuality = "reconstructed";
+    }
+
+    try {
+      Kernel::translateQuality(spkQuality);
+    }
+    catch (invalid_argument &e) {
+      SPDLOG_WARN("{} not a valid kernel quality, setting spkQuality to RECONSTRUCTED", spkQuality);
+      spkQuality = "reconstructed";
+    }
+
+    if (missionJson.contains(mission)) {
+      SPDLOG_TRACE("Found {} in config, getting only {} kernels.", mission, mission);
       missionJson = config.get(mission)[mission];
     }
     else {
@@ -206,14 +222,15 @@ namespace SpiceQL {
     }
 
     // This will change eventiually with changes to getLatestKernels
-    missionJson["sclk"]["kernels"] = getLatestKernel(missionJson["sclk"]["kernels"]);
+    missionJson["sclk"] = getLatestKernels(missionJson["sclk"]);
     json refinedCksAndSpks = searchMissionKernels(missionJson, {ets.front(), ets.back()}, true);
 
     json ephemKernels = {};
-    ephemKernels["ck"]["kernels"] = refinedCksAndSpks["ck"][Kernel::QUALITIES[(int)ckQuality]]["kernels"];
-    ephemKernels["spk"]["kernels"] = refinedCksAndSpks["spk"][Kernel::QUALITIES[(int)spkQuality]]["kernels"];
+    ephemKernels["ck"]["kernels"] = refinedCksAndSpks["ck"][ckQuality]["kernels"];
+    ephemKernels["spk"]["kernels"] = refinedCksAndSpks["spk"][spkQuality]["kernels"];
     ephemKernels["pck"]["kernels"] = missionJson["pck"]["kernels"];
     ephemKernels["tspk"]["kernels"] = missionJson["tspk"]["kernels"];
+    SPDLOG_TRACE("Kernels being furnish: {}", ephemKernels.dump());
 
     KernelSet ephemSet(ephemKernels);
 
@@ -227,15 +244,14 @@ namespace SpiceQL {
     return lt_stargs;
   }
 
-  targetOrientation getTargetOrientation(double et, int toFrame, int refFrame) {
+  vector<double> getTargetOrientation(double et, int toFrame, int refFrame) {
     // Much of this function is from ISIS SpiceRotation.cpp
     SpiceDouble stateCJ[6][6];
     SpiceDouble CJ_spice[3][3];
     SpiceDouble av_spice[3];
     SpiceDouble quat_spice[4];
 
-    array<double,4> quat;
-    array<double,3> av;
+    vector<double> orientation = {0, 0, 0, 0};
 
     bool has_av = true;
 
@@ -253,7 +269,7 @@ namespace SpiceQL {
 
       // Convert to std::array for output
       for(int i = 0; i < 3; i++) {
-        av[i] = av_spice[i];
+        orientation.push_back(av_spice[i]);
       }
 
     }
@@ -273,11 +289,208 @@ namespace SpiceQL {
     m2q_c(CJ_spice, quat_spice);
 
     for(int i = 0; i < 4; i++) {
-      quat[i] = quat_spice[i];
+      orientation[i] = quat_spice[i];
     }
 
-    if(has_av) return {quat, av};
-    return {quat, nullopt};
+    return orientation;
+  }
+
+  vector<vector<double>> getTargetOrientations(vector<double> ets, int toFrame, int refFrame, string mission, string ckQuality) {
+    SPDLOG_TRACE("Calling getTargetOrientations with {}, {}, {}, {}, {}, {}", ets.size(), toFrame, refFrame, mission, ckQuality);
+    Config config;
+    json missionJson = config.globalConf();
+
+    try {
+      Kernel::translateQuality(ckQuality);
+    }
+    catch (invalid_argument &e) {
+      SPDLOG_WARN("{} not a valid kernel quality, setting ckQuality to RECONSTRUCTED", ckQuality);
+      ckQuality = "reconstructed";
+    }
+
+    if (missionJson.contains(mission)) {
+      SPDLOG_TRACE("Found {} in config, getting only {} kernels.", mission, mission);
+      missionJson = config.get(mission)[mission];
+    }
+    else {
+      throw invalid_argument("Couldn't find " + mission + " in config explicitly, please request a mission from the config [" + getMissionKeys(config.globalConf()) + "]");
+    }
+
+    // This will change eventiually with changes to getLatestKernels
+    missionJson["sclk"] = getLatestKernels(missionJson["sclk"]);
+    json refinedCksAndSpks = searchMissionKernels(missionJson, {ets.front(), ets.back()}, true);
+
+    json ephemKernels = {};
+    ephemKernels["ck"]["kernels"] = refinedCksAndSpks["ck"][ckQuality]["kernels"];
+    ephemKernels["sclk"]["kernels"] = missionJson["sclk"]["kernels"];
+    ephemKernels["pck"]["kernels"] = missionJson["pck"]["kernels"];
+    ephemKernels["fk"] = getLatestKernels(missionJson["fk"]);
+    ephemKernels["tspk"]["kernels"] = missionJson["tspk"]["kernels"];
+    SPDLOG_TRACE("Kernels being furnish: {}", ephemKernels.dump());
+
+    KernelSet ephemSet(ephemKernels);
+
+    vector<vector<double>> orientations = {};
+    vector<double> orientation;
+    for (auto et: ets) {
+      orientation = getTargetOrientation(et, toFrame, refFrame);
+      orientations.push_back(orientation);
+    }
+
+    return orientations;
+  }
+
+
+  vector<vector<int>> frameTrace(double et, int initialFrame, string mission, string ckQuality) {
+    checkNaifErrors();
+    Config config;
+    json missionJson = config.globalConf();
+
+    try {
+      Kernel::translateQuality(ckQuality);
+    }
+    catch (invalid_argument &e) {
+      SPDLOG_WARN("{} not a valid kernel quality, setting ckQuality to RECONSTRUCTED", ckQuality);
+      ckQuality = "reconstructed";
+    }
+
+    if (missionJson.contains(mission)) {
+      SPDLOG_TRACE("Found {} in config, getting only {} kernels.", mission, mission);
+      missionJson = config.get(mission)[mission];
+    }
+    else {
+      throw invalid_argument("Couldn't find " + mission + " in config explicitly, please request a mission from the config [" + getMissionKeys(config.globalConf()) + "]");
+    }
+
+    // This will change eventiually with changes to getLatestKernels
+    missionJson["sclk"]["kernels"] = getLatestKernel(missionJson["sclk"]["kernels"]);
+    json refinedCksAndSpks = searchMissionKernels(missionJson, {et}, true);
+
+    json ephemKernels = {};
+    ephemKernels["ck"]["kernels"] = refinedCksAndSpks["ck"][ckQuality]["kernels"];
+    ephemKernels["sclk"]["kernels"] = missionJson["sclk"]["kernels"];
+    ephemKernels["pck"]["kernels"] = missionJson["pck"]["kernels"];
+    ephemKernels["fk"]["kernels"] = getLatestKernel(missionJson["fk"]["kernels"]);
+    ephemKernels["tspk"]["kernels"] = missionJson["tspk"]["kernels"];
+    SPDLOG_TRACE("Kernels being furnish: {}", ephemKernels.dump());
+
+    KernelSet ephemSet(ephemKernels);
+
+    checkNaifErrors();
+    // The code for this method was extracted from the Naif routine rotget written by N.J. Bachman &
+    //   W.L. Taber (JPL)
+    int           center;
+    int           type;
+    int           typid;
+    SpiceBoolean  found;
+    int           frmidx;  // Frame chain index for current frame
+    SpiceInt      nextFrame;   // Naif frame code of next frame
+    int           J2000Code = 1;
+    checkNaifErrors();
+    vector<int> frameCodes;
+    vector<int> frameTypes;
+    vector<int> constantFrames;
+    vector<int> timeFrames;
+    frameCodes.push_back(initialFrame);
+    frinfo_c((SpiceInt)frameCodes[0],
+             (SpiceInt *)&center,
+             (SpiceInt *)&type,
+             (SpiceInt *)&typid, &found);
+    frameTypes.push_back(type);
+
+    while (frameCodes[frameCodes.size() - 1] != J2000Code) {
+      frmidx  =  frameCodes.size() - 1;
+      // First get the frame type  (Note:: we may also need to save center if we use dynamic frames)
+      // (Another note:  the type returned is the Naif from type.  This is not quite the same as the
+      // SpiceRotation enumerated FrameType.  The SpiceRotation FrameType differentiates between
+      // pck types.  FrameTypes of 2, 6, and 7 will all be considered to be Naif frame type 2.  The
+      // logic for FrameTypes in this method is correct for all types except type 7.  Current pck
+      // do not exercise this option.  Should we ever use pck with a target body not referenced to
+      // the J2000 frame and epoch, both this method and loadPCFromSpice will need to be modified.
+      frinfo_c((SpiceInt) frameCodes[frmidx],
+               (SpiceInt *) &center,
+               (SpiceInt *) &type,
+               (SpiceInt *) &typid, &found);
+
+      if (!found) {
+        string msg = "The frame " + to_string(frameCodes[frmidx]) + " is not supported by Naif";
+        throw logic_error(msg);
+      }
+
+      double matrix[3][3];
+
+      // To get the next link in the frame chain, use the frame type
+      // 1 = INTERNAL, 2 = PCK
+      if (type == 1 ||  type == 2) {
+        nextFrame = J2000Code;
+      }
+      // 3 = CK
+      else if (type == 3) {
+        ckfrot_((SpiceInt *) &typid, &et, (double *) matrix, &nextFrame, (logical *) &found);
+
+        if (!found) {
+          string msg = "The ck rotation from frame " + to_string(frameCodes[frmidx]) + " can not "
+               + "be found due to no pointing available at requested time or a problem with the "
+               + "frame";
+          throw logic_error(msg);
+        }
+      }
+      // 4 = TK
+      else if (type == 4) {
+        tkfram_((SpiceInt *) &typid, (double *) matrix, &nextFrame, (logical *) &found);
+        if (!found) {
+          string msg = "The tk rotation from frame " + to_string(frameCodes[frmidx]) +
+                       " can not be found";
+          throw logic_error(msg);
+        }
+      }
+      // 5 = DYN
+      else if (type == 5) {
+        //
+        //        Unlike the other frame classes, the dynamic frame evaluation
+        //        routine ZZDYNROT requires the input frame ID rather than the
+        //        dynamic frame class ID. ZZDYNROT also requires the center ID
+        //        we found via the FRINFO call.
+
+        zzdynrot_((SpiceInt *) &typid, (SpiceInt *) &center, &et, (double *) matrix, &nextFrame);
+      }
+
+      else {
+        string msg = "The frame " + to_string(frameCodes[frmidx]) +
+                     " has a type " + to_string(type) + " not supported by your version of Naif Spicelib. " + 
+                     "You need to update.";
+        throw logic_error(msg);
+      }
+      frameCodes.push_back(nextFrame);
+      frameTypes.push_back(type);
+    }
+    SPDLOG_TRACE("All Frame Chain Codes: {}", fmt::join(frameCodes, ", "));
+
+    constantFrames.clear();
+    // 4 = TK
+    while (frameCodes.size() > 0) {
+      if (frameTypes[0] == 4) {
+        constantFrames.push_back(frameCodes[0]);
+        frameCodes.erase(frameCodes.begin());
+        frameTypes.erase(frameTypes.begin());
+      }
+      else {
+        break;
+      }
+    }
+
+    if (constantFrames.size() != 0) {
+      timeFrames.push_back(constantFrames[constantFrames.size() - 1]);
+    }
+
+    for (int i = 0;  i < (int) frameCodes.size(); i++) {
+      timeFrames.push_back(frameCodes[i]);
+    }
+    SPDLOG_TRACE("Time Dependent Frame Chain Codes: {}", fmt::join(timeFrames, ", "));
+    SPDLOG_TRACE("Constant Frame Chain Codes: {}", fmt::join(constantFrames, ", "));
+    checkNaifErrors();
+    vector<vector<int>> res = {timeFrames, constantFrames};
+    return res;
   }
 
 
@@ -882,8 +1095,9 @@ namespace SpiceQL {
       if (loadIak)
         kernelsToGet.push_back("iak");
     }
-
-    if (config.find(mission) != config.end()) {
+    
+    if (config.contains(mission)) {
+      vector<string> kernelsToGet = {"fk", "ik", "iak"};
       j = c[mission].get(kernelsToGet);
       json missionKernels = {};
       if (loadFk)

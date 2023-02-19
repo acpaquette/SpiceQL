@@ -219,6 +219,14 @@ void LroKernelSet::SetUp() {
   spkPath2 = root / "spk" / "LRO_TEST_GRGM660MAT370.bsp";
   writeSpk(spkPath2, positions, times2, bodyCode, 1, referenceFrame, "SPK ID 2", 1, velocities, "SPK 2");
 
+  // Write SPK3 ------------------------------------------
+  fs::create_directory(root / "spk");
+  spkPath3 = root / "spk" / "LRO_TEST_GRGM660MAT470.bsp";
+
+  velocities = {{1, 1, 1}, {2, 2, 2}};
+  positions = {{10, 10, 10}, {11, 11, 11}};
+  writeSpk(spkPath3, positions, times1, bodyCode/1000, 301, referenceFrame, "SPK ID 3", 1, velocities, "SPK 3");
+
   // Write IK1 -------------------------------------------
   fs::create_directory(root / "ik");
 
@@ -255,6 +263,13 @@ void LroKernelSet::SetUp() {
     {"TKFRAME_-85620_RELATIVE", "LRO_SC_BUS"},
     {"CK_-85620_SCLK", -85},
     {"CK_-85620_SPK", -85},
+    {"FRAME_LRO_SC_BUS", -85000},
+    {"FRAME_-85000_NAME", "LRO_SC_BUS"},
+    {"FRAME_-85000_CLASS", 3},
+    {"FRAME_-85000_CLASS_ID", -85000},
+    {"FRAME_-85000_CENTER", -85},
+    {"CK_-85000_SCLK", -85},
+    {"CK_-85000_SPK", -85},
     {"NAIF_BODY_NAME", {"LRO", "LUNAR RECONNAISSANCE ORBITER", "LRO_LROCWAC", "LRO_LROCNACL", "LRO_LROCNACR"}},
     {"NAIF_BODY_CODE", {-85, -85, -85620, -85600, -85610}}
   };

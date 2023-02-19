@@ -13,6 +13,7 @@ using namespace std::chrono;
 #include "config.h"
 #include "SpiceUsr.h"
 #include "memo.h"
+#include "query.h"
 
 #include <spdlog/spdlog.h>
 
@@ -362,4 +363,102 @@ TEST(UtilTests, testJson2DArrayTo2DVector) {
   catch (invalid_argument &e) {
     EXPECT_PRED_FORMAT2(spiceql::AssertExceptionMessage, e, "Input json is not a valid 2D Json array:");
   } 
+}
+
+TEST(PluralSuit, UnitTestGetTargetStates) {
+  MockRepository mocks;
+
+  nlohmann::json getLatestKernelsJson;
+  getLatestKernelsJson["kernels"] = {{"/Some/Path/to/sclk.tsc"}};
+  mocks.OnCallFunc(SpiceQL::getLatestKernels).Return(getLatestKernelsJson);
+
+  nlohmann::json searchMissionKernelsJson;
+  searchMissionKernelsJson["ck"]["reconstructed"]["kernels"] = {{"/Path/to/some/ck.bc"}};
+  searchMissionKernelsJson["spk"]["reconstructed"]["kernels"] = {{"/Path/to/some/spk.bsp"}};
+  mocks.OnCallFunc(SpiceQL::searchMissionKernels).Return(searchMissionKernelsJson);
+
+  vector<double> state = {0, 0, 0, 0, 0, 0, 0};
+  mocks.OnCallFunc(getTargetState).Return(state);
+
+  mocks.OnCallFunc(furnsh_c);
+
+  vector<double> ets = {110000000};
+  vector<vector<double>> resStates = getTargetStates(ets, "LRO", "LRO", "J2000", "NONE", "lroc");
+
+  EXPECT_EQ(resStates.size(), 1);
+  ASSERT_EQ(resStates.at(0).size(), 7);
+  EXPECT_DOUBLE_EQ(resStates.at(0)[0], 0.0);
+  EXPECT_DOUBLE_EQ(resStates.at(0)[1], 0.0);
+  EXPECT_DOUBLE_EQ(resStates.at(0)[2], 0.0);
+  EXPECT_DOUBLE_EQ(resStates.at(0)[3], 0.0);
+  EXPECT_DOUBLE_EQ(resStates.at(0)[4], 0.0);
+  EXPECT_DOUBLE_EQ(resStates.at(0)[5], 0.0);
+  EXPECT_DOUBLE_EQ(resStates.at(0)[6], 0.0);
+}
+
+TEST_F(LroKernelSet, UnitTestGetTargetState) {
+  nlohmann::json testKernelJson;
+  testKernelJson["kernels"] = {{ckPath1}, {ckPath2}, {spkPath1}, {spkPath2}, {spkPath3}, {ikPath2}, {fkPath}};
+  KernelSet testSet(testKernelJson);
+
+  double et = 110000000;
+  vector<double> resStates = getTargetState(et, "LRO", "MOON", "J2000", "NONE");
+
+  EXPECT_EQ(resStates.size(), 7);
+  EXPECT_NEAR(resStates[0], 0.0, 1e-14);
+  EXPECT_NEAR(resStates[1], 0.0, 1e-14);
+  EXPECT_NEAR(resStates[2], 0.0, 1e-14);
+  EXPECT_NEAR(resStates[3], 0.0, 1e-14);
+  EXPECT_NEAR(resStates[4], 0.0, 1e-14);
+  EXPECT_NEAR(resStates[5], 0.0, 1e-14);
+  EXPECT_NEAR(resStates[6], 0.0, 1e-14);
+}
+
+TEST(PluralSuit, UnitTestGetTargetOrientations) {
+  MockRepository mocks;
+
+  nlohmann::json getLatestKernelsJson;
+  getLatestKernelsJson["kernels"] = {{"/Some/Path/to/sclk.tsc"}};
+  mocks.OnCallFunc(SpiceQL::getLatestKernels).Return(getLatestKernelsJson);
+
+  nlohmann::json searchMissionKernelsJson;
+  searchMissionKernelsJson["ck"]["reconstructed"]["kernels"] = {{"/Path/to/some/ck.bc"}};
+  searchMissionKernelsJson["spk"]["reconstructed"]["kernels"] = {{"/Path/to/some/spk.bsp"}};
+  mocks.OnCallFunc(SpiceQL::searchMissionKernels).Return(searchMissionKernelsJson);
+
+  vector<double> orientation = {0, 0, 0, 0, 0, 0, 0};
+  mocks.OnCallFunc(getTargetOrientation).Return(orientation);
+
+  mocks.OnCallFunc(furnsh_c);
+
+  vector<double> ets = {110000000};
+  vector<vector<double>> resOrientations = getTargetOrientations(ets, 1, -85620, "lroc");
+
+  EXPECT_EQ(resOrientations.size(), 1);
+  ASSERT_EQ(resOrientations.at(0).size(), 7);
+  EXPECT_DOUBLE_EQ(resOrientations.at(0)[0], 0.0);
+  EXPECT_DOUBLE_EQ(resOrientations.at(0)[1], 0.0);
+  EXPECT_DOUBLE_EQ(resOrientations.at(0)[2], 0.0);
+  EXPECT_DOUBLE_EQ(resOrientations.at(0)[3], 0.0);
+  EXPECT_DOUBLE_EQ(resOrientations.at(0)[4], 0.0);
+  EXPECT_DOUBLE_EQ(resOrientations.at(0)[5], 0.0);
+  EXPECT_DOUBLE_EQ(resOrientations.at(0)[6], 0.0);
+}
+
+TEST_F(LroKernelSet, UnitTestGetTargetOrientation) {
+  nlohmann::json testKernelJson;
+  testKernelJson["kernels"] = {{ckPath1}, {ckPath2}, {spkPath1}, {spkPath2}, {spkPath3}, {ikPath2}, {fkPath}, {sclkPath}};
+  KernelSet testSet(testKernelJson);
+
+  double et = 110000000;
+  vector<double> resStates = getTargetOrientation(et, -85000, 1);
+
+  EXPECT_EQ(resStates.size(), 7);
+  EXPECT_NEAR(resStates[0], 1.0, 1e-14);
+  EXPECT_NEAR(resStates[1], 0.0, 1e-14);
+  EXPECT_NEAR(resStates[2], 0.0, 1e-14);
+  EXPECT_NEAR(resStates[3], 0.0, 1e-14);
+  EXPECT_NEAR(resStates[4], 0.0, 1e-14);
+  EXPECT_NEAR(resStates[5], 0.0, 1e-14);
+  EXPECT_NEAR(resStates[6], 0.0, 1e-14);
 }

@@ -78,16 +78,16 @@ TEST_F(LroKernelSet, UnitTestStackedKernelCopyConstructor) {
 TEST_F(LroKernelSet, UnitTestStackedKernelSetConstructorDestructor) {
   // load all available kernels
   nlohmann::json kernels = listMissionKernels(root, conf);
-  SPDLOG_DEBUG("results from listMissionKernels, {}", kernels);
+  SPDLOG_DEBUG("results from listMissionKernels, {}", kernels.dump());
 
   // do a time query
   kernels = searchMissionKernels(kernels, {110000000, 120000001}, false);
-  SPDLOG_DEBUG("Kernels after search: {} ", kernels);
+  SPDLOG_DEBUG("Kernels after search: {} ", kernels.dump());
   // get only latest versions
   kernels = getLatestKernels(kernels);
 
-  SPDLOG_DEBUG("results from getLatest: {} ", kernels);
-  
+  SPDLOG_DEBUG("results from getLatest: {} ", kernels.dump());
+
   // all the kernels in the group are now furnished.
   KernelSet ks(kernels);
 
@@ -104,10 +104,10 @@ TEST_F(LroKernelSet, UnitTestStackedKernelSetConstructorDestructor) {
     ktotal_c("ck", &nkernels);
     EXPECT_EQ(nkernels, 2);
     ktotal_c("spk", &nkernels);
-    EXPECT_EQ(nkernels, 2);
+    EXPECT_EQ(nkernels, 4);
 
     // 5 because LSK is not being loaded (yet)
-    EXPECT_EQ(pool.getRefCounts().size(), 6);
+    EXPECT_EQ(pool.getRefCounts().size(), 7);
     EXPECT_EQ(pool.getRefCount(fkPath), 2);
     EXPECT_EQ(pool.getRefCount(ckPath1), 2);
     EXPECT_EQ(pool.getRefCount(spkPath1), 2);
@@ -121,9 +121,9 @@ TEST_F(LroKernelSet, UnitTestStackedKernelSetConstructorDestructor) {
   ktotal_c("ck", &nkernels);
   EXPECT_EQ(nkernels, 1);
   ktotal_c("spk", &nkernels);
-  EXPECT_EQ(nkernels, 1);
+  EXPECT_EQ(nkernels, 2);
 
-  EXPECT_EQ(pool.getRefCounts().size(), 6);
+  EXPECT_EQ(pool.getRefCounts().size(), 7);
   EXPECT_EQ(pool.getRefCount(fkPath), 1);
   EXPECT_EQ(pool.getRefCount(ckPath1), 1);
   EXPECT_EQ(pool.getRefCount(spkPath1), 1);
@@ -143,7 +143,7 @@ TEST_F(LroKernelSet, UnitTestStackedKernelPoolGetLoadedKernels) {
   KernelSet k(kernels);
 
   std::vector<string> kv = pool.getLoadedKernels();
-  EXPECT_EQ(kv.size(), 6);
+  EXPECT_EQ(kv.size(), 7);
   EXPECT_TRUE(std::find(kv.begin(), kv.end(), fkPath) != kv.end());
   EXPECT_TRUE(std::find(kv.begin(), kv.end(), ckPath1) != kv.end());
   EXPECT_TRUE(std::find(kv.begin(), kv.end(), spkPath1) != kv.end());

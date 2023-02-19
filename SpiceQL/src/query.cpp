@@ -135,7 +135,7 @@ namespace SpiceQL {
       kernels[ptr] = newLatest;
     }
 
-    return kernels;     
+    return kernels;
   }
 
 
