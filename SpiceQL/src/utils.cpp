@@ -194,8 +194,10 @@ namespace SpiceQL {
 
   vector<vector<double>> getTargetStates(vector<double> ets, string target, string observer, string frame, string abcorr, string mission, string ckQuality, string spkQuality) {
     SPDLOG_TRACE("Calling getTargetStates with {}, {}, {}, {}, {}, {}, {}, {}", ets.size(), target, observer, frame, abcorr, mission, ckQuality, spkQuality);
-    Config config;
-    json missionJson = config.globalConf();
+    
+    if (ets.size() < 1) {
+      throw invalid_argument("No ephemeris times given.");
+    }
 
     try {
       Kernel::translateQuality(ckQuality);
@@ -213,25 +215,29 @@ namespace SpiceQL {
       spkQuality = "reconstructed";
     }
 
-    if (missionJson.contains(mission)) {
+    Config config;
+    json missionJson = {};
+    if (config.contains(mission)) {
       SPDLOG_TRACE("Found {} in config, getting only {} kernels.", mission, mission);
-      missionJson = config.get(mission)[mission];
+      missionJson = config.get(mission);
     }
     else {
       throw invalid_argument("Couldn't find " + mission + " in config explicitly, please request a mission from the config [" + getMissionKeys(config.globalConf()) + "]");
     }
+    SPDLOG_TRACE("GOT MISSION CONFIG: {}", missionJson.dump());
+    
+    json baseJson = config.get("base");
+    KernelSet baseSet(getLatestKernels(baseJson));
 
-    // This will change eventiually with changes to getLatestKernels
     missionJson["sclk"] = getLatestKernels(missionJson["sclk"]);
     json refinedCksAndSpks = searchMissionKernels(missionJson, {ets.front(), ets.back()}, true);
 
     json ephemKernels = {};
     ephemKernels["ck"]["kernels"] = refinedCksAndSpks["ck"][ckQuality]["kernels"];
     ephemKernels["spk"]["kernels"] = refinedCksAndSpks["spk"][spkQuality]["kernels"];
-    ephemKernels["pck"]["kernels"] = missionJson["pck"]["kernels"];
-    ephemKernels["tspk"]["kernels"] = missionJson["tspk"]["kernels"];
+    ephemKernels["pck"] = getLatestKernels(missionJson["pck"]);
+    ephemKernels["tspk"] = getLatestKernels(missionJson["tspk"]);
     SPDLOG_TRACE("Kernels being furnish: {}", ephemKernels.dump());
-
     KernelSet ephemSet(ephemKernels);
 
     vector<vector<double>> lt_stargs;
@@ -296,9 +302,13 @@ namespace SpiceQL {
   }
 
   vector<vector<double>> getTargetOrientations(vector<double> ets, int toFrame, int refFrame, string mission, string ckQuality) {
-    SPDLOG_TRACE("Calling getTargetOrientations with {}, {}, {}, {}, {}, {}", ets.size(), toFrame, refFrame, mission, ckQuality);
+    SPDLOG_TRACE("Calling getTargetOrientations with {}, {}, {}, {}, {}", ets.size(), toFrame, refFrame, mission, ckQuality);
     Config config;
     json missionJson = config.globalConf();
+
+    if (ets.size() < 1) {
+      throw invalid_argument("No ephemeris times given.");
+    }
 
     try {
       Kernel::translateQuality(ckQuality);
@@ -316,16 +326,15 @@ namespace SpiceQL {
       throw invalid_argument("Couldn't find " + mission + " in config explicitly, please request a mission from the config [" + getMissionKeys(config.globalConf()) + "]");
     }
 
-    // This will change eventiually with changes to getLatestKernels
     missionJson["sclk"] = getLatestKernels(missionJson["sclk"]);
     json refinedCksAndSpks = searchMissionKernels(missionJson, {ets.front(), ets.back()}, true);
 
     json ephemKernels = {};
     ephemKernels["ck"]["kernels"] = refinedCksAndSpks["ck"][ckQuality]["kernels"];
-    ephemKernels["sclk"]["kernels"] = missionJson["sclk"]["kernels"];
-    ephemKernels["pck"]["kernels"] = missionJson["pck"]["kernels"];
+    ephemKernels["sclk"] = missionJson["sclk"];
+    ephemKernels["pck"] = getLatestKernels(missionJson["pck"]);
     ephemKernels["fk"] = getLatestKernels(missionJson["fk"]);
-    ephemKernels["tspk"]["kernels"] = missionJson["tspk"]["kernels"];
+    ephemKernels["tspk"] = getLatestKernels(missionJson["tspk"]);
     SPDLOG_TRACE("Kernels being furnish: {}", ephemKernels.dump());
 
     KernelSet ephemSet(ephemKernels);
@@ -368,10 +377,10 @@ namespace SpiceQL {
 
     json ephemKernels = {};
     ephemKernels["ck"]["kernels"] = refinedCksAndSpks["ck"][ckQuality]["kernels"];
-    ephemKernels["sclk"]["kernels"] = missionJson["sclk"]["kernels"];
-    ephemKernels["pck"]["kernels"] = missionJson["pck"]["kernels"];
-    ephemKernels["fk"]["kernels"] = getLatestKernel(missionJson["fk"]["kernels"]);
-    ephemKernels["tspk"]["kernels"] = missionJson["tspk"]["kernels"];
+    ephemKernels["sclk"] = missionJson["sclk"];
+    ephemKernels["pck"] = getLatestKernel(missionJson["pck"]);
+    ephemKernels["fk"] = getLatestKernel(missionJson["fk"]);
+    ephemKernels["tspk"] = getLatestKernel(missionJson["tspk"]);
     SPDLOG_TRACE("Kernels being furnish: {}", ephemKernels.dump());
 
     KernelSet ephemSet(ephemKernels);
@@ -1080,7 +1089,6 @@ namespace SpiceQL {
 
   json loadTranslationKernels(string mission, bool loadFk, bool loadIk, bool loadIak) {
     Config c;
-    json config = c.globalConf();
     json j;
     vector<string> kernelsToGet = {};
 
@@ -1096,8 +1104,7 @@ namespace SpiceQL {
         kernelsToGet.push_back("iak");
     }
     
-    if (config.contains(mission)) {
-      vector<string> kernelsToGet = {"fk", "ik", "iak"};
+    if (c.contains(mission)) {
       j = c[mission].get(kernelsToGet);
       json missionKernels = {};
       if (loadFk)
@@ -1109,7 +1116,7 @@ namespace SpiceQL {
       j = getLatestKernels(missionKernels);
     }
     else {
-      string missionKeys = getMissionKeys(config);
+      string missionKeys = getMissionKeys(c.globalConf());
       SPDLOG_WARN("Could not find mission: \"{}\" in config. \n Double-check mission variable, manually furnish kernels, or try including frame and mission name. List of available missions: [{}].", mission, missionKeys);
     }
     return j;
@@ -1120,7 +1127,7 @@ namespace SpiceQL {
     json globalConf = missionConf.globalConf();
     json pcks;
 
-    if (globalConf.find(mission) != globalConf.end()) {
+    if (globalConf.contains(mission)) {
       SPDLOG_TRACE("Found {} in config, getting only {} pcks.", mission, mission);
       missionConf = missionConf[mission];
       pcks = missionConf.getLatest("pck")["pck"];

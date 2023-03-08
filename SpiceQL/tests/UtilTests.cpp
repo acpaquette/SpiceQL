@@ -369,7 +369,7 @@ TEST(PluralSuit, UnitTestGetTargetStates) {
   MockRepository mocks;
 
   nlohmann::json getLatestKernelsJson;
-  getLatestKernelsJson["kernels"] = {{"/Some/Path/to/sclk.tsc"}};
+  getLatestKernelsJson["kernels"] = {{"/Some/Path/to/someKernel.x"}};
   mocks.OnCallFunc(SpiceQL::getLatestKernels).Return(getLatestKernelsJson);
 
   nlohmann::json searchMissionKernelsJson;
@@ -418,7 +418,7 @@ TEST(PluralSuit, UnitTestGetTargetOrientations) {
   MockRepository mocks;
 
   nlohmann::json getLatestKernelsJson;
-  getLatestKernelsJson["kernels"] = {{"/Some/Path/to/sclk.tsc"}};
+  getLatestKernelsJson["kernels"] = {{"/Some/Path/to/someKernel.x"}};
   mocks.OnCallFunc(SpiceQL::getLatestKernels).Return(getLatestKernelsJson);
 
   nlohmann::json searchMissionKernelsJson;

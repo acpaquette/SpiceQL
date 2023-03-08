@@ -111,6 +111,9 @@ namespace SpiceQL {
 
     json eval_json(copyConfig);
     resolveConfigDependencies(eval_json, config);
+    if (!eval_json.contains(pointer)) {
+      throw invalid_argument(fmt::format("Pointer {} not in config/subset config", pointer.to_string()));
+    }
     eval_json = eval_json[pointer];
 
     vector<json::json_pointer> json_to_eval = SpiceQL::findKeyInJson(eval_json, "kernels", true);
@@ -150,10 +153,12 @@ namespace SpiceQL {
     json res;
 
     for (auto &pointer : pointers) {
+      if (pointer.at(0) != '/')
+      {
+        pointer = "/" + pointer;
+      }
       json::json_pointer p(pointer);
-      json::json_pointer cpointer(confPointer);
-      json::json_pointer evalPointer = (cpointer / p);
-      res[evalPointer] = get(p.to_string())[p];
+      res[p] = get(p);
     }
 
     return res;
@@ -167,6 +172,7 @@ namespace SpiceQL {
 
 
   json Config::get(string pointer) {
+    json res;
     json::json_pointer getConfPointer(confPointer);
 
     if (pointer != "") {
@@ -175,27 +181,46 @@ namespace SpiceQL {
         pointer = "/" + pointer;
       }
       json::json_pointer p(pointer);
-      json::json_pointer pbase(getConfPointer);
+      json::json_pointer pbase(confPointer);
       getConfPointer = (pbase / p);
     }
-    json res = evaluateConfig(getConfPointer.to_string());
-    return res[json::json_pointer(confPointer)];
+
+    try {
+      res = evaluateConfig(getConfPointer.to_string())[getConfPointer];
+    }
+    catch(const std::invalid_argument& e) {
+      throw e;
+    }
+    return res;
   }
 
 
   json Config::getLatest(string pointer) {
     json res;
-    res[pointer] = get(pointer)[pointer];
+    res[pointer] = get(pointer);
     return getLatestKernels(res);
   }
 
 
   json Config::get(vector<string> pointers) {
     json eval_json;
+    json j = {};
 
     for (auto &pointer : pointers) {
-      json j = get(pointer)[pointer];
-      eval_json[pointer] = j;
+      try {
+        j = get(pointer);
+        if (pointer != "") {
+          if (pointer.at(0) != '/')
+          {
+            pointer = "/" + pointer;
+          }
+        }
+        json::json_pointer p(pointer);
+        eval_json[p] = j;
+      }
+      catch(const std::exception& e) {
+        std::cerr << e.what() << '\n';
+      }
     }
     return eval_json;
   }
@@ -220,4 +245,10 @@ namespace SpiceQL {
     return pointers; 
   }
 
+  bool Config::contains(string key) {
+    json::json_pointer cpointer(confPointer);
+
+    json subConf = config[cpointer];
+    return subConf.contains(key);
+  }
 }

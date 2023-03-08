@@ -198,7 +198,10 @@ std::vector<std::string> lro_paths = {
     "/isis_data/lro/kernels/spk/LRO_NO_12_201311_GRGM900C_L600.BSP",
     "/isis_data/lro/kernels/spk/LRO_NO_13_201311_GRGM900C_L600.BSP",
     "/isis_data/lro/kernels/spk/LRO_SM_25_201308_GRGM660PRIMAT270.bsp",
-    "/isis_data/lro/kernels/spk/LRO_SM_26_201308_GRGM660PRIMAT270.bsp"
+    "/isis_data/lro/kernels/spk/LRO_SM_26_201308_GRGM660PRIMAT270.bsp",
+
+    "/isis_data/lro/kernels/sclk/lro_clkcor_2021327_v00.tsc",
+    "/isis_data/lro/kernels/sclk/lro_clkcor_2021287_v00.tsc"
 };
 
 // paths for testing apollo16 kernel queries

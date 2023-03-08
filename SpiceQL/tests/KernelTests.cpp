@@ -207,7 +207,7 @@ TEST_F(LroKernelSet, UnitTestFindMissionKeywords) {
 
 
 TEST_F(LroKernelSet, UnitTestGetTargetFrameInfo) {
-  nlohmann::json frameInfo = getTargetFrameInfo(499, "lro");
+  nlohmann::json frameInfo = getTargetFrameInfo(499, "lroc");
 
   nlohmann::json expectedResults;
   expectedResults["frameCode"] = 10014;
