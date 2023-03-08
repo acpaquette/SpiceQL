@@ -7,6 +7,7 @@
 #include "config.h"
 #include "utils.h"
 #include "query.h"
+#include "memo.h"
 
 using namespace std;
 using json = nlohmann::json;
@@ -32,36 +33,35 @@ TEST_F(TestConfig, FunctionalTestConfigEval) {
   json config_eval_res = testConfig.get();
   json pointer_eval_res = testConfig.get("/clementine1");
 
-  json::json_pointer pointer = "/clementine1/ck/reconstructed/kernels"_json_pointer;
+  json::json_pointer pointer = "/ck/reconstructed/kernels"_json_pointer;
   int expected_number = 4;
-  EXPECT_EQ(SpiceQL::getKernelsAsVector(config_eval_res[pointer]).size(), expected_number);
+  EXPECT_EQ(SpiceQL::getKernelsAsVector(config_eval_res["clementine1"][pointer]).size(), expected_number);
   EXPECT_EQ(SpiceQL::getKernelsAsVector(pointer_eval_res[pointer]).size(), expected_number);
-  EXPECT_EQ(testConfig[pointer].size(), 1);
+  EXPECT_EQ(testConfig["clementine1"][pointer].size(), 1);
 
-  pointer = "/clementine1/ck/smithed/kernels"_json_pointer;
+  pointer = "/ck/smithed/kernels"_json_pointer;
   expected_number = 1;
-  EXPECT_EQ(SpiceQL::getKernelsAsVector(config_eval_res[pointer]).size(), expected_number);
+  EXPECT_EQ(SpiceQL::getKernelsAsVector(config_eval_res["clementine1"][pointer]).size(), expected_number);
   EXPECT_EQ(SpiceQL::getKernelsAsVector(pointer_eval_res[pointer]).size(), expected_number);
-  EXPECT_EQ(testConfig[pointer].size(), expected_number);
+  EXPECT_EQ(testConfig["clementine1"][pointer].size(), expected_number);
 
-  pointer = "/clementine1/spk/reconstructed/kernels"_json_pointer;
+  pointer = "/spk/reconstructed/kernels"_json_pointer;
   expected_number = 2;
-  EXPECT_EQ(SpiceQL::getKernelsAsVector(config_eval_res[pointer]).size(), expected_number);
+  EXPECT_EQ(SpiceQL::getKernelsAsVector(config_eval_res["clementine1"][pointer]).size(), expected_number);
   EXPECT_EQ(SpiceQL::getKernelsAsVector(pointer_eval_res[pointer]).size(), expected_number);
-  EXPECT_EQ(testConfig[pointer].size(), 1);
+  EXPECT_EQ(testConfig["clementine1"][pointer].size(), 1);
 
-  pointer = "/clementine1/fk/kernels"_json_pointer;
+  pointer = "/fk/kernels"_json_pointer;
   expected_number = 1;
-  EXPECT_EQ(SpiceQL::getKernelsAsVector(config_eval_res[pointer]).size(), expected_number);
+  EXPECT_EQ(SpiceQL::getKernelsAsVector(config_eval_res["clementine1"][pointer]).size(), expected_number);
   EXPECT_EQ(SpiceQL::getKernelsAsVector(pointer_eval_res[pointer]).size(), expected_number);
-  EXPECT_EQ(testConfig[pointer].size(), expected_number);
+  EXPECT_EQ(testConfig["clementine1"][pointer].size(), expected_number);
 
-  pointer = "/clementine1/sclk/kernels"_json_pointer;
+  pointer = "/sclk/kernels"_json_pointer;
   expected_number = 2;
-  EXPECT_EQ(SpiceQL::getKernelsAsVector(config_eval_res[pointer]).size(), expected_number);
+  EXPECT_EQ(SpiceQL::getKernelsAsVector(config_eval_res["clementine1"][pointer]).size(), expected_number);
   EXPECT_EQ(SpiceQL::getKernelsAsVector(pointer_eval_res[pointer]).size(), expected_number);
-  EXPECT_EQ(testConfig[pointer].size(), 1);
-
+  EXPECT_EQ(testConfig["clementine1"][pointer].size(), 1);
 
   pointer = "/uvvis/ik/kernels"_json_pointer;
   expected_number = 1;
@@ -140,6 +140,79 @@ TEST_F(TestConfig, FunctionalTestsConfigKeySearch) {
   int i = 0;
   for (auto pointer : res_pointers) {
     EXPECT_EQ(pointer, pointers[i++]);
+  }
+}
+
+TEST_F(TestConfig, FunctionalTestsConfigGetRecursive) {
+  MockRepository mocks;
+  mocks.OnCallFunc(ls).Return(paths);
+
+  json resJson = testConfig.getRecursive("sclk");
+  EXPECT_EQ(resJson.size(), 16);
+  for (auto &[key, val] : resJson.items()) {
+    EXPECT_TRUE(val.contains("sclk"));
+  }
+}
+
+TEST_F(TestConfig, FunctionalTestsSubConfigGetRecursive) {
+  MockRepository mocks;
+  mocks.OnCallFunc(ls).Return(paths);
+
+  testConfig = testConfig["lro"];
+  json resJson = testConfig.getRecursive("sclk");
+  EXPECT_EQ(resJson.size(), 1);
+  for (auto &[key, val] : resJson.items()) {
+    EXPECT_EQ(key, "sclk");
+  }
+}
+
+TEST_F(TestConfig, FunctionalTestsConfigGet) {
+  vector<string> expectedPointers = {"/ck/reconstructed", "/fk", "/iak", "/ik", "/pck", "/spk/reconstructed", "/spk/smithed", "/sclk", "/tspk"};
+  MockRepository mocks;
+  mocks.OnCallFunc(Memo::ls).Return(paths);
+
+  json resJson = testConfig.get("lroc");
+  cout << resJson.dump() << endl;
+  EXPECT_EQ(resJson.size(), 8);
+  for (auto pointer : expectedPointers) {
+    ASSERT_TRUE(resJson.contains(json::json_pointer(pointer)));
+    EXPECT_TRUE(resJson[json::json_pointer(pointer)]["kernels"].size() > 0);
+  }
+}
+
+TEST_F(TestConfig, FunctionalTestsConfigGetVector) {
+  vector<string> expectedLrocPointers = {"/ck/reconstructed", "/fk", "/iak", "/ik", "/pck", "/spk/reconstructed", "/spk/smithed", "/sclk", "/tspk"};
+  vector<string> expectedCassiniPointers = {"/ck/reconstructed", "/ck/smithed", "/fk", "/iak", "/pck", "/pck/smithed", "/sclk", "/spk"};
+  MockRepository mocks;
+  mocks.OnCallFunc(Memo::ls).Return(paths);
+
+  vector<string> configPointers = {"lroc", "cassini"};
+  json resJson = testConfig.get(configPointers);
+  ASSERT_EQ(resJson.size(), 2);
+  ASSERT_EQ(resJson["lroc"].size(), 8);
+  for (auto pointer : expectedLrocPointers) {
+    ASSERT_TRUE(resJson["lroc"].contains(json::json_pointer(pointer)));
+    EXPECT_TRUE(resJson["lroc"][json::json_pointer(pointer)]["kernels"].size() > 0);
+  }
+
+  EXPECT_EQ(resJson["cassini"].size(), 6);
+  for (auto pointer : expectedCassiniPointers) {
+    ASSERT_TRUE(resJson["cassini"].contains(json::json_pointer(pointer)));
+    EXPECT_TRUE(resJson["cassini"][json::json_pointer(pointer)]["kernels"].size() > 0);
+  }
+}
+
+TEST_F(TestConfig, FunctionalTestsSubsetConfigGetVector) {
+  vector<string> expectedPointers = {"/fk", "/sclk", "/ik", "/pck"};
+  MockRepository mocks;
+  mocks.OnCallFunc(Memo::ls).Return(paths);
+  testConfig = testConfig["lroc"];
+
+  json resJson = testConfig.get(expectedPointers);
+  ASSERT_EQ(resJson.size(), 4);
+  for (auto pointer : expectedPointers) {
+    ASSERT_TRUE(resJson.contains(json::json_pointer(pointer)));
+    EXPECT_TRUE(resJson[json::json_pointer(pointer)]["kernels"].size() > 0);
   }
 }
 

@@ -146,6 +146,18 @@ namespace SpiceQL {
        */
       std::vector<std::string> findKey(std::string key, bool recursive);
 
+
+      /**
+       * @brief Check if the given key is in the config
+       * 
+       * Wrapper around nlohmann::json contains to see if the underlying config json contains
+       * the given key
+       * 
+       * @param key a key or json style pointer
+       * @return boolean true if key was found, otherwise false
+       */
+      bool contains(std::string key);
+
       /**
        * @brief Get the pointer at a position of a pointer
        *

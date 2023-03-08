@@ -102,7 +102,7 @@ namespace SpiceQL {
     }
 
     if (code == 0) {
-      throw invalid_argument(fmt::format("Frame code for frame name \"{}\" not found.", frame));
+      throw invalid_argument(fmt::format("Frame code for frame name [{}] not found.", frame));
     }
 
     return code;
@@ -202,7 +202,7 @@ namespace SpiceQL {
       if (globalConf.find(mission) != globalConf.end()) {
         SPDLOG_DEBUG("Found {} in config, getting only {} sclks.", mission, mission);
         missionConf = missionConf[mission];
-        sclks = missionConf.getLatest("sclk")["sclk"];
+        sclks = missionConf.getLatest("sclk");
       }
       else {
         SPDLOG_DEBUG("Coudn't find {} in config explicitly, loading all sclk kernels", mission);
@@ -247,30 +247,10 @@ namespace SpiceQL {
 
 
   json findMissionKeywords(string key, string mission) {
-    Config missionConf;
-    json globalConf = missionConf.globalConf();
-    json j;
-    if (globalConf.find(mission) != globalConf.end()) {
-      vector<string> kernelsToGet = {"ik", "iak"};
-      j = missionConf[mission].get(kernelsToGet);
-      json missionKernels = {};
-      missionKernels["ik"] = j["ik"];
-      missionKernels["iak"] = j["iak"];
-      j = getLatestKernels(missionKernels);
-    }
-    else {
-      throw invalid_argument(fmt::format("Could not find mission: \"{}\" in config.", mission));
-    }
+    json j = loadTranslationKernels(mission);
     KernelSet kset(j);
 
-    // check to make sure the key exists when calling findKeywords(key)
-    if (findKeywords(key).contains(key)){
-      return findKeywords(key);
-    }
-    // throw exception
-    else {
-      throw invalid_argument(fmt::format("key: {} not in kernels for mission: {}", key, mission));
-    }
+    return findKeywords(key);
   }
 
 

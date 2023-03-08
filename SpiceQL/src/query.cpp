@@ -264,7 +264,7 @@ namespace SpiceQL {
           } // end  of searching arr
         } // end of iterating qualities
         
-        SPDLOG_TRACE("newKernels {}", newKernels);
+        SPDLOG_TRACE("newKernels {}", newKernels.dump());
         reducedKernels[p/qual/"kernels"] = newKernels;
         reducedKernels[p]["deps"] = kernels[p]["deps"];
       }
@@ -281,7 +281,7 @@ namespace SpiceQL {
 
 
   vector<string> getKernelsAsVector(json kernels) {
-    SPDLOG_TRACE("geKernelsAsVector json: {}}", kernels.dump());
+    SPDLOG_TRACE("geKernelsAsVector json: {}", kernels.dump());
 
     vector<json::json_pointer> pointers = findKeyInJson(kernels, "kernels");
     vector<string> kernelVect;
@@ -294,9 +294,14 @@ namespace SpiceQL {
     }
     else {
       for (auto & p : pointers) {
-        vector<vector<string>> ks = json2DArrayTo2DVector(kernels[p]);
-        for (auto &subarr : ks) { 
-          kernelVect.insert(kernelVect.end(), subarr.begin(), subarr.end());
+        if (!kernels[p].empty()) {
+          vector<vector<string>> ks = json2DArrayTo2DVector(kernels[p]);
+          for (auto &subarr : ks) { 
+            kernelVect.insert(kernelVect.end(), subarr.begin(), subarr.end());
+          }
+        }
+        else {
+          SPDLOG_WARN("Unable to furnish {}, with kernels {}", p.to_string(), kernels[p].dump());
         }
       }    
     }

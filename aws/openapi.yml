@@ -269,30 +269,35 @@ paths:
         required: true
         schema:
           type: "string"
+        example: "mro"
       - name: "observer"
         in: "query"
         description: "Observing body that the target state will be relative to"
         required: true
         schema:
           type: "string"
+        example: "MARS"
       - name: "frame"
         in: "query"
         description: "Output reference frame to be used"
         required: true
         schema:
           type: "string"
+        example: "J2000"
       - name: "abcorr"
         in: "query"
         description: "Aboration correction"
         required: true
         schema:
           type: "string"
+        example: "LT+S"
       - name: "mission"
         in: "query"
         description: "Mission name as it relates to the config files"
         required: true
         schema:
           type: "string"
+        example: "mro"
       responses:
         '200':
           description: OK
@@ -309,6 +314,68 @@ paths:
           integration.request.querystring.frame: method.request.querystring.frame,
           integration.request.querystring.abcorr: method.request.querystring.abcorr,
           integration.request.querystring.mission: method.request.querystring.mission
+        }
+        responses:
+          default:
+            statusCode: '200'
+            responseTemplates: 
+              "application/json": "'$input.body'"
+  /getTargetOrientations:
+    get:
+      description: 'Get orientations of toFrame relative to reFrame for each provided time'
+      parameters: 
+      - name: "ets"
+        in: "query"
+        description: "All ephemeris times to get orientations for"
+        required: true
+        schema:
+          type: "array"
+          items:
+            type: "number"
+            format: "double"
+      - name: "toFrame"
+        in: "query"
+        description: "CK frame to translate to"
+        required: true
+        schema:
+          type: "integer"
+        example: "0"
+      - name: "refFrame"
+        in: "query"
+        description: "CK frame to translate from"
+        required: true
+        schema:
+          type: "integer"
+        example: "-85620"
+      - name: "mission"
+        in: "query"
+        description: "Mission name as it relates to the config files"
+        required: true
+        schema:
+          type: "string"
+        example: "mro"
+      - name: "ckQuality"
+        in: "query"
+        description: "Quality of kernel to get for the CK kernels"
+        required: false
+        schema:
+          type: "string"
+        example: "reconstructed"
+      responses:
+        '200':
+          description: OK
+      x-amazon-apigateway-integration:
+        type: aws
+        httpMethod: POST
+        uri : "arn:aws:apigateway:us-west-2:lambda:path/2015-03-31/functions/arn:aws:lambda:us-west-2:950438895271:function:getTargetOrientationslambda/invocations"
+        requestTemplates : 
+          "application/json": "{\"ets\": $input.params('ets'), \"toFrame\": $input.params('toFrame'), \"refFrame\": $input.params('refFrame'), \"mission\":\"$input.params('mission')\", \"ckQuality\":\"$input.params('ckQuality')\"}"
+        requestParameters : {
+          integration.request.querystring.ets: method.request.querystring.ets,
+          integration.request.querystring.target: method.request.querystring.toFrame,
+          integration.request.querystring.observer: method.request.querystring.refFrame,
+          integration.request.querystring.abcorr: method.request.querystring.mission,
+          integration.request.querystring.mission: method.request.querystring.ckQuality
         }
         responses:
           default:
@@ -464,4 +531,56 @@ paths:
             statusCode: '200'
             responseTemplates: 
               "application/json": "'$input.body'"
-
+  /frameTrace:
+    get:
+      description: 'Get all frames between initialFrame and J2000 (0)'
+      parameters: 
+      - name: "et"
+        in: "query"
+        description: "Ephemeris times to trace frames across"
+        required: true
+        schema:
+          format: "double"
+          type: "number"
+        example: "1281792313.1234284"
+      - name: "initialFrame"
+        in: "query"
+        description: "Starting frame to trace back to J2000 (0)"
+        required: true
+        schema:
+          type: "integer"
+        example: "-85620"
+      - name: "mission"
+        in: "query"
+        description: "Mission name as it relates to the config files"
+        required: true
+        schema:
+          type: "string"
+        example: "mro"
+      - name: "ckQuality"
+        in: "query"
+        description: "Quality of kernel to get for the CK kernels"
+        required: false
+        schema:
+          type: "string"
+        example: "reconstructed"
+      responses:
+        '200':
+          description: OK
+      x-amazon-apigateway-integration:
+        type: aws
+        httpMethod: POST
+        uri : "arn:aws:apigateway:us-west-2:lambda:path/2015-03-31/functions/arn:aws:lambda:us-west-2:950438895271:function:getTargetStateslambda/invocations"
+        requestTemplates : 
+          "application/json": "{\"ets\": $input.params('et'), \"initialFrame\": $input.params('initialFrame'), \"mission\":\"$input.params('mission')\", \"ckQuality\":\"$input.params('ckQuality')\"}"
+        requestParameters : {
+          integration.request.querystring.ets: method.request.querystring.ets,
+          integration.request.querystring.target: method.request.querystring.initialFrame,
+          integration.request.querystring.observer: method.request.querystring.mission,
+          integration.request.querystring.frame: method.request.querystring.ckQuality
+        }
+        responses:
+          default:
+            statusCode: '200'
+            responseTemplates: 
+              "application/json": "'$input.body'"

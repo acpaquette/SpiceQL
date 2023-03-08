@@ -102,11 +102,11 @@ namespace Memo {
         const char* env_redis_enabled = getenv("SPICEQL_ENABLE_REDIS");
         bool is_redis_enabled = !(env_redis_enabled == NULL);
 
-        if (env_redis_enabled != NULL) { 
+        if (env_redis_enabled != NULL) {
+            SPDLOG_TRACE("$SPICEQL_ENABLE_REDIS {}", env_redis_enabled);
             std::istringstream(std::string(env_redis_enabled)) >> std::boolalpha >> is_redis_enabled;
         }
 
-        SPDLOG_TRACE("$SPICEQL_ENABLE_REDIS {}", env_redis_enabled);
         SPDLOG_TRACE("Is Redis enabled? {}", is_redis_enabled);
         return is_redis_enabled;
     }

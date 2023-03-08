@@ -1,6 +1,4 @@
-import json
 import pyspiceql
-import os
 
 def lambda_handler(event, context):
     try: 
@@ -11,21 +9,19 @@ def lambda_handler(event, context):
         args = list(event.values())
         # removes empty arguments from list
         args = [arg for arg in args if arg]
-        ret = func(*args)
-        print("Returned: ", ret)
+        ret = {"return": func(*args)}
+        print(ret)
         return {
             "statusCode" : 200,
-            "body" : json.dumps({
-                "return" : ret
-            })
+            "body" : ret
         }
-        
-    except Exception as e: 
+
+    except Exception as e:
         return {
             "statusCode" : 500,
-            "body" : json.dumps({
+            "body" : {
                 "error" : str(e)
-            })
+            }
         }
     
 
@@ -34,21 +30,19 @@ def create_lambda_call(func):
       try: 
         print("Lambda Event: ", event)
         print("Lambda Context: ", context)
-        ret = func(**event)
-        print("Returned: ", ret)
+        ret = {"return": func(**event)}
+        print(ret)
         return {
             "statusCode" : 200,
-            "body" : json.dumps({
-                "return" : ret
-            })
+            "body" : ret
         }
         
       except Exception as e: 
         return {
             "statusCode" : 500,
-            "body" : json.dumps({
+            "body" : {
                 "error" : str(e)
-            })
+            }
         }
     return lambda_wrapper
 
@@ -58,7 +52,9 @@ lambda_utcToEt = create_lambda_call(pyspiceql.utcToEt)
 lambda_translateNameToCode = create_lambda_call(pyspiceql.Memo_translateNameToCode)
 lambda_translateCodeToName = create_lambda_call(pyspiceql.Memo_translateCodeToName)
 lambda_getTargetStates = create_lambda_call(pyspiceql.getTargetStates)
+lambda_getTargetOrientations = create_lambda_call(pyspiceql.getTargetOrientations)
 lambda_getFrameInfo = create_lambda_call(pyspiceql.getFrameInfo)
 lambda_findMissionKeywords = create_lambda_call(pyspiceql.findMissionKeywords)
 lambda_getTargetValues = create_lambda_call(pyspiceql.getTargetValues)
 lambda_getTargetFrameInfo = create_lambda_call(pyspiceql.getTargetFrameInfo)
+lambda_frameTrace = create_lambda_call(pyspiceql.frameTrace)
