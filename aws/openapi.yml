@@ -550,12 +550,6 @@ paths:
         schema:
           type: "integer"
         example: "-85620"
-      - name: "nadir"
-        in: "query"
-        description: "Get Nadir pointing for a spacecraft"
-        required: false
-        schema:
-          type: "boolean"
       - name: "mission"
         in: "query"
         description: "Mission name as it relates to the config files"
@@ -578,11 +572,10 @@ paths:
         httpMethod: POST
         uri : "arn:aws:apigateway:us-west-2:lambda:path/2015-03-31/functions/arn:aws:lambda:us-west-2:950438895271:function:frameTracelambda/invocations"
         requestTemplates : 
-          "application/json": "{\"ets\": $input.params('et'), \"initialFrame\": $input.params('initialFrame'), \"nadir\": $input.params('nadir'), \"mission\":\"$input.params('mission')\", \"ckQuality\":\"$input.params('ckQuality')\"}"
+          "application/json": "{\"ets\": $input.params('et'), \"initialFrame\": $input.params('initialFrame') \"mission\":\"$input.params('mission')\", \"ckQuality\":\"$input.params('ckQuality')\"}"
         requestParameters : {
-          integration.request.querystring.ets: method.request.querystring.ets,
+          integration.request.querystring.et: method.request.querystring.et,
           integration.request.querystring.target: method.request.querystring.initialFrame,
-          integration.request.querystring.nadir: method.request.querystring.nadir,
           integration.request.querystring.observer: method.request.querystring.mission,
           integration.request.querystring.frame: method.request.querystring.ckQuality
         }
