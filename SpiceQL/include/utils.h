@@ -155,7 +155,7 @@ namespace SpiceQL {
    *  @return A vector of 7 elements with a 0 - 5 index state vector of position and velocity 
    *          in x,y,z,vx,vy,vz format followed by the light time adjustment at the 6th index.
   **/
-  std::vector<double> getTargetState(double et, std::string target, std::string observer, std::string frame="J2000", std::string abcorr="NONE");
+  std::vector<double> getTargetState(double et, std::string target, std::string observer, std::string frame="J2000", std::string abcorr="NONE"); // use j2000 for default reference frame
 
   /**
    * @brief Gives the positions and velocities for a given frame given a set of ephemeris times
@@ -182,13 +182,22 @@ namespace SpiceQL {
    * @param mission Config subset as it relates to the mission
    * @param ckQuality string describing the quality of cks to try and obtain
    * @param spkQuality string describing the quality of spks to try and obtain
+   * @param searchKernels bool Whether to search the kernels for the user
    *
    * @see SpiceQL::getTargetState
    * @see Kernel::Quality
    *
    * @return A vector of vectors with a Nx7 state vector of positions and velocities in x,y,z,vx,vy,vz format followed by the light time adjustment.
    **/
-  std::vector<std::vector<double>> getTargetStates(std::vector<double> ets, std::string target, std::string observer, std::string frame="J2000", std::string abcorr="NONE", std::string mission="", std::string ckQuality="reconstructed", std::string spkQuality="reconstructed");
+  std::vector<std::vector<double>> getTargetStates(std::vector<double> ets,
+                                                   std::string target,
+                                                   std::string observer,
+                                                   std::string frame="J2000", // use j2000 for default reference frame
+                                                   std::string abcorr="NONE",
+                                                   std::string mission="",
+                                                   std::string ckQuality="reconstructed",
+                                                   std::string spkQuality="reconstructed",
+                                                   bool searchKernels=true);
 
   /**
    * @brief Gives quaternion and angular velocity for a given frame at a given ephemeris time
@@ -202,7 +211,7 @@ namespace SpiceQL {
    * @param refframe the reference frame's NAIF code, orientations are relative to this reference frame
    * @returns SPICE-style quaternions (w,x,y,z) and optional angular velocity (4 element without angular velocity, 7 element with)
   **/
-  std::vector<double> getTargetOrientation(double et, int toframe, int refframe = 1); // use j2000 for default reference frame
+  std::vector<double> getTargetOrientation(double et, int toframe, int refframe=1); // use j2000 for default reference frame
 
   /**
    * @brief Gives quaternion and angular velocity for a given frame at a set of ephemeris times
@@ -216,12 +225,18 @@ namespace SpiceQL {
    * @param refframe the reference frame's NAIF code, orientations are relative to this reference frame
    * @param mission Config subset as it relates to the mission
    * @param ckQuality string describing the quality of cks to try and obtain
+   * @param searchKernels bool Whether to search the kernels for the user
    *
    * @see SpiceQL::getTargetOrientation
    *
    * @returns Vector of SPICE-style quaternions (w,x,y,z) and optional angular velocity (4 element without angular velocity, 7 element with)
-  **/
-  std::vector<std::vector<double>> getTargetOrientations(std::vector<double> ets, int toframe, int refframe=1, std::string mission="", std::string ckQuality="reconstructed"); // use j2000 for default reference frame
+   **/
+  std::vector<std::vector<double>> getTargetOrientations(std::vector<double> ets, 
+                                                         int toframe, 
+                                                         int refframe=1, // use j2000 for default reference frame
+                                                         std::string mission="", 
+                                                         std::string ckQuality="reconstructed",  
+                                                         bool searchKernels=true);
 
 
   /**
@@ -234,11 +249,12 @@ namespace SpiceQL {
    * @param initialFrame the initial frame's NAIF code.
    * @param mission Config subset as it relates to the mission
    * @param ckQuality int describing the quality of cks to try and obtain
+   * @param searchKernels bool Whether to search the kernels for the user
    *
    * @returns A two element vector of vectors ints, where the first element is the sequence of time dependent frames
    * and the second is the sequence of constant frames
   **/
-  std::vector<std::vector<int>> frameTrace(double et, int initialFrame, std::string mission="", std::string ckQuality="reconstructed");
+  std::vector<std::vector<int>> frameTrace(double et, int initialFrame, std::string mission="", std::string ckQuality="reconstructed",  bool searchKernels=true);
 
   /**
     * @brief finds key:values in kernel pool
@@ -454,11 +470,11 @@ namespace SpiceQL {
    */
   nlohmann::json loadTranslationKernels(std::string mission, bool loadFk=true, bool loadIk=true, bool loadIak=true);
 
-
   /**
    * @brief Loads PCK kernels associated to mission name.
-   * 
+   *
+   * @param kernelType kernelType to search for and load
    * @param mission mission name of the config file
    */
-  nlohmann::json loadPckKernels(std::string mission);
+  nlohmann::json loadSelectKernels(std::string kernelType, std::string mission);
 }

@@ -342,19 +342,19 @@ Resources:
       SourceArn: !Sub "arn:aws:execute-api:us-west-2:950438895271:${SpiceQlRestfulApiId}/*/GET/findMissionKeywords"
 
 
-  #getTargetValues endpoint
-  getTargetValuesLambda:
+  #findTargetKeywords endpoint
+  findTargetKeywordsLambda:
     Type: AWS::Lambda::Function
     Properties:
       Timeout: 300 
       Role: arn:aws:iam::950438895271:role/csr-Lambda-Role
-      FunctionName: getTargetValueslambda
+      FunctionName: findTargetKeywordslambda
       PackageType: Image
       FileSystemConfigs: 
         - Arn: !Ref AccessPointResourceArn
           LocalMountPath: '/mnt/isis_data'
       ImageConfig:
-        Command: ["lambda_function.lambda_getTargetValues"]
+        Command: ["lambda_function.lambda_findTargetKeywords"]
       Code:
         ImageUri: 950438895271.dkr.ecr.us-west-2.amazonaws.com/spiceql:latest
       VpcConfig:
@@ -367,13 +367,13 @@ Resources:
           SPICEQL_REDIS_HOST: "spiceqlelasticachecluster.wufcwa.0001.usw2.cache.amazonaws.com"
           SPICEQL_REDIS_PORT: 6379
           SPICEQL_LOG_LEVEL: trace
-  getTargetValuesLambdaPermission:
+  findTargetKeywordsLambdaPermission:
     Type: AWS::Lambda::Permission
     Properties:
       Action: lambda:InvokeFunction
-      FunctionName: !Ref getTargetValuesLambda
+      FunctionName: !Ref findTargetKeywordsLambda
       Principal: apigateway.amazonaws.com
-      SourceArn: !Sub "arn:aws:execute-api:us-west-2:950438895271:${SpiceQlRestfulApiId}/*/GET/getTargetValues"
+      SourceArn: !Sub "arn:aws:execute-api:us-west-2:950438895271:${SpiceQlRestfulApiId}/*/GET/findTargetKeywords"
 
 
   #getFrameInfo endpoint

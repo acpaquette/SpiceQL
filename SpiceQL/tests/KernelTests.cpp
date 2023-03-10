@@ -163,14 +163,14 @@ TEST_F(LroKernelSet, UnitTestLoadTimeKernels) {
 
 
 TEST_F(LroKernelSet, UnitTestStrSclkToEt) {
-  double et = strSclkToEt(-85, "lro", "1/281199081:48971");
+  double et = strSclkToEt(-85, "1/281199081:48971", "lro");
 
   EXPECT_DOUBLE_EQ(et, 312778347.97478431);
 }
 
 
 TEST_F(LroKernelSet, UnitTestDoubleSclkToEt) {
-  double et = doubleSclkToEt(-85, "lro", 922997380.174174);
+  double et = doubleSclkToEt(-85, 922997380.174174, "lro");
 
   EXPECT_DOUBLE_EQ(et, 31593348.006268278);
 }

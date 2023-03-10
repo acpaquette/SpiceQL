@@ -112,7 +112,8 @@ namespace SpiceQL {
     json eval_json(copyConfig);
     resolveConfigDependencies(eval_json, config);
     if (!eval_json.contains(pointer)) {
-      throw invalid_argument(fmt::format("Pointer {} not in config/subset config", pointer.to_string()));
+      return {};
+      // throw invalid_argument(fmt::format("Pointer {} not in config/subset config", pointer.to_string()));
     }
     eval_json = eval_json[pointer];
 
