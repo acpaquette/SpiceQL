@@ -301,9 +301,10 @@ namespace SpiceQL {
    * See Also: https://naif.jpl.nasa.gov/pub/naif/toolkit_docs/C/cspice/str2et_c.html
    *
    * @param et UTC string, e.g. "1988 June 13, 12:29:48 TDB"
+   * @param searchKernels bool Whether to search the kernels for the user
    * @returns double precision ephemeris time
    **/
-  double utcToEt(std::string utc);
+  double utcToEt(std::string utc, bool searchKernels = true);
 
   /**
    * @brief Converts a given string spacecraft clock time to an ephemeris time
@@ -312,12 +313,13 @@ namespace SpiceQL {
    * to an ephemeris time. Call this function if your clock time looks something like:
    * 1/281199081:48971
    *
-   * @param frameCode
-   * @param mission
-   * @param sclk
+   * @param frameCode int Frame id to use
+   * @param sclk string Spacecraft Clock formatted as a string
+   * @param mission string Mission name as it relates to the config files
+   * @param searchKernels bool Whether to search the kernels for the user
    * @return double
    */
-  double strSclkToEt(int frameCode,std::string mission, std::string sclk);
+  double strSclkToEt(int frameCode, std::string sclk, std::string mission, bool searchKernels=true);
 
   /**
    * @brief Converts a given double spacecraft clock time to an ephemeris time
@@ -326,12 +328,13 @@ namespace SpiceQL {
    * to an ephemeris time. Call this function if your clock time looks something like:
    * 922997380.174174
    *
-   * @param frameCode
-   * @param mission
-   * @param sclk
+   * @param frameCode int Frame id to use
+   * @param sclk int Spacecraft Clock formatted as an int
+   * @param mission string Mission name as it relates to the config files
+   * @param searchKernels bool Whether to search the kernels for the user
    * @return double
    */
-  double doubleSclkToEt(int frameCode, std::string mission, double sclk);
+  double doubleSclkToEt(int frameCode, double sclk, std::string mission, bool searchKernels=true);
 
   /**
    * @brief Get the center, class id, and class of a given frame
@@ -340,9 +343,10 @@ namespace SpiceQL {
    *
    * @param frame String frame name to translate to a NAIF code
    * @param mission Mission name as it relates to the config files
+   * @param searchKernels bool Whether to search the kernels for the user
    * @return 3 element vector of the given frames center, class id, and class
   **/
-  std::vector<int> getFrameInfo(int frame, std::string mission);
+  std::vector<int> getFrameInfo(int frame, std::string mission, bool searchKernels=true);
 
   /**
    * @brief Switch between NAIF frame string name to integer frame code
@@ -351,9 +355,10 @@ namespace SpiceQL {
    *
    * @param frame String frame name to translate to a NAIF code
    * @param mission Mission name as it relates to the config files
+   * @param searchKernels bool Whether to search the kernels for the user
    * @return integer Naif frame code
   **/
-  int translateNameToCode(std::string frame, std::string mission = "");
+  int translateNameToCode(std::string frame, std::string mission="", bool searchKernels=true);
 
   /**
    * @brief Switch between NAIF frame integer code to string frame name
@@ -361,10 +366,11 @@ namespace SpiceQL {
    * See <a href="https://naif.jpl.nasa.gov/pub/naif/toolkit_docs/C/req/naif_ids.html">NAIF's Docs on frame codes</a> for more information
    *
    * @param frame int NAIF frame code to translate
+   * @param searchKernels bool Whether to search the kernels for the user
    * @param mission Mission name as it relates to the config files
    * @return string Naif frame name
   **/
-  std::string translateCodeToName(int frame, std::string mission = "");
+  std::string translateCodeToName(int frame, std::string mission="", bool searchKernels=true);
 
   /**
     * @brief returns kernel values for a specific mission in the form of a json
@@ -373,22 +379,23 @@ namespace SpiceQL {
     * 
     * @param key key - Kernel to get values from 
     * @param mission mission name
+    * @param searchKernels bool Whether to search the kernels for the user
     * @returns json of values
   **/
-  nlohmann::json findMissionKeywords(std::string key, std::string mission);
+  nlohmann::json findMissionKeywords(std::string key, std::string mission, bool searchKernels=true);
 
   /**
     * @brief returns Target values in the form of a vector
     *
     *  Takes in a target and key and returns the value associated in the form of vector.
-    *  Note: This function is mainly for obtaining the target radii. For obtaining other values, use getKernelVectorValue or getKernelStringValue.
+    *  Note: This function is mainly for obtaining target keywords. For obtaining other values, use findMissionKeywords.
     * 
-    * @param target target name
     * @param key keyword for desired values
     * @param mission mission name as it relates to the config files
+    * @param searchKernels bool Whether to search the kernels for the user
     * @returns vector of values
   **/
-  std::vector<double> getTargetValues(std::string target, std::string key, std::string mission);
+  nlohmann::json findTargetKeywords(std::string key, std::string mission, bool searchKernels = true);
 
   /**
     * @brief returns frame name and frame code associated to the target ID.
@@ -397,8 +404,8 @@ namespace SpiceQL {
     * 
     * @param targetId target ID
     * @param mission mission name as it relates to the config files
+    * @param searchKernels bool Whether to search the kernels for the user
     * @returns json of frame name and frame code
   **/
-  nlohmann::json getTargetFrameInfo(int targetId, std::string mission);
-
+  nlohmann::json getTargetFrameInfo(int targetId, std::string mission, bool searchKernels=true);
 }

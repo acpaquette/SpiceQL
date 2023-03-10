@@ -4,7 +4,7 @@ cmake_minimum_required(VERSION 3.14)
 set(CMAKE_SWIG_FLAGS)
 find_package(SWIG REQUIRED)
 include(UseSWIG)
-list(APPEND CMAKE_SWIG_FLAGS "-py3;-DPY3")
+list(APPEND CMAKE_SWIG_FLAGS "-py3;-DPY3;-keyword")
 
 # Setup for Python linking
 find_package(Python3 REQUIRED COMPONENTS Interpreter Development)

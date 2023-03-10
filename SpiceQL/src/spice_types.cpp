@@ -83,14 +83,15 @@ namespace SpiceQL {
   }
 
 
-  int translateNameToCode(string frame, string mission) {    
+  int translateNameToCode(string frame, string mission, bool searchKernels) {    
     SpiceInt code;
     SpiceBoolean found;
+    json kernelsToLoad = {};
 
-    if (mission == ""){
-      mission = frame;
+    if (mission != "" && searchKernels) {
+      kernelsToLoad = loadTranslationKernels(mission);
     } 
-    KernelSet kset(loadTranslationKernels(mission));
+    KernelSet kset(kernelsToLoad);
 
     checkNaifErrors();
     bodn2c_c(frame.c_str(), &code, &found);
@@ -109,12 +110,12 @@ namespace SpiceQL {
   }
 
 
-  string translateCodeToName(int frame, string mission) {
+  string translateCodeToName(int frame, string mission, bool searchKernels) {
     SpiceChar name[128];
     SpiceBoolean found;
     json kernelsToLoad = {};
 
-    if (mission != ""){
+    if (mission != "" && searchKernels){
       kernelsToLoad = loadTranslationKernels(mission);
     }
     KernelSet kset(kernelsToLoad);
@@ -135,7 +136,7 @@ namespace SpiceQL {
     return string(name);
   }
 
-  vector<int> getFrameInfo(int frame, string mission) {
+  vector<int> getFrameInfo(int frame, string mission, bool searchKernels) {
     SpiceInt cent;
     SpiceInt frclss;
     SpiceInt clssid;
@@ -143,7 +144,8 @@ namespace SpiceQL {
 
     json kernelsToLoad = {};
 
-    if (mission != "") {
+    if (mission != "" && searchKernels) {
+      // Load only the FKs
       kernelsToLoad = loadTranslationKernels(mission, true, false, false);
     }
     KernelSet kset(kernelsToLoad);
@@ -177,12 +179,16 @@ namespace SpiceQL {
   }
 
 
-  double utcToEt(string utc) {
-      // get lsk kernel
+  double utcToEt(string utc, bool searchKernels) {
       Config conf;
       conf = conf["base"];
+      json lsks = {};
 
-      json lsks = conf.getLatest("lsk")["lsk"];
+      // get lsk kernel
+      if (searchKernels) {
+       lsks = conf.getLatest("lsk");
+      }
+
       KernelSet lsk(lsks);
 
       SpiceDouble et;
@@ -194,20 +200,14 @@ namespace SpiceQL {
   }
 
 
-  double strSclkToEt(int frameCode, string mission, string sclk) {
-      // get lsk kernel
+  double strSclkToEt(int frameCode, string sclk, string mission, bool searchKernels) {
       Config missionConf;
-      json globalConf = missionConf.globalConf();
       json sclks;
-      if (globalConf.find(mission) != globalConf.end()) {
-        SPDLOG_DEBUG("Found {} in config, getting only {} sclks.", mission, mission);
-        missionConf = missionConf[mission];
-        sclks = missionConf.getLatest("sclk");
+
+      if (searchKernels) {
+        sclks = loadSelectKernels("sclk", mission);
       }
-      else {
-        SPDLOG_DEBUG("Coudn't find {} in config explicitly, loading all sclk kernels", mission);
-        sclks = missionConf.getLatestRecursive("sclk");
-      }
+
       KernelSet sclkSet(sclks);
 
       SpiceDouble et;
@@ -219,69 +219,51 @@ namespace SpiceQL {
       return et;
   }
 
-
-  double doubleSclkToEt(int frameCode, string mission, double sclk) {
-      // get lsk kernel
+  double doubleSclkToEt(int frameCode, double sclk, string mission, bool searchKernels) {
       Config missionConf;
-      json globalConf = missionConf.globalConf();
       json sclks;
-      if (globalConf.find(mission) != globalConf.end()) {
-        spdlog::debug("Found {} in config, getting only {} sclks.", mission, mission);
-        missionConf = missionConf[mission];
-        sclks = missionConf.getLatest("sclk")["sclk"];
+
+      if (searchKernels) {
+        sclks = loadSelectKernels("sclk", mission);
       }
-      else {
-        spdlog::debug("Couldn't find {} in config explicitly, loading all sclk kernels", mission);
-        sclks = missionConf.getLatestRecursive("sclk");
-      }
+
       KernelSet sclkSet(sclks);
 
       SpiceDouble et;
       checkNaifErrors();
       sct2e_c(frameCode, sclk, &et);
       checkNaifErrors();
-      spdlog::debug("strsclktoet({}, {}, {}) -> {}", frameCode, mission, sclk, et);
-      
+      SPDLOG_DEBUG("strsclktoet({}, {}, {}) -> {}", frameCode, mission, sclk, et);
+
       return et;
   }
 
+  json findMissionKeywords(string key, string mission, bool searchKernels) {
+    json translationKernels = {};
 
-  json findMissionKeywords(string key, string mission) {
-    json j = loadTranslationKernels(mission);
-    KernelSet kset(j);
+    if (mission != "" && searchKernels) {
+      translationKernels = loadTranslationKernels(mission);
+    }
+
+    KernelSet kset(translationKernels);
 
     return findKeywords(key);
   }
 
 
-  vector<double> getTargetValues(string target, string key, string mission) {
-    SpiceDouble values[3];
-    SpiceInt dim;
-    ConstSpiceChar *target_spice = target.c_str(); 
-    ConstSpiceChar *key_spice = key.c_str();
-
+  json findTargetKeywords(string key, string mission, bool searchKernels) {
     json kernelsToLoad = {};
 
-    if (mission != "") {
-      kernelsToLoad = loadPckKernels(mission);
+    if (mission != "" && searchKernels) {
+      kernelsToLoad["base"] = loadSelectKernels("pck", "base");
+      kernelsToLoad[mission] = loadSelectKernels("pck", mission);
     }
     KernelSet kset(kernelsToLoad);
-
-    checkNaifErrors();
-    bodvrd_c(target_spice, key_spice, 3, &dim, values);
-    checkNaifErrors();
-
-    // convert to std::array for output
-    vector<double> ret_values = {0, 0, 0};
-    for (int i = 0; i < 3; i++) {
-      ret_values[i] = values[i];
-    }
-
-    return ret_values;
+    return findKeywords(key);
   }
 
 
-  json getTargetFrameInfo(int targetId, string mission) {
+  json getTargetFrameInfo(int targetId, string mission, bool searchKernels) {
     SpiceInt frameCode;
     SpiceChar frameName[128];
     SpiceBoolean found;
@@ -289,8 +271,9 @@ namespace SpiceQL {
     json frameInfo;
     json kernelsToLoad = {};
 
-    if (mission != "") {
-      kernelsToLoad = loadPckKernels(mission);
+    if (mission != "" && searchKernels) {
+      kernelsToLoad["base"] = loadSelectKernels("pck", "base");
+      kernelsToLoad[mission] = loadSelectKernels("pck", mission);
     }
     KernelSet kset(kernelsToLoad);
 

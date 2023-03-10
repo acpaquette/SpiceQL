@@ -1,4 +1,6 @@
 
+#pragma once
+
 #include <vector>
 #include <string>
 
@@ -46,9 +48,10 @@ namespace SpiceQL {
     *
     * @param frame Name of frame to translate
     * @param mission Name of mission
+    * @param searchKernels bool Whether to search the kernels for the user
     * @returns int
    **/
-    int translateNameToCode(std::string frame, std::string mission);
+    int translateNameToCode(std::string frame, std::string mission, bool searchKernels=true);
 
 
   /**
@@ -61,8 +64,9 @@ namespace SpiceQL {
     *
     * @param frame Code of frame to translate
     * @param mission Name of mission
+    * @param searchKernels bool Whether to search the kernels for the user
     * @returns std::string
    **/
-    std::string translateCodeToName(int frame, std::string mission);
+    std::string translateCodeToName(int frame, std::string mission, bool searchKernels=true);
   }
 }
