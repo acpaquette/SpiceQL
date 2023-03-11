@@ -422,27 +422,20 @@ paths:
     get:
       description: 'Takes in an a Target key and returns the values associated as a vector.'
       parameters: 
-      - name: "target"
-        in: "query"
-        description: "Target to get values of"
-        required: true
-        schema:
-          type: "string"
-        example: "Earth"
       - name: "key"
         in: "query"
         description: "Keyword for desired values"
         required: true
         schema:
           type: "string"
-        example: "RADII"
+        example: "*499*"
       - name: "mission"
         in: "query"
         description: "Mission name as it relates to the config files"
         required: false
         schema:
           type: "string"
-        example: "kaguya"
+        example: "mro"
       responses:
         '200':
           description: OK
@@ -451,9 +444,8 @@ paths:
         httpMethod: POST
         uri : "arn:aws:apigateway:us-west-2:lambda:path/2015-03-31/functions/arn:aws:lambda:us-west-2:950438895271:function:findTargetKeywordslambda/invocations"
         requestTemplates : 
-          "application/json": "{\"target\":\"$input.params('target')\", \"key\":\"$input.params('key')\", \"mission\":\"$input.params('mission')\"}"
+          "application/json": "{\"key\":\"$input.params('key')\", \"mission\":\"$input.params('mission')\"}"
         requestParameters : {
-          integration.request.querystring.target: method.request.querystring.target,
           integration.request.querystring.key: method.request.querystring.key,
           integration.request.querystring.mission: method.request.querystring.mission
         }
