@@ -516,6 +516,9 @@ paths:
         schema:
           type: "string"
         example: "mro"
+      responses:
+        '200':
+          description: OK
       x-amazon-apigateway-integration:
         type: aws
         httpMethod: POST
