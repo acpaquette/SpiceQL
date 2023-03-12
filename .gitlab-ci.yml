@@ -142,7 +142,7 @@ update-image:
   variables:
     IMAGEURI: 950438895271.dkr.ecr.us-west-2.amazonaws.com/spiceql:latest
     REGION: us-west-2
-    FUNCTIONS: spiceqlambdadev strSclkToEtlambda doubleSclkToEtlambda utcToEtlambda translateNameToCodelambda translateCodeToNamelambda getTargetStateslambda getTargetOrientationslambda findMissionKeywordslambda findTargetKeywordslambda getTargetFrameInfolambda getFrameInfolambda frameTraceLambda
+    FUNCTIONS: spiceqlambdadev strSclkToEtlambda doubleSclkToEtlambda utcToEtlambda translateNameToCodelambda translateCodeToNamelambda getTargetStateslambda getTargetOrientationslambda findMissionKeywordslambda findTargetKeywordslambda getTargetFrameInfolambda getFrameInfolambda frameTracelambda
   image: 
     name: $CI_REGISTRY/usgs-chs/chs-library/docker/images/docker:latest
   services:
