@@ -114,6 +114,7 @@ Resources:
     Properties:
       ClusterName: SpiceQlElastiCacheCluster
       CacheNodeType: cache.t3.medium
+      CacheParameterGroupName: default.redis7.cluster.on
       Engine: redis
       NumCacheNodes: 1
       VpcSecurityGroupIds: 
