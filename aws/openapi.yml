@@ -567,7 +567,7 @@ paths:
         httpMethod: POST
         uri : "arn:aws:apigateway:us-west-2:lambda:path/2015-03-31/functions/arn:aws:lambda:us-west-2:950438895271:function:frameTracelambda/invocations"
         requestTemplates : 
-          "application/json": "{\"ets\": $input.params('et'), \"initialFrame\": $input.params('initialFrame'), \"mission\":\"$input.params('mission')\", \"ckQuality\":\"$input.params('ckQuality')\"}"
+          "application/json": "{\"et\": $input.params('et'), \"initialFrame\": $input.params('initialFrame'), \"mission\":\"$input.params('mission')\", \"ckQuality\":\"$input.params('ckQuality')\"}"
         requestParameters : {
           integration.request.querystring.et: method.request.querystring.et,
           integration.request.querystring.target: method.request.querystring.initialFrame,
