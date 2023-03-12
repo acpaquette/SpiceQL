@@ -109,15 +109,15 @@ Resources:
       Description: ElastiCacheSubnetGroup
       SubnetIds:
         - subnet-0326c18b7c38caa73
-  SpiceQlElastiCache:
-    Type: AWS::ElastiCache::CacheCluster
+  SpiceQlReplicationGroup:
+    Type: 'AWS::ElastiCache::ReplicationGroup'
     Properties:
-      ClusterName: SpiceQlElastiCacheCluster
       CacheNodeType: cache.t3.medium
       CacheParameterGroupName: default.redis7.cluster.on
       Engine: redis
-      NumCacheNodes: 1
-      VpcSecurityGroupIds: 
+      NumCacheClusters: 2
+      AutomaticFailoverEnabled: 'true'
+      SecurityGroupIds: 
         - !GetAtt 
           - SpiceQlSG
           - GroupId
