@@ -114,6 +114,7 @@ Resources:
     Properties:
       CacheNodeType: cache.t3.medium
       CacheParameterGroupName: default.redis7.cluster.on
+      ReplicationGroupDescription: "SpiceQL Redis Cluster"
       Engine: redis
       NumCacheClusters: 2
       AutomaticFailoverEnabled: 'true'
