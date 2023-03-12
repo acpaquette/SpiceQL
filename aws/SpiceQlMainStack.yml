@@ -88,20 +88,6 @@ Resources:
         ApiMappingKey: 'v1'
         Stage: v1
 
-  # Lambdas  
-  LambdaStack:
-        Type: AWS::CloudFormation::Stack
-        DependsOn:
-            - SpiceQlSG
-            - SpiceQlRestfulApi
-            - AccessPointResource
-        Properties:
-            Parameters:
-                SpiceQlSgId: !Ref SpiceQlSG
-                SpiceQlRestfulApiId: !Ref SpiceQlRestfulApi
-                AccessPointResourceArn: !GetAtt AccessPointResource.Arn
-            TemplateURL: https://s3.amazonaws.com/cf-templates-1bxumkby1rqpi-us-west-2/spiceql-cf-templates/SpiceQLambdaStack.yml
-
   # ElastiCache
   ElastiCacheSubnetGroup:
     Type: AWS::ElastiCache::SubnetGroup
@@ -114,6 +100,7 @@ Resources:
     Properties:
       CacheNodeType: cache.t3.medium
       CacheParameterGroupName: default.redis7.cluster.on
+      ReplicationGroupId: "spiceqlelasticachecluster"
       ReplicationGroupDescription: "SpiceQL Redis Cluster"
       Engine: redis
       NumCacheClusters: 2
@@ -123,3 +110,19 @@ Resources:
           - SpiceQlSG
           - GroupId
       CacheSubnetGroupName: !Ref ElastiCacheSubnetGroup
+
+  # Lambdas  
+  LambdaStack:
+        Type: AWS::CloudFormation::Stack
+        DependsOn:
+            - SpiceQlSG
+            - SpiceQlRestfulApi
+            - AccessPointResource
+            - SpiceQlReplicationGroup
+        Properties:
+            Parameters:
+                SpiceQlSgId: !Ref SpiceQlSG
+                SpiceQlRestfulApiId: !Ref SpiceQlRestfulApi
+                AccessPointResourceArn: !GetAtt AccessPointResource.Arn
+                SpiceQlRedisEndpoint: !GetAtt SpiceQlReplicationGroup.Address
+            TemplateURL: https://s3.amazonaws.com/cf-templates-1bxumkby1rqpi-us-west-2/spiceql-cf-templates/SpiceQLambdaStack.yml
