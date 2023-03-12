@@ -276,7 +276,7 @@ Resources:
       SourceArn: !Sub "arn:aws:execute-api:us-west-2:950438895271:${SpiceQlRestfulApiId}/*/GET/getTargetOrientations"
 
   #frameTrace endpoint
-  frameTraceLambda:
+  FrameTraceLambda:
     Type: AWS::Lambda::Function
     Properties:
       Timeout: 300 
@@ -300,11 +300,11 @@ Resources:
           SPICEQL_REDIS_HOST: "spiceqlelasticachecluster.wufcwa.0001.usw2.cache.amazonaws.com"
           SPICEQL_REDIS_PORT: 6379
           SPICEQL_LOG_LEVEL: trace
-  frameTraceLambdaPermission:
+  FrameTraceLambdaPermission:
     Type: AWS::Lambda::Permission
     Properties:
       Action: lambda:InvokeFunction
-      FunctionName: !Ref frameTraceLambda
+      FunctionName: !Ref FrameTraceLambda
       Principal: apigateway.amazonaws.com
       SourceArn: !Sub "arn:aws:execute-api:us-west-2:950438895271:${SpiceQlRestfulApiId}/*/GET/frameTrace"
 
