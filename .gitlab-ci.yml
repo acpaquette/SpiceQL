@@ -111,8 +111,8 @@ update-openApi:
     - pip install awscli
   script:
     - aws s3 cp aws/openapi.yml s3://spiceql-openapi-files
-    - aws apigateway put-rest-api --rest-api-id 3ywct7h7qb --region us-west-2 --mode overwrite --body 'fileb://aws/openapi.yml'
-    - aws apigateway create-deployment --rest-api-id 3ywct7h7qb --region us-west-2 --stage-name v1
+    - aws apigateway put-rest-api --rest-api-id	07imq4i6hc --region us-west-2 --mode overwrite --body 'fileb://aws/openapi.yml'
+    - aws apigateway create-deployment --rest-api-id 07imq4i6hc --region us-west-2 --stage-name v1
 
 update-stacks:
   stage: deploy
