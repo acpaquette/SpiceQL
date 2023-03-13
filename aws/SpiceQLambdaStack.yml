@@ -6,6 +6,8 @@ Parameters:
     Type: String
   SpiceQlRestfulApiId:
     Type: String
+  SpiceQlRedisEndpoint:
+    Type: String
 Resources:
 
   #spiceql endpoint
@@ -30,9 +32,10 @@ Resources:
           - subnet-0326c18b7c38caa73
       Environment:
         Variables: 
-          SPICEQL_REDIS_HOST: "spiceqlelasticachecluster.wufcwa.0001.usw2.cache.amazonaws.com"
+          SPICEQL_REDIS_HOST: !Ref SpiceQlRedisEndpoint
           SPICEQL_REDIS_PORT: 6379
           SPICEQL_LOG_LEVEL: trace
+          SPICEQL_ENABLE_REDIS: true
   SpiceQLambdaPermission:
     Type: AWS::Lambda::Permission
     DependsOn:
@@ -65,9 +68,10 @@ Resources:
           - subnet-0326c18b7c38caa73
       Environment:
         Variables: 
-          SPICEQL_REDIS_HOST: "spiceqlelasticachecluster.wufcwa.0001.usw2.cache.amazonaws.com"
+          SPICEQL_REDIS_HOST: !Ref SpiceQlRedisEndpoint
           SPICEQL_REDIS_PORT: 6379
           SPICEQL_LOG_LEVEL: trace
+          SPICEQL_ENABLE_REDIS: true
   StrSclkToEtLambdaPermission:
     Type: AWS::Lambda::Permission
     Properties:
@@ -98,9 +102,10 @@ Resources:
           - subnet-0326c18b7c38caa73
       Environment:
         Variables: 
-          SPICEQL_REDIS_HOST: "spiceqlelasticachecluster.wufcwa.0001.usw2.cache.amazonaws.com"
+          SPICEQL_REDIS_HOST: !Ref SpiceQlRedisEndpoint
           SPICEQL_REDIS_PORT: 6379
           SPICEQL_LOG_LEVEL: trace
+          SPICEQL_ENABLE_REDIS: true
   DoubleSclkToEtLambdaPermission:
     Type: AWS::Lambda::Permission
     Properties:
@@ -131,9 +136,10 @@ Resources:
           - subnet-0326c18b7c38caa73
       Environment:
         Variables: 
-          SPICEQL_REDIS_HOST: "spiceqlelasticachecluster.wufcwa.0001.usw2.cache.amazonaws.com"
+          SPICEQL_REDIS_HOST: !Ref SpiceQlRedisEndpoint
           SPICEQL_REDIS_PORT: 6379
           SPICEQL_LOG_LEVEL: trace
+          SPICEQL_ENABLE_REDIS: true
   UtcToEtLambdaPermission:
     Type: AWS::Lambda::Permission
     Properties:
@@ -164,9 +170,10 @@ Resources:
           - subnet-0326c18b7c38caa73
       Environment:
         Variables: 
-          SPICEQL_REDIS_HOST: "spiceqlelasticachecluster.wufcwa.0001.usw2.cache.amazonaws.com"
+          SPICEQL_REDIS_HOST: !Ref SpiceQlRedisEndpoint
           SPICEQL_REDIS_PORT: 6379
           SPICEQL_LOG_LEVEL: trace
+          SPICEQL_ENABLE_REDIS: true
   TranslateNameToCodeLambdaPermission:
     Type: AWS::Lambda::Permission
     Properties:
@@ -197,9 +204,10 @@ Resources:
           - subnet-0326c18b7c38caa73
       Environment:
         Variables: 
-          SPICEQL_REDIS_HOST: "spiceqlelasticachecluster.wufcwa.0001.usw2.cache.amazonaws.com"
+          SPICEQL_REDIS_HOST: !Ref SpiceQlRedisEndpoint
           SPICEQL_REDIS_PORT: 6379
           SPICEQL_LOG_LEVEL: trace
+          SPICEQL_ENABLE_REDIS: true
   TranslateCodeToNameLambdaPermission:
     Type: AWS::Lambda::Permission
     Properties:
@@ -231,9 +239,10 @@ Resources:
           - subnet-0326c18b7c38caa73
       Environment:
         Variables: 
-          SPICEQL_REDIS_HOST: "spiceqlelasticachecluster.wufcwa.0001.usw2.cache.amazonaws.com"
+          SPICEQL_REDIS_HOST: !Ref SpiceQlRedisEndpoint
           SPICEQL_REDIS_PORT: 6379
           SPICEQL_LOG_LEVEL: trace
+          SPICEQL_ENABLE_REDIS: true
   GetTargetStatesLambdaPermission:
     Type: AWS::Lambda::Permission
     Properties:
@@ -264,9 +273,10 @@ Resources:
           - subnet-0326c18b7c38caa73
       Environment:
         Variables: 
-          SPICEQL_REDIS_HOST: "spiceqlelasticachecluster.wufcwa.0001.usw2.cache.amazonaws.com"
+          SPICEQL_REDIS_HOST: !Ref SpiceQlRedisEndpoint
           SPICEQL_REDIS_PORT: 6379
           SPICEQL_LOG_LEVEL: trace
+          SPICEQL_ENABLE_REDIS: true
   GetTargetOrientationsLambdaPermission:
     Type: AWS::Lambda::Permission
     Properties:
@@ -297,9 +307,10 @@ Resources:
           - subnet-0326c18b7c38caa73
       Environment:
         Variables: 
-          SPICEQL_REDIS_HOST: "spiceqlelasticachecluster.wufcwa.0001.usw2.cache.amazonaws.com"
+          SPICEQL_REDIS_HOST: !Ref SpiceQlRedisEndpoint
           SPICEQL_REDIS_PORT: 6379
           SPICEQL_LOG_LEVEL: trace
+          SPICEQL_ENABLE_REDIS: true
   FrameTraceLambdaPermission:
     Type: AWS::Lambda::Permission
     Properties:
@@ -330,9 +341,10 @@ Resources:
           - subnet-0326c18b7c38caa73
       Environment:
         Variables: 
-          SPICEQL_REDIS_HOST: "spiceqlelasticachecluster.wufcwa.0001.usw2.cache.amazonaws.com"
+          SPICEQL_REDIS_HOST: !Ref SpiceQlRedisEndpoint
           SPICEQL_REDIS_PORT: 6379
           SPICEQL_LOG_LEVEL: trace
+          SPICEQL_ENABLE_REDIS: true
   findMissionKeywordsLambdaPermission:
     Type: AWS::Lambda::Permission
     Properties:
@@ -364,9 +376,10 @@ Resources:
           - subnet-0326c18b7c38caa73
       Environment:
         Variables: 
-          SPICEQL_REDIS_HOST: "spiceqlelasticachecluster.wufcwa.0001.usw2.cache.amazonaws.com"
+          SPICEQL_REDIS_HOST: "spiceqlelasticachecluster.wufcwa.clustercfg.usw2.cache.amazonaws.com"
           SPICEQL_REDIS_PORT: 6379
           SPICEQL_LOG_LEVEL: trace
+          SPICEQL_ENABLE_REDIS: true
   findTargetKeywordsLambdaPermission:
     Type: AWS::Lambda::Permission
     Properties:
@@ -398,9 +411,10 @@ Resources:
           - subnet-0326c18b7c38caa73
       Environment:
         Variables: 
-          SPICEQL_REDIS_HOST: "spiceqlelasticachecluster.wufcwa.0001.usw2.cache.amazonaws.com"
+          SPICEQL_REDIS_HOST: !Ref SpiceQlRedisEndpoint
           SPICEQL_REDIS_PORT: 6379
           SPICEQL_LOG_LEVEL: trace
+          SPICEQL_ENABLE_REDIS: true
   GetFrameInfoLambdaPermission:
     Type: AWS::Lambda::Permission
     Properties:
@@ -432,9 +446,10 @@ Resources:
           - subnet-0326c18b7c38caa73
       Environment:
         Variables: 
-          SPICEQL_REDIS_HOST: "spiceqlelasticachecluster.wufcwa.0001.usw2.cache.amazonaws.com"
+          SPICEQL_REDIS_HOST: !Ref SpiceQlRedisEndpoint
           SPICEQL_REDIS_PORT: 6379
           SPICEQL_LOG_LEVEL: trace
+          SPICEQL_ENABLE_REDIS: true
   GetTargetFrameInfoLambdaPermission:
     Type: AWS::Lambda::Permission
     Properties:
