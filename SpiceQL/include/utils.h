@@ -211,7 +211,7 @@ namespace SpiceQL {
    * @param refframe the reference frame's NAIF code, orientations are relative to this reference frame
    * @returns SPICE-style quaternions (w,x,y,z) and optional angular velocity (4 element without angular velocity, 7 element with)
   **/
-  std::vector<double> getTargetOrientation(double et, int toframe, int refframe=1); // use j2000 for default reference frame
+  std::vector<double> getTargetOrientation(double et, int toFrame, int refFrame=1); // use j2000 for default reference frame
 
   /**
    * @brief Gives quaternion and angular velocity for a given frame at a set of ephemeris times
@@ -232,8 +232,8 @@ namespace SpiceQL {
    * @returns Vector of SPICE-style quaternions (w,x,y,z) and optional angular velocity (4 element without angular velocity, 7 element with)
    **/
   std::vector<std::vector<double>> getTargetOrientations(std::vector<double> ets, 
-                                                         int toframe, 
-                                                         int refframe=1, // use j2000 for default reference frame
+                                                         int toFrame, 
+                                                         int refFrame=1, // use j2000 for default reference frame
                                                          std::string mission="", 
                                                          std::string ckQuality="reconstructed",  
                                                          bool searchKernels=true);
