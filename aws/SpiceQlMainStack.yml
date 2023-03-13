@@ -98,12 +98,12 @@ Resources:
   SpiceQlReplicationGroup:
     Type: 'AWS::ElastiCache::ReplicationGroup'
     Properties:
-      CacheNodeType: cache.t3.medium
+      CacheNodeType: cache.m5.large
       CacheParameterGroupName: default.redis7.cluster.on
       ReplicationGroupId: "spiceqlelasticachecluster"
       ReplicationGroupDescription: "SpiceQL Redis Cluster"
       Engine: redis
-      NumCacheClusters: 2
+      NumCacheClusters: 4
       AutomaticFailoverEnabled: 'true'
       SecurityGroupIds: 
         - !GetAtt 
