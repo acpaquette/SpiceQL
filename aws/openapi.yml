@@ -264,7 +264,6 @@ paths:
               items:
                 type: number
                 format: "double"
-            - type: number
       - name: "target"
         in: "query"
         description: "Target to get the state of"
@@ -336,7 +335,6 @@ paths:
               items:
                 type: number
                 format: "double"
-            - type: number
       - name: "toFrame"
         in: "query"
         description: "CK frame to translate to"
