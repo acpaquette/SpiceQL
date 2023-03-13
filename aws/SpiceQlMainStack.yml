@@ -124,5 +124,5 @@ Resources:
                 SpiceQlSgId: !Ref SpiceQlSG
                 SpiceQlRestfulApiId: !Ref SpiceQlRestfulApi
                 AccessPointResourceArn: !GetAtt AccessPointResource.Arn
-                SpiceQlRedisEndpoint: !GetAtt SpiceQlReplicationGroup.Address
+                SpiceQlRedisEndpoint: !GetAtt SpiceQlReplicationGroup.ConfigurationEndPoint.Address
             TemplateURL: https://s3.amazonaws.com/cf-templates-1bxumkby1rqpi-us-west-2/spiceql-cf-templates/SpiceQLambdaStack.yml
