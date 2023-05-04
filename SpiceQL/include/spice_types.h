@@ -306,6 +306,21 @@ namespace SpiceQL {
    **/
   double utcToEt(std::string utc, bool searchKernels = true);
 
+
+  /**
+   * @brief convert et string to a UTC string
+   *
+   * Basically a wrapper around NAIF's cspice et2utc_c function except it also temporarily loads the required kernels.
+   * See Also: https://naif.jpl.nasa.gov/pub/naif/toolkit_docs/C/cspice/et2utc_c.html
+   *
+   * @param et ephemeris time
+   * @param precision number of decimal 
+   * @param searchKernels bool Whether to search the kernels for the user
+   * @returns double precision ephemeris time
+   **/
+  std::string etToUtc(double et, std::string format = "C", double precision = 8, bool searchKernels=true);
+
+
   /**
    * @brief Converts a given string spacecraft clock time to an ephemeris time
    *

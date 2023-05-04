@@ -199,6 +199,25 @@ namespace SpiceQL {
       return et;
   }
 
+  string etToUtc(double et, string format, double precision, bool searchKernels) {
+      Config conf;
+      conf = conf["base"];
+      json lsks = {};
+
+      // get lsk kernel
+      if (searchKernels) {
+       lsks = conf.getLatest("lsk");
+      }
+
+      KernelSet lsk(lsks);
+
+      SpiceChar utc_spice[100]; 
+      checkNaifErrors();
+      et2utc_c(et, format.c_str(), precision, 100, utc_spice);
+      checkNaifErrors();
+      string utc_string(utc_spice);
+      return utc_string;
+  }
 
   double strSclkToEt(int frameCode, string sclk, string mission, bool searchKernels) {
       Config missionConf;
