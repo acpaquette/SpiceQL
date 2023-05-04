@@ -1,6 +1,8 @@
 # Prerequisites
 *.d
 
+tutorials/data/*
+
 # Compiled Object files
 *.slo
 *.lo

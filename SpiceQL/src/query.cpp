@@ -214,7 +214,9 @@ namespace SpiceQL {
     // Load any SCLKs in the config
     vector<KernelSet> sclkKernels;
     for (auto &p : findKeyInJson(kernels, "sclk", true)) {
-      sclkKernels.push_back(KernelSet(kernels[p]));
+      kernels["sclk"] = getLatestKernels(kernels[p]); 
+      SPDLOG_TRACE("sclks {}", kernels["sclk"].dump()); 
+      sclkKernels.push_back(KernelSet(kernels["sclk"]));
     }
 
     vector<json::json_pointer> ckpointers = findKeyInJson(kernels, "ck", true);

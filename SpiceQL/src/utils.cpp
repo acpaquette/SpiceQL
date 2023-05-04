@@ -7,6 +7,7 @@
 #include <exception>
 #include <fstream>
 #include <regex>
+#include <chrono>
 
 #include <SpiceUsr.h>
 #include <SpiceZfc.h>
@@ -30,7 +31,8 @@
 
 using json = nlohmann::json;
 using namespace std;
-
+using namespace std::chrono;
+ 
 string calForm = "YYYY MON DD HR:MN:SC.###### TDB ::TDB";
 
 // FMT formatter for fs::path, this enables passing path objects to FMT calls.
@@ -233,19 +235,29 @@ namespace SpiceQL {
       baseJson = config.get("base");
       baseJson = getLatestKernels(baseJson);
 
+      auto start = high_resolution_clock::now();
       missionJson["sclk"] = getLatestKernels(missionJson["sclk"]);
       json refinedCksAndSpks = searchMissionKernels(missionJson, {ets.front(), ets.back()}, true);
+      auto stop = high_resolution_clock::now();
+      auto duration = duration_cast<microseconds>(stop - start);
+
+      SPDLOG_DEBUG("Time in microseconds to get filtered kernel list: {}", duration.count());
 
       ephemKernels["ck"]["kernels"] = refinedCksAndSpks["ck"][ckQuality]["kernels"];
       ephemKernels["spk"]["kernels"] = refinedCksAndSpks["spk"][spkQuality]["kernels"];
       ephemKernels["pck"] = getLatestKernels(missionJson["pck"]);
       ephemKernels["tspk"] = getLatestKernels(missionJson["tspk"]);
-      SPDLOG_TRACE("Kernels being furnish: {}", ephemKernels.dump());
-    }
+      SPDLOG_TRACE("Kernels being furnished: {}", ephemKernels.dump());
+    }                  
 
+    auto start = high_resolution_clock::now();
     KernelSet baseSet(baseJson);
     KernelSet ephemSet(ephemKernels);
-
+    auto stop = high_resolution_clock::now();
+    auto duration = duration_cast<microseconds>(stop - start);
+    SPDLOG_DEBUG("Time in microseconds to furnish kernel sets: {}", duration.count());
+    
+    start = high_resolution_clock::now();
     vector<vector<double>> lt_stargs;
     vector<double> lt_starg;
     for (auto et: ets) {
@@ -253,8 +265,13 @@ namespace SpiceQL {
       lt_stargs.push_back(lt_starg);
     }
 
+    stop = high_resolution_clock::now();
+    duration = duration_cast<microseconds>(stop - start);
+    SPDLOG_DEBUG("Time in microseconds to get data results: {}", duration.count());
+ 
     return lt_stargs;
   }
+
 
   vector<double> getTargetOrientation(double et, int toFrame, int refFrame) {
     // Much of this function is from ISIS SpiceRotation.cpp
@@ -307,6 +324,7 @@ namespace SpiceQL {
     return orientation;
   }
 
+
   vector<vector<double>> getTargetOrientations(vector<double> ets, int toFrame, int refFrame, string mission, string ckQuality, bool searchKernels) {
     SPDLOG_TRACE("Calling getTargetOrientations with {}, {}, {}, {}, {}, {}", ets.size(), toFrame, refFrame, mission, ckQuality, searchKernels);
     Config config;
@@ -335,29 +353,43 @@ namespace SpiceQL {
       else {
         throw invalid_argument("Couldn't find " + mission + " in config explicitly, please request a mission from the config [" + getMissionKeys(config.globalConf()) + "]");
       }
+      
       baseJson = config.get("base");
       baseJson = getLatestKernels(baseJson);
 
+      auto start = high_resolution_clock::now();
       missionJson["sclk"] = getLatestKernels(missionJson["sclk"]);
       json refinedCksAndSpks = searchMissionKernels(missionJson, {ets.front(), ets.back()}, true);
+      auto stop = high_resolution_clock::now();
+      auto duration = duration_cast<microseconds>(stop - start);
+      SPDLOG_DEBUG("Time in microseconds to get filtered kernel sets: {}", duration.count());
 
       ephemKernels["ck"]["kernels"] = refinedCksAndSpks["ck"][ckQuality]["kernels"];
       ephemKernels["sclk"] = missionJson["sclk"];
       ephemKernels["pck"] = getLatestKernels(missionJson["pck"]);
       ephemKernels["fk"] = getLatestKernels(missionJson["fk"]);
       ephemKernels["tspk"] = getLatestKernels(missionJson["tspk"]);
+
       SPDLOG_TRACE("Kernels being furnish: {}", ephemKernels.dump());
     }
 
+    auto start = high_resolution_clock::now();
     KernelSet baseSet(baseJson);
     KernelSet ephemSet(ephemKernels);
+    auto stop = high_resolution_clock::now();
+    auto duration = duration_cast<microseconds>(stop - start);
+    SPDLOG_DEBUG("Time in microseconds to furnish kernel sets: {}", duration.count());
 
+    start = high_resolution_clock::now();
     vector<vector<double>> orientations = {};
     vector<double> orientation;
     for (auto et: ets) {
       orientation = getTargetOrientation(et, toFrame, refFrame);
       orientations.push_back(orientation);
     }
+    stop = high_resolution_clock::now();
+    duration = duration_cast<microseconds>(stop - start);
+    SPDLOG_DEBUG("Time in microseconds to get data results: {}", duration.count());
 
     return orientations;
   }

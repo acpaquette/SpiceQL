@@ -104,7 +104,7 @@ namespace Memo {
 
         if (env_redis_enabled != NULL) {
             SPDLOG_TRACE("$SPICEQL_ENABLE_REDIS {}", env_redis_enabled);
-            std::istringstream(std::string(env_redis_enabled)) >> std::boolalpha >> is_redis_enabled;
+            std::istringstream(toLower(std::string(env_redis_enabled))) >> std::boolalpha >> is_redis_enabled;
         }
 
         SPDLOG_TRACE("Is Redis enabled? {}", is_redis_enabled);
@@ -143,10 +143,10 @@ namespace Memo {
         return CACHE_DIRECTORY;
     }
 
-
-    inline std::string getRedisURI() { 
+    inline sw::redis::RedisCluster* getRedisConnection() { 
         static std::string REDIS_URI = "";
-    
+        static sw::redis::RedisCluster *cluster = NULL; 
+
         if(!Memo::isRedisEnabled()) {
           throw std::runtime_error("Redis is not enabled, set $SPICEQL_ENABLE_REDIS=true to enable redis support");
         }
@@ -165,9 +165,13 @@ namespace Memo {
           SPDLOG_DEBUG("Redis URI: {}", REDIS_URI);
         }
     
-        SPDLOG_TRACE("Returning Redis URI: {}", REDIS_URI); 
+        SPDLOG_TRACE("Redis URI: {}", REDIS_URI); 
         
-        return REDIS_URI; 
+        if(cluster == NULL) { 
+            cluster = new sw::redis::RedisCluster(REDIS_URI);
+        }
+
+        return cluster; 
     }
 
     class Cache {
@@ -207,13 +211,13 @@ namespace Memo {
             typedef decltype(f(params...)) retval_t;
             std::string name = descr + "-" + std::to_string(seed);
 
-            sw::redis::RedisCluster cluster(getRedisURI()); 
+            sw::redis::RedisCluster *cluster = getRedisConnection();
 
             SPDLOG_TRACE("Cache Redis Key: {}", name);
             std::unordered_map<std::string, std::string> rdata;
             
             try {
-                cluster.hgetall(name, std::inserter(rdata, rdata.begin()));
+                cluster->hgetall(name, std::inserter(rdata, rdata.begin()));
             } catch (std::exception &e) { 
                 SPDLOG_DEBUG("hmget exception: {}", e.what());
                 // key not found or connection error, leave empty
@@ -267,7 +271,7 @@ namespace Memo {
                 {"modtime", oss_time.str()}
             };
 
-            cluster.hset(name, output_map.begin(), output_map.end());
+            cluster->hset(name, output_map.begin(), output_map.end());
 
             return ret;
         }

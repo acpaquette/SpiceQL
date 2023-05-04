@@ -79,8 +79,7 @@ namespace SpiceQL {
         SPDLOG_DEBUG("Using log dir: {}", log_dir); 
         SPDLOG_DEBUG("Log level: {}", log_level_string); 
         SPDLOG_DEBUG("Log level enum: {}", log_level);
-
-        SPDLOG_TRACE("Log level enum: {}", log_level);
+        SPDLOG_TRACE("Log dir: {}", log_dir);
       } 
     }
   };
