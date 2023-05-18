@@ -243,7 +243,7 @@ namespace SpiceQL {
     json ephemKernels = {};
 
     if (searchKernels) {
-      ephemKernels = searchAndRefineKernels(mission, {obsevStart, observEnd}, ckQuality, "na", {"ck", "sclk"});
+      ephemKernels = searchAndRefineKernels(mission, {observStart, observEnd}, ckQuality, "na", {"ck", "sclk"});
     }
 
     KernelSet ephemSet(ephemKernels);
