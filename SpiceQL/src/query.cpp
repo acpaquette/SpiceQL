@@ -24,6 +24,7 @@
 
 using json = nlohmann::json;
 using namespace std;
+using namespace std::chrono;
 
 namespace SpiceQL {
 
