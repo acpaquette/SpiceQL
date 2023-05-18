@@ -200,11 +200,11 @@ namespace SpiceQL {
                                                    bool searchKernels=true);
 
   /**
-   * @brief Extracts all record times between observStart and observeEnd
+   * @brief Extracts all segment times between observStart and observeEnd
    *
-   * Even an observation start and observation end, extract all times assocaited
-   * with records in a CK file. The times returned are all times assocaited with
-   * concrete CK record times with no interpolation.
+   * Givven an observation start and observation end, extract all times assocaited
+   * with segments in a CK file. The times returned are all times assocaited with
+   * concrete CK segment times with no interpolation.
    *
    * @param observStart Ephemeris time to start searching at
    * @param observEnd Ephemeris time to stop searching at
