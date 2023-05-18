@@ -205,12 +205,7 @@ namespace SpiceQL {
     json ephemKernels = {};
 
     if (searchKernels) {
-      auto start = high_resolution_clock::now();
       ephemKernels = searchAndRefineKernels(mission, {ets.front(), ets.back()}, ckQuality, spkQuality, {"sclk", "ck", "spk", "pck", "tspk"});
-      auto stop = high_resolution_clock::now();
-      auto duration = duration_cast<microseconds>(stop - start);
-
-      SPDLOG_DEBUG("Time in microseconds to get filtered kernel list: {}", duration.count());
     }
 
     auto start = high_resolution_clock::now();
@@ -450,12 +445,7 @@ namespace SpiceQL {
     json ephemKernels = {};
 
     if (searchKernels) {
-      auto start = high_resolution_clock::now();
       ephemKernels = searchAndRefineKernels(mission, {ets.front(), ets.back()}, ckQuality, "na", {"sclk", "ck", "pck", "fk", "tspk"});
-      auto stop = high_resolution_clock::now();
-      auto duration = duration_cast<microseconds>(stop - start);
-
-      SPDLOG_DEBUG("Time in microseconds to get filtered kernel list: {}", duration.count());
     }
 
     auto start = high_resolution_clock::now();
@@ -486,13 +476,7 @@ namespace SpiceQL {
     json ephemKernels;
 
     if (searchKernels) {
-      // If nadir is enabled we can probably load a smaller set of kernels?
-      auto start = high_resolution_clock::now();
       ephemKernels = searchAndRefineKernels(mission, {et}, ckQuality, "na", {"sclk", "ck", "pck", "fk", "tspk"});
-      auto stop = high_resolution_clock::now();
-      auto duration = duration_cast<microseconds>(stop - start);
-
-      SPDLOG_DEBUG("Time in microseconds to get filtered kernel list: {}", duration.count());
     }
 
     KernelSet ephemSet(ephemKernels);

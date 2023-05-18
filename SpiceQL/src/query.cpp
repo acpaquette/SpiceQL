@@ -339,6 +339,7 @@ namespace SpiceQL {
   }
 
   json searchAndRefineKernels(string mission, vector<double> times, string ckQuality, string spkQuality, vector<string> kernels) {
+    auto start = high_resolution_clock::now();
     Config config;
     json missionKernels;
     Kernel::Quality ckQualityEnum;
@@ -369,6 +370,7 @@ namespace SpiceQL {
     else {
       throw invalid_argument("Couldn't find " + mission + " in config explicitly, please request a mission from the config [" + getMissionKeys(config.globalConf()) + "]");
     }
+    // If nadir is enabled we can probably load a smaller set of kernels?
     json refinedMissionKernels = {};
     json refinedBaseKernels = {};
     json baseKernels = config.get("base");
@@ -428,6 +430,10 @@ namespace SpiceQL {
     json finalKernels = {};
     finalKernels["base"] = refinedBaseKernels;
     finalKernels[mission] = refinedMissionKernels;
+    auto stop = high_resolution_clock::now();
+    auto duration = duration_cast<microseconds>(stop - start);
+
+    SPDLOG_DEBUG("Time in microseconds to get filtered kernel list: {}", duration.count());
     return finalKernels;
   }
 }
