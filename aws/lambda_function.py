@@ -58,3 +58,5 @@ lambda_findMissionKeywords = create_lambda_call(pyspiceql.findMissionKeywords)
 lambda_findTargetKeywords = create_lambda_call(pyspiceql.findTargetKeywords)
 lambda_getTargetFrameInfo = create_lambda_call(pyspiceql.getTargetFrameInfo)
 lambda_frameTrace = create_lambda_call(pyspiceql.frameTrace)
+lambda_extractExactCkTimes = create_lambda_call(pyspiceql.extractExactCkTimes)
+

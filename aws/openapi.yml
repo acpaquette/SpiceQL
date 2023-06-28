@@ -581,3 +581,65 @@ paths:
             statusCode: '200'
             responseTemplates: 
               "application/json": "$input.body"
+  /extractExactCkTimes:
+    get:
+      description: 'Exact all segment times for a given target between observStart and observStop'
+      parameters: 
+      - name: "observStart"
+        in: "query"
+        description: "Ephemeris time to start searching at"
+        required: true
+        schema:
+          format: "double"
+          type: "number"
+        example: "1281792313.1234284"
+      - name: "observEnd"
+        in: "query"
+        description: "Ephemeris time to stop searching at"
+        required: true
+        schema:
+          format: "double"
+          type: "number"
+        example: "1281792315.1234284"
+      - name: "targetFrame"
+        in: "query"
+        description: "Target frame to extract records for"
+        required: true
+        schema:
+          type: "integer"
+        example: "-85620"
+      - name: "mission"
+        in: "query"
+        description: "Mission name as it relates to the config files"
+        required: true
+        schema:
+          type: "string"
+        example: "mro"
+      - name: "ckQuality"
+        in: "query"
+        description: "Quality of kernel to get for the CK kernels"
+        required: false
+        schema:
+          type: "string"
+        example: "reconstructed"
+      responses:
+        '200':
+          description: OK
+      x-amazon-apigateway-integration:
+        type: aws
+        httpMethod: POST
+        uri : "arn:aws:apigateway:us-west-2:lambda:path/2015-03-31/functions/arn:aws:lambda:us-west-2:950438895271:function:frameTracelambda/invocations"
+        requestTemplates : 
+          "application/json": "{\"observStart\": $input.params('observStart'), \"observStop\": $input.params('observStop'), \"mission\":\"$input.params('mission')\", \"ckQuality\":\"$input.params('ckQuality')\"}"
+        requestParameters : {
+          integration.request.querystring.observStart: method.request.querystring.observStart,
+          integration.request.querystring.observStop: method.request.querystring.observStop,
+          integration.request.querystring.targetFrame: method.request.querystring.targetFrame,
+          integration.request.querystring.mission: method.request.querystring.mission,
+          integration.request.querystring.ckQuality: method.request.querystring.ckQuality
+        }
+        responses:
+          default:
+            statusCode: '200'
+            responseTemplates: 
+              "application/json": "$input.body"
