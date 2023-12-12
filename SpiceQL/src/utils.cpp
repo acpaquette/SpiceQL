@@ -605,7 +605,7 @@ namespace SpiceQL {
   json findKeywords(string keytpl) {
     // Define gnpool i/o
     const SpiceInt START = 0;
-    const SpiceInt ROOM = 50;
+    const SpiceInt ROOM = 100;
     const SpiceInt LENOUT = 100;
     ConstSpiceChar *cstr = keytpl.c_str();
     SpiceInt nkeys;
