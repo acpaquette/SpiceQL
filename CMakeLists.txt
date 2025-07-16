@@ -59,6 +59,13 @@ if(SPICEQL_BUILD_LIB)
   find_package(cereal REQUIRED)
   find_package(spdlog REQUIRED)
   find_package(HighFive REQUIRED)
+  include(FetchContent)
+  FetchContent_Declare(
+    RESTinCurl
+    GIT_REPOSITORY https://github.com/jgaa/RESTinCurl.git
+    GIT_TAG master
+  )
+  FetchContent_MakeAvailable(RESTinCurl)
 
   set(SPICEQL_INSTALL_INCLUDE_DIR "include/SpiceQL")
   set(SPICEQL_SRC_FILES   ${CMAKE_CURRENT_SOURCE_DIR}/SpiceQL/src/spiceql.cpp 
@@ -140,14 +147,6 @@ if(SPICEQL_BUILD_LIB)
                               cereal
                               )
 
-  include(FetchContent)
-  FetchContent_Declare(
-    RESTinCurl
-    GIT_REPOSITORY https://github.com/jgaa/RESTinCurl.git
-    GIT_TAG master
-  )
-  FetchContent_MakeAvailable(RESTinCurl)
-
   target_link_libraries(SpiceQL
                         PUBLIC
                         fmt::fmt-header-only
@@ -157,6 +156,7 @@ if(SPICEQL_BUILD_LIB)
                         spdlog::spdlog_header_only
                         HighFive
                         RESTinCurl::RESTinCurl
+                        ${CURL_LIBRARIES}
                         )
    
   install(TARGETS SpiceQL LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR})
