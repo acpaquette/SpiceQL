@@ -84,9 +84,6 @@ if(SPICEQL_BUILD_LIB)
                            ${SPICEQL_BUILD_INCLUDE_DIR}/inventoryimpl.h
                            ${SPICEQL_BUILD_INCLUDE_DIR}/api.h)
 
-  set(SPICEQL_PRIVATE_HEADER_FILES ${SPICEQL_BUILD_INCLUDE_DIR}/memo.h
-                                   ${SPICEQL_BUILD_INCLUDE_DIR}/restincurl.h)
-
   set(SPICEQL_CONFIG_FILES ${CMAKE_CURRENT_SOURCE_DIR}/SpiceQL/db/apollo15.json 
                            ${CMAKE_CURRENT_SOURCE_DIR}/SpiceQL/db/apollo16.json
                            ${CMAKE_CURRENT_SOURCE_DIR}/SpiceQL/db/apollo17.json
@@ -134,14 +131,22 @@ if(SPICEQL_BUILD_LIB)
   target_compile_definitions(SpiceQL PRIVATE SPDLOG_ACTIVE_LEVEL=SPDLOG_LEVEL_TRACE 
                                      PUBLIC -D_SOURCE_PREFIX="${CMAKE_CURRENT_SOURCE_DIR}")
   
-target_include_directories(SpiceQL
-                            PUBLIC
-                            $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/SpiceQL/include>
-                            $<INSTALL_INTERFACE:include>
-                            PRIVATE
-                            ${CMAKE_CURRENT_SOURCE_DIR}/submodules/BTree/include/
-                            cereal
-                            )
+  target_include_directories(SpiceQL
+                              PUBLIC
+                              $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/SpiceQL/include>
+                              $<INSTALL_INTERFACE:include>
+                              PRIVATE
+                              ${CMAKE_CURRENT_SOURCE_DIR}/submodules/BTree/include/
+                              cereal
+                              )
+
+  include(FetchContent)
+  FetchContent_Declare(
+    RESTinCurl
+    GIT_REPOSITORY https://github.com/jgaa/RESTinCurl.git
+    GIT_TAG master
+  )
+  FetchContent_MakeAvailable(RESTinCurl)
 
   target_link_libraries(SpiceQL
                         PUBLIC
@@ -151,6 +156,7 @@ target_include_directories(SpiceQL
                         cspice
                         spdlog::spdlog_header_only
                         HighFive
+                        RESTinCurl::RESTinCurl
                         )
    
   install(TARGETS SpiceQL LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR})
