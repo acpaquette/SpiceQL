@@ -66,6 +66,7 @@ if(SPICEQL_BUILD_LIB)
     GIT_TAG master
   )
   FetchContent_MakeAvailable(RESTinCurl)
+  find_package(CURL REQUIRED)
 
   set(SPICEQL_INSTALL_INCLUDE_DIR "include/SpiceQL")
   set(SPICEQL_SRC_FILES   ${CMAKE_CURRENT_SOURCE_DIR}/SpiceQL/src/spiceql.cpp 
@@ -157,7 +158,7 @@ if(SPICEQL_BUILD_LIB)
                         HighFive
                         RESTinCurl::RESTinCurl
                         INTERFACE
-                        ${CURL_LIBRARIES}
+                        CURL::libcurl
                         )
    
   install(TARGETS SpiceQL LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR})
