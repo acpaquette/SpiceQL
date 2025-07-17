@@ -156,6 +156,7 @@ if(SPICEQL_BUILD_LIB)
                         spdlog::spdlog_header_only
                         HighFive
                         RESTinCurl::RESTinCurl
+                        INTERFACE
                         ${CURL_LIBRARIES}
                         )
    
