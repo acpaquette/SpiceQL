@@ -292,7 +292,7 @@ namespace SpiceQL {
             // To be safe, setting a more conservative 150 ET limit here.
             const int numEtsGetLimit = 150;
             json out = ets.size() <= numEtsGetLimit ? spiceAPIQuery("getTargetStates", args) : spiceAPIQuery("getTargetStates", args, "POST");
-            vector<vector<double>> kvect = json2DFloatArrayTo2DVector(out["body"]["return"]);
+            vector<vector<double>> kvect = json2DArrayTo2DVector<double>(out["body"]["return"]);
             return make_pair(kvect, out["body"]["kernels"]);
         }
 
@@ -339,7 +339,6 @@ namespace SpiceQL {
                                                        vector<string> ckQualities, vector<string> spkQualities, bool useWeb, bool searchKernels, bool fullKernelPath, 
                                                        int limitCk, int limitSpk, vector<string> kernelList) {
         SPDLOG_TRACE("Calling getTargetStatesRanged with {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}", startEt, stopEt, numRecords, target, observer, frame, abcorr, mission, ckQualities.size(), spkQualities.size(), useWeb, searchKernels, kernelList.size());
-        // SPDLOG_TRACE("ets: [{}]", fmt::join(ets, ", "));
         if (useWeb) {
             // @TODO validity checks
             json args = json::object({
@@ -362,7 +361,7 @@ namespace SpiceQL {
             // @TODO check that json exists / contains what we're looking for
             const int numEtsGetLimit = 150;
             json out = numRecords <= numEtsGetLimit ? spiceAPIQuery("getTargetStatesRanged", args) : spiceAPIQuery("getTargetStatesRanged", args, "POST");
-            vector<vector<double>> kvect = json2DFloatArrayTo2DVector(out["body"]["return"]);
+            vector<vector<double>> kvect = json2DArrayTo2DVector<double>(out["body"]["return"]);
             return make_pair(kvect, out["body"]["kernels"]);
         }
 
@@ -431,7 +430,7 @@ namespace SpiceQL {
                 {"kernelList", kernelList}
             });
             json out = spiceAPIQuery("getTargetOrientations", args);
-            vector<vector<double>> kvect = json2DFloatArrayTo2DVector(out["body"]["return"]);
+            vector<vector<double>> kvect = json2DArrayTo2DVector<double>(out["body"]["return"]);
             return make_pair(kvect, out["body"]["kernels"]);
         }
 
@@ -492,7 +491,7 @@ namespace SpiceQL {
                 {"kernelList", kernelList}
             });
             json out = spiceAPIQuery("getExactTargetOrientations", args);
-            vector<vector<double>> kvect = json2DFloatArrayTo2DVector(out["body"]["return"]);
+            vector<vector<double>> kvect = json2DArrayTo2DVector<double>(out["body"]["return"]);
             return make_pair(kvect, out["body"]["kernels"]);
         }
         
@@ -574,7 +573,7 @@ namespace SpiceQL {
     }
 
 
-   pair<string, json> doubleEtToSclk(int frameCode, double et, string mission, bool useWeb, bool searchKernels, bool fullKernelPath, int limitCk, int limitSpk, vector<string> kernelList) {
+    pair<string, json> doubleEtToSclk(int frameCode, double et, string mission, bool useWeb, bool searchKernels, bool fullKernelPath, int limitCk, int limitSpk, vector<string> kernelList) {
         SPDLOG_TRACE("calling doubleEtToSclk({}, {}, {}, {}, {}, {})", frameCode, et, mission, useWeb, searchKernels, kernelList.size());
 
         json ephemKernels;
@@ -614,7 +613,7 @@ namespace SpiceQL {
         SPDLOG_DEBUG("strsclktoet({}, {}, {}) -> {}", frameCode, mission, sclk, et);
 
         return make_pair(string(sclk), ephemKernels);
-   }
+    }
 
 
     pair<double, json> doubleSclkToEt(int frameCode, double sclk, string mission, bool useWeb, bool searchKernels, bool fullKernelPath, int limitCk, int limitSpk, vector<string> kernelList) {
@@ -1025,7 +1024,7 @@ namespace SpiceQL {
                 {"kernelList", kernelList}
             });
             json out = spiceAPIQuery("frameTrace", args);
-            vector<vector<int>> kvect = json2DIntArrayTo2DVector(out["body"]["return"], true);
+            vector<vector<int>> kvect = json2DArrayTo2DVector<int>(out["body"]["return"], true);
             return make_pair(kvect, out["body"]["kernels"]);
         }
 

@@ -378,15 +378,15 @@ namespace SpiceQL {
 
 
   /**
-    * @brief Returns std::vector<std::vector<string>> interpretation of a json array.
+    * @brief Returns std::vector<std::vector<T>> interpretation of a json array.
     *
     * Attempts to convert the json array to a C++ array. Also handles
-    * strings in cases where one element arrays are stored as scalars.
+    * cases where one element arrays are stored as scalars.
     * Throws exception if the json obj is not an array.
     *
     * @param arr input json arr
     *
-    * @returns string vector containing arr data
+    * @returns T type vector containing arr data
     **/
   template<typename T>
   std::vector<std::vector<T>> json2DArrayTo2DVector(nlohmann::json arr, bool retainEmpty=false) {
@@ -430,34 +430,6 @@ namespace SpiceQL {
 
     return res;
    }
-
-
-   /**
-    * @brief Returns std::vector<std::vector<float>> interpretation of a json array.
-    *
-    * Attempts to convert the json array to a C++ array. Also handles
-    * strings in cases where one element arrays are stored as scalars.
-    * Throws exception if the json obj is not an array.
-    *
-    * @param arr input json arr
-    *
-    * @returns double vector containing arr data
-   **/
-   std::vector<std::vector<double>> json2DFloatArrayTo2DVector(nlohmann::json arr);
-
-
-   /**
-    * @brief Returns std::vector<std::vector<int>> interpretation of a json array.
-    *
-    * Attempts to convert the json array to a C++ array. Also handles
-    * strings in cases where one element arrays are stored as scalars.
-    * Throws exception if the json obj is not an array.
-    *
-    * @param arr input json arr
-    *
-    * @returns int vector containing arr data
-    **/
-  std::vector<std::vector<int>> json2DIntArrayTo2DVector(nlohmann::json arr, bool retainEmpty = false);
 
 
   /**
