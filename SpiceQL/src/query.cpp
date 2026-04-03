@@ -143,7 +143,7 @@ namespace SpiceQL {
     for (json::json_pointer &ptr : kptrs) {
       SPDLOG_TRACE("Getting Latest Kernels from: {}", ptr.to_string());
       SPDLOG_TRACE("JSON: {}", kernels[ptr].dump());
-      vector<vector<string>> kvect = json2DArrayTo2DVector(kernels[ptr]);
+      vector<vector<string>> kvect = json2DArrayTo2DVector<string>(kernels[ptr]);
       vector<vector<string>> newLatest;
  
       for (auto &vec : kvect) {
@@ -233,7 +233,7 @@ namespace SpiceQL {
     vector<string> kernelVect;
 
     if (pointers.empty() && kernels.is_array()) {
-      vector<vector<string>> ks = json2DArrayTo2DVector(kernels);
+      vector<vector<string>> ks = json2DArrayTo2DVector<string>(kernels);
       for (auto &subarr : ks) { 
         kernelVect.insert(kernelVect.end(), subarr.begin(), subarr.end());
       } 
@@ -271,7 +271,7 @@ namespace SpiceQL {
     else {
       for (auto & p : pointers) {
         if (!kernels[p].empty()) {
-          vector<vector<string>> ks = json2DArrayTo2DVector(kernels[p]);
+          vector<vector<string>> ks = json2DArrayTo2DVector<string>(kernels[p]);
           for (auto &subarr : ks) { 
             kernelVect.insert(kernelVect.end(), subarr.begin(), subarr.end());
           }
@@ -291,7 +291,7 @@ namespace SpiceQL {
     set<string> kset;
     
     if (pointers.empty() && kernels.is_array()) {
-      vector<vector<string>> ks = json2DArrayTo2DVector(kernels);
+      vector<vector<string>> ks = json2DArrayTo2DVector<string>(kernels);
       for (auto &subarr : ks) {
         for (auto &k : subarr) {
           kset.emplace(k);
@@ -300,7 +300,7 @@ namespace SpiceQL {
     }
     else {
       for (auto & p : pointers) {
-        vector<vector<string>> ks = json2DArrayTo2DVector(kernels[p]);
+        vector<vector<string>> ks = json2DArrayTo2DVector<string>(kernels[p]);
         for (auto &subarr : ks) {
           for (auto &k : subarr) {
             kset.emplace(k);

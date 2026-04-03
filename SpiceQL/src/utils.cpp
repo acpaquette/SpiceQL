@@ -431,46 +431,6 @@ namespace SpiceQL {
     return res;
   }
 
-
-  vector<vector<string>> json2DArrayTo2DVector(json arr) {
-    vector<vector<string>> res;
-
-    if (arr.is_array()) {
-      for(auto &subarr : arr) {
-        if (subarr.empty() || subarr.is_null()) {
-          continue; 
-        }
-        
-        vector<string> subres; 
-
-        if (!subarr.is_array()) { 
-          throw invalid_argument("Input json is not a valid 2D Json array: " + arr.dump());
-        }
-        for(auto &k : subarr) {
-          // should be a single element
-          if (k.empty()) { 
-            continue;
-          }
-          if (k.is_array()) { // needs to be scalar
-            throw invalid_argument("Input json is not a valid 2D Json array: " + arr.dump());
-          }
-          subres.emplace_back(k);
-        }
-        res.push_back(subres);
-      }
-    }
-    else if (arr.is_string()) {
-      vector<string> subres; 
-      subres.emplace_back(arr);
-      res.emplace_back(subres);
-    }
-    else {
-      throw invalid_argument("Input json is not a valid 2D Json array: " + arr.dump());
-    }
-
-    return res;
-  }
-
   vector<vector<double>> json2DFloatArrayTo2DVector(json arr) {
     vector<vector<double>> res;
 
@@ -899,7 +859,7 @@ namespace SpiceQL {
 
     vector<json::json_pointer> ckKernelGrps = findKeyInJson(ckJson, "kernels");
     for(auto &ckKernelGrp : ckKernelGrps) { 
-      vector<vector<string>> kernelList = json2DArrayTo2DVector(ckJson[ckKernelGrp]);
+      vector<vector<string>> kernelList = json2DArrayTo2DVector<string>(ckJson[ckKernelGrp]);
       for(auto &subList : kernelList) { 
         for (auto & kernel : subList) {
           vector<pair<double, double>> timeIntervals = getTimeIntervals(kernel);
@@ -912,7 +872,7 @@ namespace SpiceQL {
     json spkJson = conf.getRecursive("spk");
     vector<json::json_pointer> spkKernelGrps = findKeyInJson(spkJson, "kernels");
     for(auto &spkKernelGrp : spkKernelGrps) { 
-      vector<vector<string>> kernelList = json2DArrayTo2DVector(spkJson[spkKernelGrp]);
+      vector<vector<string>> kernelList = json2DArrayTo2DVector<string>(spkJson[spkKernelGrp]);
       for(auto &subList : kernelList) { 
         for (auto & kernel : subList) {
           vector<pair<double, double>> timeIntervals = getTimeIntervals(kernel);
@@ -937,7 +897,7 @@ namespace SpiceQL {
 
     vector<json::json_pointer> ckKernelGrps = findKeyInJson(ckJson, "kernels");
     for(auto &ckKernelGrp : ckKernelGrps) { 
-      vector<vector<string>> kernelList = json2DArrayTo2DVector(ckJson[ckKernelGrp]);
+      vector<vector<string>> kernelList = json2DArrayTo2DVector<string>(ckJson[ckKernelGrp]);
       for(auto &subList : kernelList) { 
         for (auto & kernel : subList) {
           pair<double, double> sstimes = getKernelStartStopTimes(kernel);
@@ -950,7 +910,7 @@ namespace SpiceQL {
     json spkJson = conf.getRecursive("spk");
     vector<json::json_pointer> spkKernelGrps = findKeyInJson(spkJson, "kernels");
     for(auto &spkKernelGrp : spkKernelGrps) { 
-      vector<vector<string>> kernelList = json2DArrayTo2DVector(spkJson[spkKernelGrp]);
+      vector<vector<string>> kernelList = json2DArrayTo2DVector<string>(spkJson[spkKernelGrp]);
       for(auto &subList : kernelList) { 
         for (auto & kernel : subList) {
           pair<double, double> sstimes = getKernelStartStopTimes(kernel);

@@ -387,8 +387,49 @@ namespace SpiceQL {
     * @param arr input json arr
     *
     * @returns string vector containing arr data
-   **/
-   std::vector<std::vector<std::string>> json2DArrayTo2DVector(nlohmann::json arr);
+    **/
+  template<typename T>
+  std::vector<std::vector<T>> json2DArrayTo2DVector(nlohmann::json arr, bool retainEmpty=false) {
+    std::vector<std::vector<T>> res;
+
+    if (arr.is_array()) {
+      for(auto &subarr : arr) {
+        if (subarr.is_null()) {
+          continue; 
+        }
+        else if (subarr.empty() && !retainEmpty) {
+          continue;
+        }
+        
+        std::vector<T> subres; 
+
+        if (!subarr.is_array()) { 
+          throw std::invalid_argument("Input json is not a valid 2D Json array: " + arr.dump());
+        }
+        for(auto &k : subarr) {
+          // should be a single element
+          if (k.empty()) { 
+            continue;
+          }
+          if (k.is_array()) { // needs to be scalar
+            throw std::invalid_argument("Input json is not a valid 2D Json array: " + arr.dump());
+          }
+          subres.emplace_back(k);
+        }
+        res.push_back(subres);
+      }
+    }
+    else if (arr.is_primitive()) {
+      std::vector<T> subres; 
+      subres.emplace_back(arr);
+      res.emplace_back(subres);
+    }
+    else {
+      throw std::invalid_argument("Input json is not a valid 2D Json array: " + arr.dump());
+    }
+
+    return res;
+   }
 
 
    /**

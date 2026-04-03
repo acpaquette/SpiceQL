@@ -342,7 +342,7 @@ TEST(UtilTests, testJson2DArrayTo2DVector) {
       "1D Array" : ["1.bc", "2.bc", "3.bc"]
   })"_json; 
 
-  vector<vector<string>> res = json2DArrayTo2DVector(arrays["2D Array"]);
+  vector<vector<string>> res = json2DArrayTo2DVector<std::string>(arrays["2D Array"]);
   ASSERT_EQ(res.size(), 2);
   ASSERT_EQ(res.at(0).size(), 3);
   ASSERT_EQ(res.at(1).size(), 2);
@@ -352,14 +352,14 @@ TEST(UtilTests, testJson2DArrayTo2DVector) {
   truth = {"1.bc", "2.bc"}; 
   EXPECT_THAT(res.at(1), truth);
 
-  res = json2DArrayTo2DVector(arrays["string"]);
+  res = json2DArrayTo2DVector<std::string>(arrays["string"]);
   ASSERT_EQ(res.size(), 1);
   ASSERT_EQ(res.at(0).size(), 1);
   ASSERT_EQ(res.at(0).at(0), "1.bc"); 
 
 
   try { 
-    res = json2DArrayTo2DVector(arrays["1D Array"]);
+    res = json2DArrayTo2DVector<std::string>(arrays["1D Array"]);
     FAIL() << "Should throw" << std::endl;
   }
   catch (invalid_argument &e) {
